@@ -1,2 +1,2 @@
-# flexcast
+# FlexCast
 FlexCast Prototype
