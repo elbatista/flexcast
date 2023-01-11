@@ -53,7 +53,7 @@ public abstract class ServerNode extends ServerProxy {
             this.dgPointers = new Item[id];
             this.dgPointersHst = new ItemHst[id];
         }
-        this.depGraph = new LocalDepGraph(id, this.dgPointers);
+        this.depGraph = new LocalDepGraph(id);//, this.dgPointers);
         if(getId() > 1 && getId() < (getNumNodes()-1)){
             pendNotifPointers = new Item[id];
             pendNotifPointersHst = new Item[id];
@@ -62,9 +62,9 @@ public abstract class ServerNode extends ServerProxy {
             for(short j = 0; j < numNodes; j++)
                 ancDstInfo[i][j] = new AncDst((short)(id+1));
         print(this, "Start listening... Queues:", this.queues.size());
-        print("#################################################");
-        print("ADJUSTED NOTIF POINTERS");
-        print("#################################################");
+        print("########################################################");
+        print("ADJUSTED NOTIF POINTERS, NO PTRS ON LOCALDEPGRAPH CLASS");
+        print("########################################################");
     }
 
     public short getNumNodes() {

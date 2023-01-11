@@ -35,7 +35,7 @@ public class Results {
                     }
 
                 }
-                values.addAll(auxvalues.subList((int)(auxvalues.size() * 0.2), (int)(auxvalues.size() * 0.8)));
+                values.addAll(auxvalues.subList((int)(auxvalues.size() * 0.1), (int)(auxvalues.size() * 0.9)));
                 //values.addAll(auxvalues);
                 auxvalues.clear();
             });
@@ -57,19 +57,20 @@ public class Results {
                 try{scan = new Scanner(path.toFile());}catch (Exception e) {}
                 while(scan.hasNext()){
                     String line = scan.nextLine();
-                    if(line.startsWith("Tp at sec") && !line.startsWith("Tp at sec 180")){
+                    if(line.startsWith("Tp at sec") && !line.startsWith("Tp at sec 60")){
                         lines++;
                         StringTokenizer str = new StringTokenizer(line, ":");
                         str.nextToken(); // skip the first column (text)
                         values.add(Double.valueOf(str.nextToken().trim())); // add the second column (tp)
                     }
                 }
-                valuesperclient.add(Stats.of(values.subList((int)(values.size() * 0.2), (int)(values.size() * 0.8))).mean());
+                valuesperclient.add(Stats.of(values.subList((int)(values.size() * .1), (int)(values.size() * .9))).mean());
                 values.clear();
             });
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // System.out.println(strpath + " - " + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(valuesperclient));
         return Stats.of(valuesperclient).sum();
     }
 
@@ -77,11 +78,14 @@ public class Results {
         ArrayList<Double> latencies = new ArrayList<>();
         
         String algo     = "flex";
-        String locality = "noptlcdhstcyc95";
+        String locality = "90";
+        int nodes       = 6;
+        int dur         = 60;
+        int cli         = 12;
 
-        latencies.addAll(readFiles("results/nogc/"+algo+"/192cli/"+locality+"/america"));
-        latencies.addAll(readFiles("results/nogc/"+algo+"/192cli/"+locality+"/europe"));
-        latencies.addAll(readFiles("results/nogc/"+algo+"/192cli/"+locality+"/asia"));
+        latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/america"));
+        latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/europe"));
+        latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/asia"));
         
         System.out.println("Read "+totalFiles+" latency files...");
         System.out.println(Stats.of(latencies).mean() + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(latencies));
@@ -90,9 +94,9 @@ public class Results {
         double avgtp = 0;
         totalFiles = 0;
 
-        avgtp += readTPFiles("results/nogc/"+algo+"/192cli/"+locality+"/logs/clients/america");
-        avgtp += readTPFiles("results/nogc/"+algo+"/192cli/"+locality+"/logs/clients/europe");
-        avgtp += readTPFiles("results/nogc/"+algo+"/192cli/"+locality+"/logs/clients/asia");
+        avgtp += readTPFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/america");
+        avgtp += readTPFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
+        avgtp += readTPFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
 
         System.out.println("Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
         System.out.println("AVG Throughput: "+avgtp+" ops/sec");

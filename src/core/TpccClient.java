@@ -127,6 +127,8 @@ public class TpccClient extends Client {
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
 
+        // print("ONLY 2 DESTS MSGS");
+
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;
@@ -214,6 +216,35 @@ public class TpccClient extends Client {
                 case 5: return 4;
             }
         }
+        else if(numNodes == 9){
+            switch(warehouseID){
+                case 0: return 1;
+                case 1: return 0;
+                case 2: return 1;
+                case 3: return 4;
+                case 4: return 3;
+                case 5: return 4;
+                case 6: return 7;
+                case 7: return 6;
+                case 8: return 7;
+            }
+        }
+        else if(numNodes == 12){
+            switch(warehouseID){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 1;
+                case 3: return 2;
+                case 4: return 5;
+                case 5: return 4;
+                case 6: return 5;
+                case 7: return 6;
+                case 8: return 9;
+                case 9: return 8;
+                case 10: return 9;
+                case 11: return 10;
+            }
+        }
         // simply get the next HW in order of id
         short tempdst = (short)(warehouseID+1);
         if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
@@ -229,6 +260,35 @@ public class TpccClient extends Client {
                 case 3: return 1;
                 case 4: return 2;
                 case 5: return 3;
+            }
+        }
+        else if(numNodes == 9){
+            switch(warehouseID){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 5;
+                case 4: return 6;
+                case 5: return 3;
+                case 6: return 8;
+                case 7: return 5;
+                case 8: return 6;
+            }
+        }
+        else if(numNodes == 12){
+            switch(warehouseID){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 1;
+                case 4: return 6;
+                case 5: return 7;
+                case 6: return 4;
+                case 7: return 5;
+                case 8: return 10;
+                case 9: return 7;
+                case 10: return 8;
+                case 11: return 9;
             }
         }
         // simply get the next HW in order of id
