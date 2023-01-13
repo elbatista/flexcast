@@ -29,6 +29,9 @@ public class Message extends BaseObj implements Externalizable {
     private Channel channelIn;
     private HashSet<Integer> pendNotifOrigins;
     private ArrayList<Message> batch;
+    private boolean matchedWithNL = false;
+    private boolean ackAlreadyAdded = false;
+    private Message nextInQueue = null;
 
     // constructor
     public Message(){
@@ -51,6 +54,30 @@ public class Message extends BaseObj implements Externalizable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public boolean isMatchedWithNL() {
+        return matchedWithNL;
+    }
+
+    public void setMatchedWithNL(boolean v) {
+        this.matchedWithNL = v;
+    }
+
+    public boolean getAckAlreadyAdded() {
+        return ackAlreadyAdded;
+    }
+
+    public void setAckAlreadyAdded(boolean v) {
+        this.ackAlreadyAdded = v;
+    }
+
+    public Message getNextInQueue(){
+        return this.nextInQueue;
+    }
+
+    public void setNextInQueue(Message next){
+        this.nextInQueue = next;
     }
 
     public Channel getChannelIn() {

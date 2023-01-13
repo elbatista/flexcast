@@ -129,6 +129,8 @@ public class TpccClient extends Client {
 
         // print("ONLY 2 DESTS MSGS");
 
+        // int i = 0;
+        // for(; i< args.getNumMessages(); i++){
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;

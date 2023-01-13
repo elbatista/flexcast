@@ -1,11 +1,12 @@
 package core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
+// import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
+// import java.util.concurrent.locks.ReentrantLock;
 import messages.LightMessage;
 import messages.LightMessagesList;
 import messages.Message;
@@ -15,40 +16,73 @@ import datastructures.MessageDepGraph;
 import datastructures.NotifList;
 import messages.Message.Type;
 import util.ArgsParser;
-import datastructures.SPSCQueue;
+// import datastructures.SPSCQueue;
 
 public class ServerNodeFunctions extends ServerNode {
 
-    private int batchSize = 0, batchTimeout = 1000;
-    private HashMap<Short, SPSCQueue<Message>> batches2;
-    private ReentrantLock lock = new ReentrantLock();
+    // private int batchSize = 0, batchTimeout = 1000;
+    // private HashMap<Short, SPSCQueue<Message>> batches2;
+    // private ReentrantLock lock = new ReentrantLock();
 
     public ServerNodeFunctions(short id, ArgsParser args) {
         super(id, args.getClientCount());
-        this.batchSize = args.getBatchSize();
-        this.batchTimeout = args.getBatchTimeout();
-        if(getId() < (getNumNodes()-1) && batchSize > 0){
-            batches2 = new HashMap<>();
-            for(short i = (short)(id+1); i < (getNumNodes()); i++){
-                batches2.put(i, new SPSCQueue<>(10000000));
-                final short ii = i;
-                new Thread(new Runnable(){ public void run(){
-                    try {sendBatches(ii);} catch (InterruptedException e) {}
-                }}).start();
-            }
+        // this.batchSize = args.getBatchSize();
+        // this.batchTimeout = args.getBatchTimeout();
+        // if(getId() < (getNumNodes()-1) && batchSize > 0){
+        //     batches2 = new HashMap<>();
+        //     for(short i = (short)(id+1); i < (getNumNodes()); i++){
+        //         batches2.put(i, new SPSCQueue<>(10000000));
+        //         final short ii = i;
+        //         new Thread(new Runnable(){ public void run(){
+        //             try {sendBatches(ii);} catch (InterruptedException e) {}
+        //         }}).start();
+        //     }
+        // }
+    }
+
+    void printQueues(){
+        for(Short key : queues.keySet()){
+            print("Head of queue", key,":", queues.get(key).peek(), "- Rest:", Arrays.toString(queues.get(key).toArray()));
         }
     }
 
     @Override
     protected void reprocessQueues() {
-        //print("reprocessQueues");
+        print("reprocessQueues");
+        printQueues();
         boolean delivered = true;
-        while(delivered){
+        boolean[] shouldRetryQueues = new boolean[]{false};
+        while(delivered || shouldRetryQueues[0]){
             delivered = false;
+            shouldRetryQueues[0] = false;
             for(Queue<Message> q : queues.values()){
                 Message m = q.peek();
-                if(m != null && canDeliver(m)){
+                if(m == null) continue;
+
+                if(m.getType() == Type.MSG && canDeliver(m, shouldRetryQueues)){
                     aDeliver(m, false);
+                    delivered = true;
+                }
+
+                if(m.getType() == Type.ACK){
+                    print("Found an ack in the queue");
+                    Message morig = tempQueuedMessages.get(m.getId());
+                    // if not found, stores the ack in pending acks set and continues
+                    if(morig == null){
+                        // ArrayList<Message> list = pendingAcks.get(m.getId());
+                        // if(list == null){
+                        //     list = new ArrayList<>();
+                        //     pendingAcks.put(m.getId(), list);
+                        // }
+                        // list.add(m);
+                        continue;
+                    }
+                    // when the related message is found, add the ack to it
+                    if(!m.getAckAlreadyAdded()){
+                        morig.getAcks().add(m);
+                        print("Added ack to", morig.getId(), "from", m.getSender());
+                    }
+                    q.poll().setNextInQueue(null);
                     delivered = true;
                 }
             }
@@ -57,20 +91,20 @@ public class ServerNodeFunctions extends ServerNode {
 
     @Override
     protected void aDeliver(Message m, boolean lca) {
-        lock.lock();
+        // lock.lock();
         ItemHst myHstItem = depGraph.addToHst(new LightMessage(m.getId(), m.getDst()));
-        lock.unlock();
+        // lock.unlock();
         if(lca){
             forward(m);
         }
         else{
-            queues.get(m.getLca()).poll();
+            queues.get(m.getLca()).poll().setNextInQueue(null);
             tempQueuedMessages.remove(m.getId());
             updatePointers(m, myHstItem);
             sendAck(m);
         }
         if(!specialNotif) processPendingNotifs(m);
-        //print("delivered", m);
+        print("delivered", m);
         sendReply(m);
     }
 
@@ -89,12 +123,12 @@ public class ServerNodeFunctions extends ServerNode {
 
     @Override
     protected void aDeliverSpecial(Message m) {
-        lock.lock();
+        // lock.lock();
         depGraph.addToHst(new LightMessage(m.getId(), m.getDst()));
-        lock.unlock();
+        // lock.unlock();
         sendAck(m);            
         sendReply(m);
-        //print("delivered", m);
+        print("delivered", m);
     }
 
     @Override
@@ -128,9 +162,22 @@ public class ServerNodeFunctions extends ServerNode {
 
     @Override
     protected void sendAck(Message m) {
+
+
         if(getId() == (getNumNodes()-1)) return; // last one doesnt have someone to send acks
         Set<Short> notifList = null;
-        if(getId() < (getNumNodes()-2)) notifList = sendNotif(m); // last 2 nodes never have someone to notify
+
+        // se nao vou enviar acks, tbm nao envio notifs
+        boolean shouldSendNotifs = false;
+        for(short dst : m.getDst()){
+            if(dst > getId()){
+                shouldSendNotifs = true;
+                break;
+            }
+        }
+        if(!shouldSendNotifs) print("Not sending notifs here, because there are no acks", m);
+        if(shouldSendNotifs && getId() < (getNumNodes()-2)) notifList = sendNotif(m); // last 2 nodes never have someone to notify
+
         for(short dst : m.getDst()){
             if(dst > getId()){
                 Message ack = new Message(m.getId());
@@ -140,20 +187,21 @@ public class ServerNodeFunctions extends ServerNode {
                 if(m.getType() == Type.NOTIF) ack.setIdNotifier(m.getSender());
                 ack.ackIsFromDst(m.getType() == Type.MSG && m.isAddressedTo(getId()));
 
-                if(batchSize == 0) newHst(ack, dst);
+                // if(batchSize == 0) 
+                newHst(ack, dst);
 
                 if(notifList != null && notifList.size() > 0)
                     ack.addNotifList(notifList, getId());
 
-                if(batchSize == 0) {
+                // if(batchSize == 0) {
                     send(ack, dst);
-                    //print("sent ack", ack, "to", dst);
-                }
-                else {
-                    boolean inserted = false;
-                    while (!inserted)
-                        inserted = batches2.get(dst).offer(ack);
-                }
+                    print("sent ack", ack, "to", dst);
+                // }
+                // else {
+                //     boolean inserted = false;
+                //     while (!inserted)
+                //         inserted = batches2.get(dst).offer(ack);
+                // }
             }
         }
     }
@@ -183,63 +231,64 @@ public class ServerNodeFunctions extends ServerNode {
                 toSend.setCliId(m.getCliId());
                 toSend.setSender(getId());
 
-                if(batchSize == 0) newHst(toSend, dst);
+                // if(batchSize == 0) 
+                newHst(toSend, dst);
 
                 if(notifList != null && notifList.size() > 0)
                     toSend.addNotifList(notifList, getId());
 
-                if(batchSize == 0){
+                // if(batchSize == 0){
                     send(toSend, dst);
                     //print("fwd", toSend, "to", dst);
-                }
-                else {
-                    boolean inserted = false;
-                    while (!inserted)
-                        inserted = batches2.get(dst).offer(toSend);
-                }
+                // }
+                // else {
+                //     boolean inserted = false;
+                //     while (!inserted)
+                //         inserted = batches2.get(dst).offer(toSend);
+                // }
             }
         }
     }
 
-    private void sendBatches(short node) throws InterruptedException{
-        print("Started thread for batching messages (variable size) to node", node, batchTimeout == 0 ? "no timeout" : (batchTimeout + " nanos"), "(SPSCQueue)");
-        while(true){
-            Message m1;
-            while(true) {
-                m1 = batches2.get(node).poll();
-                if(m1 != null) break;
-            }
+    // private void sendBatches(short node) throws InterruptedException{
+    //     print("Started thread for batching messages (variable size) to node", node, batchTimeout == 0 ? "no timeout" : (batchTimeout + " nanos"), "(SPSCQueue)");
+    //     while(true){
+    //         Message m1;
+    //         while(true) {
+    //             m1 = batches2.get(node).poll();
+    //             if(m1 != null) break;
+    //         }
 
-            if(batchTimeout > 0) Thread.sleep(0, batchTimeout);
+    //         if(batchTimeout > 0) Thread.sleep(0, batchTimeout);
         
-            Message m2 = batches2.get(node).poll();
+    //         Message m2 = batches2.get(node).poll();
 
-            if(m2 == null){
-                lock.lock();
-                newHst(m1, node);
-                lock.unlock();
-                send(m1, node);
-                continue;
-            }
+    //         if(m2 == null){
+    //             lock.lock();
+    //             newHst(m1, node);
+    //             lock.unlock();
+    //             send(m1, node);
+    //             continue;
+    //         }
             
-            Message msgBatch = new Message();
-            msgBatch.setType(Type.BATCH);
-            msgBatch.setSender(getId());
-            msgBatch.getBatch().add(m1);
-            msgBatch.getBatch().add(m2);
+    //         Message msgBatch = new Message();
+    //         msgBatch.setType(Type.BATCH);
+    //         msgBatch.setSender(getId());
+    //         msgBatch.getBatch().add(m1);
+    //         msgBatch.getBatch().add(m2);
             
-            while(true){
-                Message m3 = batches2.get(node).poll();
-                if(m3 == null) break;
-                msgBatch.getBatch().add(m3);
-            }
+    //         while(true){
+    //             Message m3 = batches2.get(node).poll();
+    //             if(m3 == null) break;
+    //             msgBatch.getBatch().add(m3);
+    //         }
 
-            lock.lock();
-            newHst(msgBatch, node);
-            lock.unlock();
-            send(msgBatch, node);
-        }
-    }
+    //         lock.lock();
+    //         newHst(msgBatch, node);
+    //         lock.unlock();
+    //         send(msgBatch, node);
+    //     }
+    // }
     
     private void newHst(Message m, short dst) {
         MessageDepGraph mg = new MessageDepGraph((short)(getId()+1));
@@ -276,29 +325,29 @@ public class ServerNodeFunctions extends ServerNode {
                 notif.addNotifList(nl.getNotifList(), nl.getNotifier());
             notif.addNotifList(notifList, getId());
 
-            if(batchSize == 0) newHst(notif, node);
+            // if(batchSize == 0) 
+            newHst(notif, node);
 
-            if(batchSize > 0){
-                boolean inserted = false;
-                while (!inserted) 
-                    inserted = batches2.get(node).offer(notif);
-            }
-            else {
+            // if(batchSize > 0){
+            //     boolean inserted = false;
+            //     while (!inserted) 
+            //         inserted = batches2.get(node).offer(notif);
+            // }
+            // else {
                 send(notif, node);
-                //print("sent notif", notif, "to", node);
-            }
+                print("sent notif", notif, "to", node);
+            // }
         }
         return notifList;
     }
 
     private boolean isThereMsgTo(short lca, short son, short dst, boolean shouldUpdateLast) {
-        //Item [] last = ancDstInfo[lca][son][dst].getLastInNotif();
+        Item [] last = ancDstInfo[son][dst].getLastInNotif();
 
         for(short i = 0; i <= getId(); i++){
-            Item start = notifPointers[lca][son][dst][i] == null ? depGraph.getGraph()[i].getFirst() : notifPointers[lca][son][dst][i];
-            //if(start != null) print("Starting from", start.get());
+            Item start = last[i] == null ? depGraph.getGraph()[i].getFirst() : last[i];
             while(start != null){
-                if(shouldUpdateLast) notifPointers[lca][son][dst][i] = start.getNext() == null ? start : start.getNext();
+                if(shouldUpdateLast) last[i] = start.getNext() == null ? start : start.getNext();
                 if(start.get().isAddressedTo(son))
                     return true;
                 start = start.getNext();
@@ -309,20 +358,24 @@ public class ServerNodeFunctions extends ServerNode {
     }
 
     // methods for the delivery process:
-    private boolean canDeliver(Message m) {
-        //print("canDeliver", m);
-        addPendingAcks(m);
-        if(!checkAcksFromDsts(m)) return false;
+    private boolean canDeliver(Message m, boolean[] shouldRetryQueues) {
+        print("canDeliver", m);
+        // addPendingAcks(m);
+        if(!checkAcksFromDsts(m)){
+            print("Not received acks from all dsts");
+            return false;
+        }
+        // for(NotifList nl : m.getNotifList())
+        //     if(!checkNotifList(m, nl)) return false;
 
-        for(NotifList nl : m.getNotifList())
-            if(!checkNotifList(m, nl)) return false;
-
-        if(!checkMessageAcks(m)) return false;
-
-        return checkDepGraph(m);
+        if(!checkMessageAcks(m)){
+            print("Not received acks from all in notif lists");
+            return false;
+        }
+        return checkDepGraph(m, shouldRetryQueues);
     }
 
-    private boolean checkDepGraph(Message m) {
+    private boolean checkDepGraph(Message m, boolean[] shouldRetryQueues) {
         for(short i = 0; i < getId(); i++){
             Item item = dgPointers[i];
             if(item == null) item = depGraph.getGraph()[i].getFirst();
@@ -335,17 +388,31 @@ public class ServerNodeFunctions extends ServerNode {
                     LightMessage lm = new LightMessage(m.getId(), m.getDst());
 
                     // Exception 1 - i am lcd
-                    if(lcd == getId() && !depGraph.generatesCycleOnDelivering(lm, m2, dgPointers, dgPointersHst)){
-                        item = item.getNext();
-                        continue;
+                    if(lcd == getId()){
+                        if(!depGraph.generatesCycleOnDelivering(lm, m2, dgPointers, dgPointersHst)){
+                            item = item.getNext();
+                            continue;
+                        }
+                        print("delivering", lm, "before", m2, "generates cycle");
+                        print("graph", depGraph.getDepGraphAsString());
+                        // for(Queue<Message> q : queues.values()){
+                        //     Message qhead = q.peek();
+                        //     if(qhead != null && qhead.getType() == Type.MSG && qhead.getId() == m2.getId()){
+                        //         shouldRetryQueues[0] = addAcksFromQueues(qhead);
+                        //         break;
+                        //     }
+                        // }
+                    }
+                    // Exception 2 - i will follow lcd's order
+                    else {
+                        if(depGraph.doesMessageComesFirstThan(lcd, lm, m2)){
+                            item = item.getNext();
+                            continue;
+                        }
+                        print("msg", m2, "comes first than", lm, "in lcd's order");
                     }
 
-                    // Exception 2 - i will follow lcd's order
-                    if(lcd != getId() && depGraph.doesMessageComesFirstThan(lcd, lm, m2)){
-                        item = item.getNext();
-                        continue;
-                    }
-                    //print("cant deliver", lm, "missing", m2, "in my hst");
+                    print("cant deliver", lm, "missing", m2, "in my hst");
                     return false;
                 }
                 item = item.getNext();
@@ -365,28 +432,91 @@ public class ServerNodeFunctions extends ServerNode {
         return false;
     }
 
-    private boolean checkMessageAcks(Message m) {
-        for(Message ack : m.getAcks())
-            for(NotifList nl : ack.getNotifList())
-                if(!checkNotifList(m, nl)) 
-                    return false;
-        return true;
+    private boolean addAcksFromQueues(Message m) {
+        boolean added = false;
+        for(Queue<Message> q : queues.values()){
+            Message qhead = q.peek();
+            // pula fila vazia e a fila onde estou
+            if(qhead == null) continue;
+            if(qhead.equals(m) && qhead.getType() == m.getType()) continue;
+
+            while(qhead != null){
+                if(qhead.getType() == Type.ACK && qhead.getId() == m.getId()){
+                    //add ack to message
+                    if(!qhead.getAckAlreadyAdded()){
+                        m.getAcks().add(qhead);
+                        qhead.setAckAlreadyAdded(true);
+                        added = true;
+                    }
+                }
+                if(qhead.getType() == Type.MSG && m.getLcd(qhead) != getId()) break;
+                qhead = qhead.getNextInQueue();
+            }
+
+        }
+        return added;
     }
 
-    private boolean checkNotifList(Message m, NotifList nl){
-        for(short anc : nl.getNotifList()){
-            if(anc > m.getLca() && anc < getId()){
-                if(!m.getAcks().stream().anyMatch(a->{
-                    return a.getSender() == anc 
-                    && a.getIdNotifier() == nl.getNotifier()
-                    && !a.ackIsFromDst();
-                }) ){
-                    return false;
+    private boolean checkMessageAcks(Message m) {
+        // addAcksFromQueues(m);
+        ArrayList <NotifList> allNLs = new ArrayList<>();
+        allNLs.addAll(m.getNotifList());
+        for(Message ack : m.getAcks()){
+            ack.setMatchedWithNL(ack.ackIsFromDst());
+            allNLs.addAll(ack.getNotifList());
+        }
+        print("checkMessageAcks allNLs size:", allNLs.size(), "- acks recvd:", m.getAcks().size());
+        for(NotifList nl : allNLs){
+            for(short anc : nl.getNotifList()){
+                boolean found = false;
+                for(Message ack : m.getAcks()){
+                    if(nl.getNotifier() == ack.getIdNotifier() && !ack.ackIsFromDst()){
+                        if(anc == ack.getSender() & !ack.isMatchedWithNL()){
+                            found = true;
+                            ack.setMatchedWithNL(true);
+                            break;
+                        }
+                    }
                 }
+                if(!found) return false;
             }
         }
-        return true;
+
+        return m.getAcks().stream().filter(ack->!ack.isMatchedWithNL()).count() == 0;
+        // int acksNeeded = 0;
+        // for(short anc : m.getDst())
+        //     if(anc > m.getLca() && anc < getId()) acksNeeded++;
+
+        // for(NotifList nl : m.getNotifList())
+        //     acksNeeded += nl.getNotifList().size();
+        
+        // for(Message ack : m.getAcks()){
+        //     for(NotifList nl : ack.getNotifList()){
+        //         // if(!checkNotifList(m, nl)) {
+        //         //     return false;
+        //         // }
+        //         acksNeeded += nl.getNotifList().size();
+        //     }
+        // }
+        // return m.getAcks().size() == acksNeeded;
     }
+
+    // private boolean checkNotifList(Message m, NotifList nl){
+    //     for(short anc : nl.getNotifList()){
+    //         if(anc > m.getLca() && anc < getId()){
+    //             if(!m.getAcks().stream().anyMatch(a->{
+    //                 return a.getSender() == anc 
+    //                 && a.getIdNotifier() == nl.getNotifier()
+    //                 && !a.ackIsFromDst();
+    //             }) ){
+    //                 return false;
+    //             }
+    //         }
+    //     }
+    //     return true;
+    // }
+
+    
 
     private boolean checkAcksFromDsts(Message m) {
         for(short anc : m.getDst())
@@ -395,12 +525,12 @@ public class ServerNodeFunctions extends ServerNode {
         return true;
     }
 
-    private void addPendingAcks(Message m) {
-        ArrayList<Message> l = pendingAcks.get(m.getId());
-        if(l == null) return;
-        //if there was any pending ack for this message, add them to the message
-        m.getAcks().addAll(l);
-        // remove from pending acks
-        pendingAcks.remove(m.getId());
-    }
+    // private void addPendingAcks(Message m) {
+    //     ArrayList<Message> l = pendingAcks.get(m.getId());
+    //     if(l == null) return;
+    //     //if there was any pending ack for this message, add them to the message
+    //     m.getAcks().addAll(l);
+    //     // remove from pending acks
+    //     pendingAcks.remove(m.getId());
+    // }
 }

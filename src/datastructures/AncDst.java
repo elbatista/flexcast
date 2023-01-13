@@ -4,9 +4,9 @@ import messages.LightMessagesList.Item;
 
 public class AncDst {
     private Item lastInPfx; 
-    // private Item [] lastInNotif;
+    private Item [] lastInNotif;
     public AncDst(short lastInNotifSize){
-        // lastInNotif = new Item[lastInNotifSize];
+        lastInNotif = new Item[lastInNotifSize];
     }
     public Item getLastInPfx() {
         return lastInPfx;
@@ -14,7 +14,7 @@ public class AncDst {
     public void setLastInPfx(Item lastInPfx) {
         this.lastInPfx = lastInPfx;
     }
-    // public Item [] getLastInNotif() {
-    //     return lastInNotif;
-    // }
+    public Item [] getLastInNotif() {
+        return lastInNotif;
+    }
 }

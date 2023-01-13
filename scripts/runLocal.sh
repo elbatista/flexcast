@@ -31,15 +31,14 @@ do
         java -cp "bin/*:lib/*" MainClient -c $5 -i 1 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 1 >> logs/cli1.txt &
         java -cp "bin/*:lib/*" MainClient -c $5 -i 2 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli2.txt &
         java -cp "bin/*:lib/*" MainClient -c $5 -i 3 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 3 >> logs/cli3.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 4 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 4 >> logs/cli4.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 5 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 5 >> logs/cli5.txt &
-
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 6 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 0 >> logs/cli6.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 7 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 1 >> logs/cli7.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 8 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli8.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 9 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 3 >> logs/cli9.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 10 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 4 >> logs/cli10.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 11 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 5 >> logs/cli11.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 4 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 4 >> logs/cli4.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 5 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 5 >> logs/cli5.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 6 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 0 >> logs/cli6.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 7 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 1 >> logs/cli7.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 8 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli8.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 9 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 3 >> logs/cli9.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 10 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 4 >> logs/cli10.txt &
+        # java -cp "bin/*:lib/*" MainClient -c $5 -i 11 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 5 >> logs/cli11.txt &
     # done
     echo started $5 clients >> logs/executions.log
     
@@ -57,8 +56,9 @@ do
 
     # se teve ciclos, para experimentos
     echo "starting cycle validation ("$(date)")" >> logs/executions.log; java -cp "bin/*:lib/*" util.Validator > logs/validationresult.txt
+    cat logs/validationresult.txt >> logs/executions.log;
     if grep -q "true" logs/validationresult.txt; then echo "cycle detected!" >> logs/executions.log; cat logs/validationresult.txt; exit 0; fi
     echo "no cycles detected ("$(date)")" >> logs/executions.log; 
     
-    #exit 0; # <- para executar somente uma vez
+    # exit 0; # <- para executar somente uma vez
 done

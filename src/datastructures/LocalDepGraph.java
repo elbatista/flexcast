@@ -1,11 +1,10 @@
 package datastructures;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.CycleDetector;
 import org.jgrapht.graph.DefaultEdge;
-// import org.jgrapht.graph.builder.GraphBuilder;
+import org.jgrapht.graph.builder.GraphBuilder;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import messages.LightMessage;
 import messages.LightMessagesList;
@@ -18,22 +17,14 @@ public class LocalDepGraph extends BaseObj {
     private LightMessagesList [] graph;
     private short node;
     private Item updateDGPointers[][];
-    Graph<Integer,DefaultEdge> globalGraph2;
-    HashMap<Integer, HashMap<Integer, Boolean>> cyclesDetected;
+    private Item dgPointers[];
 
-    public LocalDepGraph(short node){//, Item[] dgPointers){
+    public LocalDepGraph(short node, Item[] dgPointers){
         this.node = node;
         graph = new LightMessagesList[node+1];
         for (short i = 0; i <= node; i++)  graph[i] = new LightMessagesList();
         if(node > 0) updateDGPointers = new Item[node][node];
-        cyclesDetected = new HashMap<>();
-        globalGraph2 = 
-        GraphTypeBuilder.<Integer, DefaultEdge> directed()
-        .allowingMultipleEdges(false)
-        .allowingSelfLoops(false)
-        .weighted(false)
-        .edgeClass(DefaultEdge.class)
-        .buildGraph();
+        this.dgPointers = dgPointers;
     }
 
     public LightMessagesList getMyHst(){
@@ -45,17 +36,11 @@ public class LocalDepGraph extends BaseObj {
     }
  
     public ItemHst addToHst(LightMessage m){
-        ItemHst item = graph[this.node].addHst(m);
-        globalGraph2.addVertex(m.getId());
-        if(getMyHst().getLast().getPrev() != null){
-            globalGraph2.addEdge(getMyHst().getLast().getPrev().get().getId(), m.getId());
-        }
-        return item;
+        return graph[this.node].addHst(m);
     }
 
     public boolean doesMessageComesFirstThan(short lcd, LightMessage m, LightMessage m2){
-        // LightMessagesList.Item item = dgPointers[lcd] == null ? graph[lcd].getFirst() : dgPointers[lcd];
-        LightMessagesList.Item item = graph[lcd].getFirst();
+        LightMessagesList.Item item = dgPointers[lcd] == null ? graph[lcd].getFirst() : dgPointers[lcd];
         while(item != null){
             // if m comes first ... returns true
             if(item.get().getId() == m.getId()) return true;
@@ -84,13 +69,9 @@ public class LocalDepGraph extends BaseObj {
             }
             item = item.getNext();
         }
-        for(int i = mgraphidx; i < mgraph.size(); i++){
+        for(int i = mgraphidx; i < mgraph.size(); i++)
             graph[n].add(mgraph.get(i));
-            globalGraph2.addVertex(mgraph.get(i).getId());
-            if(graph[n].getLast().getPrev() != null){
-                globalGraph2.addEdge(graph[n].getLast().getPrev().get().getId(), mgraph.get(i).getId());
-            }
-        }
+
         updateDGPointers[sender][n] = item;
     }
 
@@ -112,87 +93,52 @@ public class LocalDepGraph extends BaseObj {
     }
 
     public boolean generatesCycleOnDelivering(LightMessage m1, LightMessage m2, Item[] dgPointers, ItemHst[] dgPointersHst) {
-        // Graph<Integer,DefaultEdge> globalGraph = 
-        // GraphTypeBuilder.<Integer, DefaultEdge> directed()
-        // .allowingMultipleEdges(false)
-        // .allowingSelfLoops(false)
-        // .weighted(false)
-        // .edgeClass(DefaultEdge.class)
-        // .buildGraph();
+        Graph<Integer,DefaultEdge> globalGraph = 
+        GraphTypeBuilder.<Integer, DefaultEdge> directed()
+        .allowingMultipleEdges(false)
+        .allowingSelfLoops(false)
+        .weighted(false)
+        .edgeClass(DefaultEdge.class)
+        .buildGraph();
 
-        // GraphBuilder<Integer,DefaultEdge,Graph<Integer,DefaultEdge>> builder = 
-        // new GraphBuilder<Integer,DefaultEdge,Graph<Integer,DefaultEdge>>(globalGraph);
-        // boolean first;
-        // for(short i = 0; i < node; i++){
-        //     // Item item = dgPointers[i] == null ? graph[i].getFirst() : dgPointers[i];
-        //     Item item = graph[i].getFirst();
-        //     first = true;
-        //     while(item != null){
-        //         builder.addVertex(item.get().getId());
-        //         if(!first) builder.addEdge(item.getPrev().get().getId(), item.get().getId());
-        //         item = item.getNext();
-        //         first = false;
-        //     }
-        // }
-
-        // // ItemHst itemHst = dgPointersHst[0];
-        // // for(short i = 1; i < dgPointersHst.length; i++){
-        // //     if(itemHst == null){
-        // //         itemHst = dgPointersHst[i];
-        // //         continue;
-        // //     }
-        // //     if(dgPointersHst[i] != null && dgPointersHst[i].getIdx() < itemHst.getIdx())
-        // //         itemHst = dgPointersHst[i];
-        // // }
-        // // if(itemHst == null) itemHst = (ItemHst) getMyHst().getFirst();
-        // ItemHst itemHst = (ItemHst) getMyHst().getFirst();
-        // first = true;
-        // while(itemHst != null){
-        //     builder.addVertex(itemHst.get().getId());
-        //     if(!first) builder.addEdge(itemHst.getPrev().get().getId(), itemHst.get().getId());
-        //     itemHst = (ItemHst)itemHst.getNext();
-        //     first = false;
-        // }
-
-        // if(graph[node].getLast() != null)
-        //     builder.addEdgeChain(graph[node].getLast().get().getId(), m1.getId(), m2.getId());
-        // else
-        //     builder.addEdgeChain(m1.getId(), m2.getId());
-
-        // return new CycleDetector<>(builder.build()).detectCycles();
-
-
-
-
-        ////////
-        if(cyclesDetected.get(m1.getId()) != null){
-            if(cyclesDetected.get(m1.getId()).get(m2.getId()) != null) return true;
+        GraphBuilder<Integer,DefaultEdge,Graph<Integer,DefaultEdge>> builder = 
+        new GraphBuilder<Integer,DefaultEdge,Graph<Integer,DefaultEdge>>(globalGraph);
+        boolean first;
+        for(short i = 0; i < node; i++){
+            Item item = dgPointers[i] == null ? graph[i].getFirst() : dgPointers[i];
+            first = true;
+            while(item != null){
+                builder.addVertex(item.get().getId());
+                if(!first) builder.addEdge(item.getPrev().get().getId(), item.get().getId());
+                item = item.getNext();
+                first = false;
+            }
         }
 
-        boolean m1exists = !globalGraph2.addVertex(m1.getId());
-        boolean m2exists = !globalGraph2.addVertex(m2.getId());
-        boolean addedEdgeHst = false;
-
-        globalGraph2.addEdge(m1.getId(), m2.getId());
-
-        if(getMyHst().getLast() != null){
-            addedEdgeHst = true;
-            globalGraph2.addEdge(getMyHst().getLast().get().getId(), m1.getId());
+        ItemHst itemHst = dgPointersHst[0];
+        for(short i = 1; i < dgPointersHst.length; i++){
+            if(itemHst == null){
+                itemHst = dgPointersHst[i];
+                continue;
+            }
+            if(dgPointersHst[i] != null && dgPointersHst[i].getIdx() < itemHst.getIdx())
+                itemHst = dgPointersHst[i];
+        }
+        if(itemHst == null) itemHst = (ItemHst) getMyHst().getFirst();
+        first = true;
+        while(itemHst != null){
+            builder.addVertex(itemHst.get().getId());
+            if(!first) builder.addEdge(itemHst.getPrev().get().getId(), itemHst.get().getId());
+            itemHst = (ItemHst)itemHst.getNext();
+            first = false;
         }
 
-        boolean cycle = new CycleDetector<>(globalGraph2).detectCycles();
+        if(graph[node].getLast() != null)
+            builder.addEdgeChain(graph[node].getLast().get().getId(), m1.getId(), m2.getId());
+        else
+            builder.addEdgeChain(m1.getId(), m2.getId());
 
-        if(cycle){
-            if(cyclesDetected.get(m1.getId()) == null) cyclesDetected.put(m1.getId(), new HashMap<>());
-            cyclesDetected.get(m1.getId()).put(m2.getId(), cycle);
-        }
-
-        if(addedEdgeHst) globalGraph2.removeEdge(getMyHst().getLast().get().getId(), m1.getId());
-        globalGraph2.removeEdge(m1.getId(), m2.getId());
-        if(!m2exists) globalGraph2.removeVertex(m2.getId());
-        if(!m1exists) globalGraph2.removeVertex(m1.getId());
-
-        return cycle;
+        return new CycleDetector<>(builder.build()).detectCycles();
     }
 
 }
