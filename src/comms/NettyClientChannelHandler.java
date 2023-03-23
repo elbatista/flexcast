@@ -42,11 +42,4 @@ public class NettyClientChannelHandler extends ChannelInboundHandlerAdapter {
         proxy.receiveReply(m);
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        System.out.println("NettyClientChannelHandler - Exception - " + cause);
-        ctx.close();
-        System.exit(0);
-    }
 }

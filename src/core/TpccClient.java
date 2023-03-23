@@ -71,10 +71,10 @@ public class TpccClient extends Client {
         sendReadyMessage();
         print("All other clients ready!");
 
-        print("Started tpcc experiment. Num nodes:", numNodes);
+        print("Started tpcc experiment. Num nodes:", numNodes, (totalTime>0?"Duration: "+ totalTime:""), (args.getNumMessages()>0?"Num msgs: "+ args.getNumMessages():""));
         print("My home warehouse:", warehouseID);
 
-        if(args.getLocality() == 0) print("No locality");
+        print("Locality", args.getLocality(),"%");
         stats = new Stats(totalTime);
         executeTransactions();
 
@@ -127,30 +127,31 @@ public class TpccClient extends Client {
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
 
-        // print("ONLY 2 DESTS MSGS");
+        print("ONLY 2 DESTS MSGS");
 
-        // int i = 0;
-        // for(; i< args.getNumMessages(); i++){
-        while (elapsed / 1e9 < totalTime) {
+        int i = 0;
+        for(; args.getNumMessages() > 0 ? i<args.getNumMessages() : (elapsed / 1e9 < (totalTime>0?totalTime:10)); i++){
+        // while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
-            int numDests = 1;
 
-            if (transactionType <= newOrderWeight) {
-                //transactionTypeName = "New-Order";
-                numDests = doNewOrder();
-            } else if (transactionType <= newOrderWeight + paymentWeight) {
-                //transactionTypeName = "Payment";
-                numDests = doPayment();
-            } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight) {
-                //transactionTypeName = "Order-Status";
-                numDests = doOrderStatus();
-            } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight) {
-                //transactionTypeName = "Delivery";
-                numDests = doDelivery();
-            } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight + stockLevelWeight) {
-                //transactionTypeName = "Stock-Level";
-                numDests = doStockLevel();
-            }
+            int numDests = 2;
+
+            // if (transactionType <= newOrderWeight) {
+            //     //transactionTypeName = "New-Order";
+            //     numDests = doNewOrder();
+            // } else if (transactionType <= newOrderWeight + paymentWeight) {
+            //     //transactionTypeName = "Payment";
+            //     numDests = doPayment();
+            // } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight) {
+            //     //transactionTypeName = "Order-Status";
+            //     numDests = doOrderStatus();
+            // } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight) {
+            //     //transactionTypeName = "Delivery";
+            //     numDests = doDelivery();
+            // } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight + stockLevelWeight) {
+            //     //transactionTypeName = "Stock-Level";
+            //     numDests = doStockLevel();
+            // }
 
             Message m = newMessageTo(generateDests(numDests));
             multicast(m);

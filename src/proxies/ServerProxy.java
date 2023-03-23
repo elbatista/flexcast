@@ -8,24 +8,29 @@ import messages.Message;
 import messages.Message.Type;
 
 public abstract class ServerProxy extends ClientProxy {
-    private ConcurrentLinkedQueue<Message> bufferQueue;
+    // private ConcurrentLinkedQueue<Message> bufferQueue;
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs;
-
+    protected HashMap<Short, ConcurrentLinkedQueue<Message>> queues;
+    protected HashMap<Integer, Boolean> deliveredMsgs = new HashMap<>();
     public ServerProxy(short id, int numClients){
         super(id);
         this.numClients = numClients;
-        bufferQueue = new ConcurrentLinkedQueue<>();
+        // bufferQueue = new ConcurrentLinkedQueue<>();
+        queues = new HashMap<>();
+        for(short i = 0; i <= id; i++){
+            queues.put(i, new ConcurrentLinkedQueue<>());
+        }
         cliChannels = new HashMap<>();
         new NettyServerChannel(this, this);
-        new Thread(new Runnable() {
-            public void run(){
-                while(true) {
-                    Message m = bufferQueue.poll();
-                    if(m != null) receive(m);
-                }
-            }
-        }).start();
+        // new Thread(new Runnable() {
+        //     public void run(){
+        //         while(true) {
+        //             Message m = bufferQueue.poll();
+        //             if(m != null) receive(m);
+        //         }
+        //     }
+        // }).start();
     }
     public void buffer(Message m){
         // client local msgs are immediatly delivered 
@@ -34,27 +39,35 @@ public abstract class ServerProxy extends ClientProxy {
             sendReply(m);
             return;
         }
-        bufferQueue.offer(m);
+        // bufferQueue.offer(m);
+        receive(m);
     }
-    private void receive(Message m) {
+
+    private synchronized void receive(Message m) {
         switch(m.getType()){
-            case MSG: receiveMsg(m, true); break;
-            case ACK: receiveAck(m, true); break;
-            case NOTIF: receiveNotif(m, true); break;
-            case BATCH: receiveBatch(m); break;
+            // case MSG: receiveMsg(m); break;
+            // case ACK: receiveAck(m); break;
+            // case NOTIF: receiveNotif(m); break;
+            // case BATCH: receiveBatch(m); break;
             // message used only to establish a connection to each client
             case CONN: {
                 cliChannels.put(m.getCliId(), m.getChannelIn());
                 m.setSender(getId());
                 m.getChannelIn().writeAndFlush(m);
                 print("Channel to client", m.getCliId(), ":", m.getChannelIn());
-                break;
+                return;
             }
             // message used only to ensure all clients are ready (connected) before all clients start multicasting
-            case READY: receiveReady(m); break;
+            case READY: receiveReady(m); return;
             // message used only to end a connection to a client
-            case END: receiveEnd(m); break;
+            case END: receiveEnd(m); return;
             default: break;
+        }
+        if(m.getType() == Type.MSG){
+            queues.get(m.getLca()).offer(m);
+        }
+        else {
+            queues.get(m.getSender()).offer(m);
         }
     }
 
@@ -74,23 +87,24 @@ public abstract class ServerProxy extends ClientProxy {
         numCliEndsRecv++;
         m.setSender(getId());
         m.getChannelIn().writeAndFlush(m);
+        print("End msgs from", m.getCliId());
         if(numCliEndsRecv == numClients){
             print("All", numClients, " clients done!");
             finish();
         }
     }
 
-    private void receiveBatch(Message batch) {
-        updateDG(batch);
-        for(Message m : batch.getBatch()){
-            switch(m.getType()){
-                case MSG: receiveMsg(m, false); break;
-                case ACK: receiveAck(m, false); break;
-                case NOTIF: receiveNotif(m, false); break;
-                default: break;
-            } 
-        }
-    }
+    // private void receiveBatch(Message batch) {
+    //     updateDG(batch);
+    //     for(Message m : batch.getBatch()){
+    //         switch(m.getType()){
+    //             case MSG: receiveMsg(m, false); break;
+    //             case ACK: receiveAck(m, false); break;
+    //             case NOTIF: receiveNotif(m, false); break;
+    //             default: break;
+    //         } 
+    //     }
+    // }
 
     protected void sendReply(Message m){
         Message reply = new Message(m.getId());
@@ -100,8 +114,8 @@ public abstract class ServerProxy extends ClientProxy {
     }
 
     protected abstract void finish();
-    protected abstract void updateDG(Message m);
-    protected abstract void receiveMsg(Message m, boolean shouldUPdateDG);
-    protected abstract void receiveAck(Message m, boolean shouldUPdateDG);
-    protected abstract void receiveNotif(Message m, boolean shouldUPdateDG);
+    // protected abstract void updateDG(Message m);
+    // protected abstract void receiveMsg(Message m);
+    // protected abstract void receiveAck(Message m);
+    // protected abstract void receiveNotif(Message m);
 }

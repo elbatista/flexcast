@@ -20,12 +20,4 @@ public class NettyServerChannelHandler extends ChannelInboundHandlerAdapter {
         server.buffer(m);
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        System.out.println("NettyServerChannelHandler - Exception -" + cause.toString());
-        ctx.close();
-        System.exit(0);
-    }
-
 }

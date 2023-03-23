@@ -2,172 +2,202 @@ package core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.concurrent.TimeUnit;
+import com.google.common.math.Stats;
+
+// import java.util.LinkedList;
+// import java.util.Queue;
 import proxies.ServerProxy;
 import util.FileManager;
 import base.Node;
 import datastructures.AncDst;
 import datastructures.LocalDepGraph;
+import datastructures.PendingMsg;
+import datastructures.PendingMsgNotif;
+import messages.LightMessage;
 import messages.Message;
 import messages.LightMessagesList.Item;
-import messages.LightMessagesList.ItemHst;
+// import messages.LightMessagesList.ItemHst;
 
-public abstract class ServerNode extends ServerProxy {
-    protected HashMap<Short, Queue<Message>> queues;
-    protected HashMap<Integer, Message> tempQueuedMessages;
+public abstract class ServerNode extends ServerProxy implements Runnable {
+    // protected HashMap<Short, Queue<Message>> queues;
+    // protected HashMap<Integer, Message> tempQueuedMessages;
     protected LocalDepGraph depGraph;
-    protected LinkedList<Message> pendingNotifs;
-    // protected HashMap<Integer, ArrayList<Message>> pendingAcks;
+    // protected LightMessagesList myHst = new LightMessagesList();
+    // protected LinkedList<Message> pendingNotifs;
     protected FileManager files;
     private short numNodes; // num of nodes
     protected AncDst [][] ancDstInfo;
-    protected boolean special = false, specialNotif = false;
+    // protected boolean special = false, specialNotif = false;
     protected Item dgPointers[];
-    // protected Item notifPointers[][][][];
-    protected ItemHst dgPointersHst[];
-    protected Item pendNotifPointers[];
-    protected Item pendNotifPointersHst[];
-    protected int msgs, notifs, acks, pendNotifs;
+    protected Item notifPointers[][][][];
+    // protected ItemHst dgPointersHst[];
+    // protected Item pendNotifPointers[];
+    // protected Item pendNotifPointersHst[];
+    protected int msgs, notifs, acks;//, pendNotifs;
+
+    HashMap<Integer, PendingMsg> pendingMsgs;
+    protected ArrayList<Long> values = new ArrayList<>();
 
     public ServerNode(short id, int numClients){
         super(id, numClients);
-        this.special = (id == 1);
-        this.specialNotif = !(id > 1);
-        this.queues = new HashMap<>();
-        this.tempQueuedMessages = new HashMap<>();
+        // this.special = (id == 1);
+        // this.specialNotif = !(id > 1);
+        // this.queues = new HashMap<>();
+        // this.tempQueuedMessages = new HashMap<>();
         // this.pendingAcks = new HashMap<>();
-        this.pendingNotifs = new LinkedList<>();
+        // this.pendingNotifs = new LinkedList<>();
         this.files = new FileManager();
         for(Node n : files.loadHosts()){
             // a queue for each ancestor (but the special case)
-            if((getId() > 1) && (n.getId() < id)) this.queues.put(n.getId(), new LinkedList<>() );
+            // if((getId() > 1) && (n.getId() < id)) this.queues.put(n.getId(), new LinkedList<>() );
             if(n.getId() == id) setHost(n.getHost());
             // sets connection to each descendant
             if(n.getId() > id) connectTo(n);
             numNodes++;
         }
         ancDstInfo = new AncDst[numNodes][numNodes];
-        // notifPointers = new Item[numNodes][numNodes][numNodes][numNodes];
-        if(id > 1){
-            this.dgPointers = new Item[id];
-            this.dgPointersHst = new ItemHst[id];
-        }
-        this.depGraph = new LocalDepGraph(id, this.dgPointers);
-        if(getId() > 1 && getId() < (getNumNodes()-1)){
-            pendNotifPointers = new Item[id];
-            pendNotifPointersHst = new Item[id];
-        }
+        this.notifPointers = new Item[numNodes][numNodes][numNodes][numNodes];
+        this.dgPointers = new Item[id];//+1];
+        this.depGraph = new LocalDepGraph(id);//, this.dgPointers);
+        this.pendingMsgs = new HashMap<>();
+        // if(getId() > 1 && getId() < (getNumNodes()-1)){
+        //     pendNotifPointers = new Item[id];
+        //     pendNotifPointersHst = new Item[id];
+        // }
         for(short i = 0; i < numNodes; i++)
             for(short j = 0; j < numNodes; j++)
                 ancDstInfo[i][j] = new AncDst((short)(id+1));
         print(this, "Start listening... Queues:", this.queues.size());
-        print("########################################################");
-        print("ADJUSTED ACKS ON QUEUES");
-        print("########################################################");
+        new Thread(this).start();
+    }
+    
+    @Override
+    public void run(){
+        // int count = 0;
+        while(true){
+
+            // if(count%30 == 0 && values.size()>0) {
+            //     count++;
+            //     print(">>>>> us to cmpt deps ("+values.size()+")", TimeUnit.NANOSECONDS.toMicros((long)Stats.of(values).mean()));
+            // }
+
+            // pega uma msg de uma fila e processa
+            for(short i = 0; i <= getId(); i++){
+                Message m = queues.get(i).poll();
+                if(m == null) continue;
+                // count++;
+                switch(m.getType()){
+                    case MSG: receiveMsg(m); break;
+                    case ACK: receiveAck(m); break;
+                    case NOTIF: receiveNotif(m); break;
+                    default: break;
+                }
+            }
+        }
     }
 
     public short getNumNodes() {
         return numNodes;
     }
-
-    protected void updateDG(Message m){
-        depGraph.update(m);
-    }
-
-    @Override
-    protected void receiveMsg(Message m, boolean updateDG){
-        print("receiveMsg", m);
+        
+    protected void receiveMsg(Message m){
+        // print("receiveMsg", m);
         msgs++;
+        
         boolean isLca = (m.getLca() == getId());
         if(isLca){
             aDeliver(m, isLca);
+            return;
+        }
+        
+        depGraph.update(m);
+        // print("Graph:", depGraph.getDepGraphAsString());
+        
+        PendingMsg pend = pendingMsgs.get(m.getId());
+
+        // cria entrada de msg pend se nao existir
+        if(pend == null){
+            pend = new PendingMsg(new LightMessage(m.getId(), m.getDst()), m, getId(), deliveredMsgs, values);
+            pendingMsgs.put(m.getId(), pend);
         }
         else {
-            if(updateDG) depGraph.update(m);
-            if(special){
-                aDeliverSpecial(m);
-                return;
-            }
-            if(queues.get(m.getLca()).size() > 0) ((Message)((LinkedList) queues.get(m.getLca())).getLast()).setNextInQueue(m);
-            queues.get(m.getLca()).offer(m);
-            tempQueuedMessages.put(m.getId(), m);
-            reprocessQueues();
+            pend.setMsg(m);
         }
+        pend.addAcksDestsDependencies(m);
+
+        pend.addAcksNotifListsDependencies(m);
+        
+        pend.addPrevMsgsDependencies(depGraph, dgPointers, pendingMsgs);
+        // pend.addPrevMsgsDependencies(depGraph, pendingMsgs);
+
+        reprocessPendingMsgs();
     }
 
-    @Override
-    protected void receiveAck(Message ack, boolean updateDG){
-        print("receiveAck", ack, "from", ack.getSender());
-        acks++;
-        if(updateDG) depGraph.update(ack);
-        if(queues.get(ack.getSender()).size() > 0) ((Message)((LinkedList) queues.get(ack.getSender())).getLast()).setNextInQueue(ack);
-        queues.get(ack.getSender()).offer(ack);
-        //tempQueuedMessages.put(ack.getId(), ack);
-        reprocessQueues();
+    protected void receiveAck(Message ack){
+        // for now, ignore repeated acks for messages already delivered
+        if(deliveredMsgs.get(ack.getId()) != null) return;
 
-        // Message m = tempQueuedMessages.get(ack.getId());
-        // // if not found, stores the ack in pending acks set and returns without reprocessing queues
-        // if(m == null){
-        //     ArrayList<Message> list = pendingAcks.get(ack.getId());
-        //     if(list == null){
-        //         list = new ArrayList<>();
-        //         pendingAcks.put(ack.getId(), list);
-        //     }
-        //     list.add(ack);
-        //     return;
+        // print("receiveAck", ack, "from", ack.getSender());
+        acks++;
+        depGraph.update(ack);
+        //print("Graph:", depGraph.getDepGraphAsString());
+
+        PendingMsg pend = pendingMsgs.get(ack.getId());
+
+        // cria entrada de msg pend se nao existir
+        if(pend == null){
+            pend = new PendingMsg(new LightMessage(ack.getId(), ack.getDst()), getId(), deliveredMsgs, values);
+            pendingMsgs.put(ack.getId(), pend);
+        }
+
+        pend.addAcksNotifListsDependencies(ack);
+
+        if (pend.getMsg() != null) pend.addPrevMsgsDependencies(depGraph, dgPointers, pendingMsgs);
+        // if (pend.getMsg() != null) pend.addPrevMsgsDependencies(depGraph, pendingMsgs);
+
+        pend.receiveAck(ack);
+        // if(pendingMsgs.size()>0) print("<<---");
+        // for(PendingMsg p : pendingMsgs.values()){
+        //     print(p);
         // }
-        // // when the related message is found, add the ack to it
-        // m.getAcks().add(ack);
-        // reprocessQueues();
+        // if(pendingMsgs.size()>0) print("--->>");
+        reprocessPendingMsgs();
     }
     
-    @Override
-    protected void receiveNotif(Message notif, boolean updateDG){
-        print("receiveNotif", notif, "from", notif.getSender());
+    protected void receiveNotif(Message notif){
+        // print("receiveNotif", notif, "from", notif.getSender());
         notifs++;
-        if(updateDG) depGraph.update(notif);
-        if(!specialNotif){
-            if(pendingNotifs.size() > 0){
-                pendingNotifs.add(notif);
-                pendNotifs++;
-                return;
-            }
-            if(!canDeliverNotif(notif)){
-                pendingNotifs.add(notif);
-                pendNotifs++;
-                return;
-            }
+        depGraph.update(notif);
+        // print("Graph:", depGraph.getDepGraphAsString());
+
+        PendingMsgNotif pendNotif = (PendingMsgNotif) pendingMsgs.get(notif.getId());
+
+        if(pendNotif == null){
+            pendNotif = new PendingMsgNotif(new LightMessage(notif.getId(), notif.getDst()), notif, getId(), deliveredMsgs, values);
+            pendingMsgs.put(notif.getId(), pendNotif);
         }
-        sendAck(notif);
+        else {
+            pendNotif.addNotif(notif);
+        }
+
+        pendNotif.addPrevMsgsDependencies(depGraph, dgPointers, pendingMsgs);
+        // pendNotif.addPrevMsgsDependencies(depGraph, pendingMsgs);
+
+        reprocessPendingMsgs();
     }
 
+    @Override
     protected void finish(){
-        if(queues.keySet().stream().anyMatch(key->(queues.get(key).size() > 0))){
-            print("Some Queue is not empty !!! ");
-            queues.keySet().forEach(key->{
-                print("Queue", key, "->", queues.get(key));
-            });
-            files.stop();
-            exit();
-        }
-        print("All Queues empty ! =]");
-        // if(pendingNotifs.size() > 0 || pendingAcks.size() > 0){
-            if(pendingNotifs.size() > 0){
-                print("Warning: pendingNotifs is not empty... =[");
-                //for(Message pend : pendingNotifs) print(pend, pend.getPendNotifOrigins());
-            }
-            // if(pendingAcks.size() > 0){
-            //     print("Warning: pendingAcks is not empty... =[");
-                //for(ArrayList<Message> pendList : pendingAcks.values()) 
-                    //for(Message pend : pendList) print(pend, pend.getSender());
-            // }
-            if(tempQueuedMessages.size() > 0){
-                print("Warning: tempQueuedMessages is not empty... =[");
-            }
+        // if(queues.keySet().stream().anyMatch(key->(queues.get(key).size() > 0))){
+        //     print("Some Queue is not empty !!! ");
+        //     queues.keySet().forEach(key->{
+        //         print("Queue", key, "->", queues.get(key));
+        //     });
         //     files.stop();
         //     exit();
         // }
+        // print("All Queues empty ! =]");
         files.persistMessages(depGraph.getMyHst(), getId(), false, false);
         print("-------------------------------------");
         print("Total msgs in the history:", depGraph.getMyHst().size());
@@ -175,15 +205,12 @@ public abstract class ServerNode extends ServerProxy {
         print("Total msgs received:", msgs);
         print("Total notifs:", notifs);
         print("Total acks:", acks);
-        print("Total pendNotifs:", pendNotifs);
         print("-------------------------------------");
         files.nodeFinished(getId());
         exit();
     }
     
     abstract void sendAck(Message m);
-    abstract void reprocessQueues();
+    abstract void reprocessPendingMsgs();
     abstract void aDeliver(Message m, boolean isLca);
-    abstract void aDeliverSpecial(Message m);
-    abstract boolean canDeliverNotif(Message notif);
 }

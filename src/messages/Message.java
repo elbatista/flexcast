@@ -176,7 +176,7 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     public String toString(){
-        return toString(getId(), getType(), Arrays.toString(getDst()));
+        return toString(getId(), getType(), Arrays.toString(getDst()), getType()==Type.ACK ? ("sender: "+getSender()+(ackIsFromDst()?"":", notifier: "+getIdNotifier())) : "");
     }
 
     public boolean isAddressedTo(short d){

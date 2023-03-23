@@ -43,6 +43,17 @@ public class LightMessage extends BaseObj implements Serializable {
         return lcd;
     }
 
+    public short getLcd(LightMessage m){
+        short lcd = -1;
+        for (short dst1 : getDst()) {
+            for(short dst2 : m.getDst()){
+                if(dst1 < dst2) break;
+                if(dst1 == dst2) return dst1;
+            }
+        }
+        return lcd;
+    }
+
     @Override
     public boolean equals(Object m){
         return ((LightMessage)m).getId() == getId();

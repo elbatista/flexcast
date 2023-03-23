@@ -23,16 +23,18 @@ do
     done
     echo started $6 servers >> logs/executions.log
 
+    sleep .5;
+
     # Start clients
     ((END = $5-1))
     # for j in $(seq 0 $END); do
         # java -cp "bin/*:lib/*" MainClient -c $5 -i $j -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli$j.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 0 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 0 >> logs/cli0.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 1 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 1 >> logs/cli1.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 2 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli2.txt &
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 3 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 3 >> logs/cli3.txt &
-        # java -cp "bin/*:lib/*" MainClient -c $5 -i 4 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 4 >> logs/cli4.txt &
-        # java -cp "bin/*:lib/*" MainClient -c $5 -i 5 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 5 >> logs/cli5.txt &
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 0 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 0 >> logs/cli0.txt & sleep .05
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 1 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 1 >> logs/cli1.txt & sleep .05
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 2 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli2.txt & sleep .05
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 3 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 3 >> logs/cli3.txt & sleep .05
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 4 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 4 >> logs/cli4.txt & sleep .05
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 5 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 5 >> logs/cli5.txt & sleep .05
         # java -cp "bin/*:lib/*" MainClient -c $5 -i 6 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 0 >> logs/cli6.txt &
         # java -cp "bin/*:lib/*" MainClient -c $5 -i 7 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 1 >> logs/cli7.txt &
         # java -cp "bin/*:lib/*" MainClient -c $5 -i 8 -d $1 $f $dbg $sk $tpcc $np $nmsgs $locality -w 2 >> logs/cli8.txt &
@@ -47,7 +49,7 @@ do
     do
         sleep 1;
         nodeFiles=`find ./files -name 'NodeFinished*' | wc -l` #Count files and store in a variable
-        if [ "$nodeFiles" -ge $6 ]; then sleep 1; break; fi
+        if [ "$nodeFiles" -ge $6 ]; then break; fi
     done
     echo "all nodes done"  >> logs/executions.log; pkill -f 'java.*Main*'; echo "processes killed"  >> logs/executions.log
 
@@ -60,5 +62,8 @@ do
     if grep -q "true" logs/validationresult.txt; then echo "cycle detected!" >> logs/executions.log; cat logs/validationresult.txt; exit 0; fi
     echo "no cycles detected ("$(date)")" >> logs/executions.log; 
     
+    pkill -f 'java.*Main*';
+
     # exit 0; # <- para executar somente uma vez
+
 done

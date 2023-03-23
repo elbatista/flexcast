@@ -1,0 +1,556 @@
+Node5 [127.0.0.1:11025] Start listening... Queues: 6 
+Channel to client 2 : [id: 0xc4a34734, L:/127.0.0.1:11025 - R:/127.0.0.1:55915] 
+Channel to client 3 : [id: 0xafdceb56, L:/127.0.0.1:11025 - R:/127.0.0.1:55920] 
+Channel to client 1 : [id: 0x59ce1cd8, L:/127.0.0.1:11025 - R:/127.0.0.1:55906] 
+Channel to client 0 : [id: 0x51b0c1a5, L:/127.0.0.1:11025 - R:/127.0.0.1:55903] 
+Channel to client 4 : [id: 0x13354869, L:/127.0.0.1:11025 - R:/127.0.0.1:55925] 
+Channel to client 5 : [id: 0x279c3b5b, L:/127.0.0.1:11025 - R:/127.0.0.1:55933] 
+<<--- 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4)]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+delivered 6 MSG [0, 1, 3, 4, 5]   
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:2, msg:2 MSG [2, 3, 5]  , deps:[(ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+delivered 2 MSG [2, 3, 5]   
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 4 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5] ), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5] )]} 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[(ack fromDst sender: 2 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+delivered 5 MSG [1, 2, 5]   
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved)]} 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] ), ( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved)]} 
+delivered 1 MSG [0, 1, 2, 3, 4, 5]   
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved)]} 
+delivered 9 MSG [0, 1, 2, 3, 4, 5]   
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 0 solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 6 [0, 1, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+delivered 10 MSG [0, 1, 2, 4, 5]   
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0), (ack notifList sender: 2 idNotifier: 0), (ack notifList sender: 3 idNotifier: 0), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5] )]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0), (ack notifList sender: 3 idNotifier: 0), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5] ), (ack notifList sender: 2 idNotifier: 1), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5] ), (ack notifList sender: 2 idNotifier: 1), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2), (ack notifList sender: 4 idNotifier: 2)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5] ), (ack notifList sender: 2 idNotifier: 1), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5] ), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5] ), (ack notifList sender: 2 idNotifier: 1), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 2 idNotifier: 0 solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved)]} 
+delivered 12 MSG [0, 1, 3, 4, 5]   
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5] ), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5] )]} 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), ( msgDep: 10 [0, 1, 2, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 5 [1, 2, 5]  solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+delivered 14 MSG [0, 1, 2, 3, 5]   
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5] )]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:11, msg:11 MSG [0, 5]  , deps:[(ack notifList sender: 1 idNotifier: 0 solved), (ack notifList sender: 2 idNotifier: 0 solved), (ack notifList sender: 3 idNotifier: 0 solved), (ack notifList sender: 4 idNotifier: 0 solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 12 [0, 1, 3, 4, 5]  solved), (ack notifList sender: 2 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 4 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 2 solved), (ack notifList sender: 4 idNotifier: 3 solved)]} 
+delivered 11 MSG [0, 5]   
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5]  solved)]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+--->> 
+End msgs from 2 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5] ), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5]  solved)]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5] )]} 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved)]} 
+delivered 13 MSG [1, 2, 3, 4, 5]   
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5]  solved)]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5] ), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:16, msg:16 MSG [1, 3, 4, 5]  , deps:[(ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 2 idNotifier: 1 solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 11 [0, 5]  solved)]} 
+delivered 16 MSG [1, 3, 4, 5]   
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5]  solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5]  solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+--->> 
+End msgs from 1 
+<<--- 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5]  solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:null, deps:[(ack notifList sender: 3 idNotifier: 0 solved)]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5]  solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:null, deps:[(ack notifList sender: 3 idNotifier: 0 solved)]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5]  solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:null, deps:[(ack notifList sender: 3 idNotifier: 0 solved)]} 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 3 solved), (ack fromDst sender: 4 solved), ( msgDep: 11 [0, 5]  solved), ( msgDep: 14 [0, 1, 2, 3, 5]  solved), ( msgDep: 16 [1, 3, 4, 5]  solved), ( msgDep: 13 [1, 2, 3, 4, 5]  solved)]} 
+delivered 18 MSG [0, 1, 2, 3, 4, 5]   
+--->> 
+<<--- 
+Pend{id:17, msg:null, deps:[(ack notifList sender: 3 idNotifier: 0 solved)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack notifList sender: 3 idNotifier: 0 solved), (ack fromDst sender: 1), (ack fromDst sender: 2), (ack fromDst sender: 4)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack notifList sender: 3 idNotifier: 0 solved), (ack fromDst sender: 1 solved), (ack fromDst sender: 2), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 1)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack notifList sender: 3 idNotifier: 0 solved), (ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 1), (ack notifList sender: 3 idNotifier: 2)]} 
+End msgs from 0 
+--->> 
+End msgs from 4 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack notifList sender: 3 idNotifier: 0 solved), (ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack notifList sender: 3 idNotifier: 0 solved), (ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+--->> 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack notifList sender: 3 idNotifier: 0 solved), (ack fromDst sender: 1 solved), (ack fromDst sender: 2 solved), (ack fromDst sender: 4 solved), (ack notifList sender: 3 idNotifier: 1 solved), (ack notifList sender: 3 idNotifier: 2 solved)]} 
+delivered 17 MSG [0, 1, 2, 4, 5]   
+--->> 
+End msgs from 3 
+End msgs from 5 
+All 6  clients done! 
+All Queues empty ! =] 
+Messages persisted 
+------------------------------------- 
+Total msgs in the history: 13 
+Total local msgs received: 0 
+Total msgs received: 13 
+Total notifs: 0 
+Total acks: 64 
+------------------------------------- 
+Node 5 is finished 

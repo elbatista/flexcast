@@ -1,0 +1,167 @@
+Node2 [127.0.0.1:11010] Start listening... Queues: 3 
+Channel to node 5 : [id: 0xb45d71ca, L:/127.0.0.1:55888 - R:/127.0.0.1:11025] 
+Channel to node 3 : [id: 0xfba1a828, L:/127.0.0.1:55889 - R:/127.0.0.1:11015] 
+Channel to node 4 : [id: 0x0e71ae51, L:/127.0.0.1:55890 - R:/127.0.0.1:11020] 
+Channel to client 1 : [id: 0x3cf917ca, L:/127.0.0.1:11010 - R:/127.0.0.1:55907] 
+Channel to client 0 : [id: 0x1dd9b2e9, L:/127.0.0.1:11010 - R:/127.0.0.1:55900] 
+Channel to client 2 : [id: 0xac4cb291, L:/127.0.0.1:11010 - R:/127.0.0.1:55913] 
+Channel to client 3 : [id: 0x75d1b994, L:/127.0.0.1:11010 - R:/127.0.0.1:55923] 
+Channel to client 4 : [id: 0x024cde20, L:/127.0.0.1:11010 - R:/127.0.0.1:55929] 
+Channel to client 5 : [id: 0xd2415d26, L:/127.0.0.1:11010 - R:/127.0.0.1:55930] 
+delivered 2 MSG [2, 3, 5]   
+<<--- 
+Pend{id:5, msg:5 MSG [1, 2, 5]  , deps:[]} 
+sent notif 5 NOTIF [1, 2, 5]   to 3 
+sent ack 5 ACK [1, 2, 5] sender: 2  to 5 
+delivered 5 MSG [1, 2, 5]   
+--->> 
+<<--- 
+PendNotif{id:3, msg:null, deps:[], notifs:[3 NOTIF [1, 3]  ]} 
+sent ack 3 ACK [1, 3] sender: 2, notifier: 1  to 3 
+--->> 
+<<--- 
+PendNotif{id:4, msg:null, deps:[], notifs:[4 NOTIF [1, 4]  ]} 
+sent notif 4 NOTIF [1, 4]   to 3 
+sent ack 4 ACK [1, 4] sender: 2, notifier: 1  to 4 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1)]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1)]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1)]} 
+PendNotif{id:6, msg:null, deps:[( msgDep: 1 [0, 1, 2, 3, 4, 5] ), ( msgDep: 9 [0, 1, 2, 3, 4, 5] )], notifs:[6 NOTIF [0, 1, 3, 4, 5]  ]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), ( msgDep: 1 [0, 1, 2, 3, 4, 5] )]} 
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved)]} 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 3 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 4 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 5 
+delivered 1 MSG [0, 1, 2, 3, 4, 5]   
+PendNotif{id:6, msg:null, deps:[( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] )], notifs:[6 NOTIF [0, 1, 3, 4, 5]  ]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+PendNotif{id:6, msg:null, deps:[( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] )], notifs:[6 NOTIF [0, 1, 3, 4, 5]  ]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved)]} 
+--->> 
+<<--- 
+PendNotif{id:6, msg:null, deps:[( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5] )], notifs:[6 NOTIF [0, 1, 3, 4, 5]  ]} 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved), ( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved)]} 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 3 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 4 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 5 
+delivered 9 MSG [0, 1, 2, 3, 4, 5]   
+--->> 
+<<--- 
+PendNotif{id:6, msg:null, deps:[( msgDep: 1 [0, 1, 2, 3, 4, 5]  solved), ( msgDep: 9 [0, 1, 2, 3, 4, 5]  solved)], notifs:[6 NOTIF [0, 1, 3, 4, 5]  ]} 
+sent ack 6 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 1  to 3 
+sent ack 6 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 1  to 4 
+sent ack 6 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 1  to 5 
+--->> 
+<<--- 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1)]} 
+--->> 
+<<--- 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved)]} 
+sent notif 10 NOTIF [0, 1, 2, 4, 5]   to 3 
+sent ack 10 ACK [0, 1, 2, 4, 5] sender: 2  to 4 
+sent ack 10 ACK [0, 1, 2, 4, 5] sender: 2  to 5 
+delivered 10 MSG [0, 1, 2, 4, 5]   
+--->> 
+<<--- 
+PendNotif{id:12, msg:null, deps:[], notifs:[12 NOTIF [0, 1, 3, 4, 5]  ]} 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 0  to 3 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 0  to 4 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 0  to 5 
+--->> 
+<<--- 
+PendNotif{id:12, msg:null, deps:[], notifs:[12 NOTIF [0, 1, 3, 4, 5]  ]} 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 1  to 3 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 1  to 4 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 2, notifier: 1  to 5 
+--->> 
+<<--- 
+Pend{id:8, msg:8 MSG [1, 2]  , deps:[]} 
+delivered 8 MSG [1, 2]   
+--->> 
+<<--- 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1)]} 
+--->> 
+<<--- 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[(ack fromDst sender: 1 solved)]} 
+sent notif 14 NOTIF [0, 1, 2, 3, 5]   to 4 
+sent ack 14 ACK [0, 1, 2, 3, 5] sender: 2  to 3 
+sent ack 14 ACK [0, 1, 2, 3, 5] sender: 2  to 5 
+delivered 14 MSG [0, 1, 2, 3, 5]   
+--->> 
+<<--- 
+PendNotif{id:11, msg:null, deps:[], notifs:[11 NOTIF [0, 5]  ]} 
+sent notif 11 NOTIF [0, 5]   to 3 
+sent notif 11 NOTIF [0, 5]   to 4 
+sent ack 11 ACK [0, 5] sender: 2, notifier: 0  to 5 
+--->> 
+<<--- 
+PendNotif{id:11, msg:null, deps:[], notifs:[11 NOTIF [0, 5]  ]} 
+sent notif 11 NOTIF [0, 5]   to 3 
+sent notif 11 NOTIF [0, 5]   to 4 
+sent ack 11 ACK [0, 5] sender: 2, notifier: 1  to 5 
+--->> 
+<<--- 
+Pend{id:13, msg:13 MSG [1, 2, 3, 4, 5]  , deps:[]} 
+sent ack 13 ACK [1, 2, 3, 4, 5] sender: 2  to 3 
+sent ack 13 ACK [1, 2, 3, 4, 5] sender: 2  to 4 
+sent ack 13 ACK [1, 2, 3, 4, 5] sender: 2  to 5 
+delivered 13 MSG [1, 2, 3, 4, 5]   
+--->> 
+<<--- 
+PendNotif{id:16, msg:null, deps:[], notifs:[16 NOTIF [1, 3, 4, 5]  ]} 
+sent ack 16 ACK [1, 3, 4, 5] sender: 2, notifier: 1  to 3 
+sent ack 16 ACK [1, 3, 4, 5] sender: 2, notifier: 1  to 4 
+sent ack 16 ACK [1, 3, 4, 5] sender: 2, notifier: 1  to 5 
+--->> 
+<<--- 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1)]} 
+--->> 
+<<--- 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[(ack fromDst sender: 1 solved)]} 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 3 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 4 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 2  to 5 
+delivered 18 MSG [0, 1, 2, 3, 4, 5]   
+--->> 
+End msgs from 2 
+End msgs from 1 
+End msgs from 4 
+<<--- 
+PendNotif{id:15, msg:null, deps:[], notifs:[15 NOTIF [1, 3]  ]} 
+sent ack 15 ACK [1, 3] sender: 2, notifier: 1  to 3 
+--->> 
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1)]} 
+--->> 
+<<--- 
+End msgs from 0 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[(ack fromDst sender: 1 solved)]} 
+sent notif 17 NOTIF [0, 1, 2, 4, 5]   to 3 
+sent ack 17 ACK [0, 1, 2, 4, 5] sender: 2  to 4 
+sent ack 17 ACK [0, 1, 2, 4, 5] sender: 2  to 5 
+delivered 17 MSG [0, 1, 2, 4, 5]   
+--->> 
+End msgs from 3 
+End msgs from 5 
+All 6  clients done! 
+All Queues empty ! =] 
+Messages persisted 
+------------------------------------- 
+Total msgs in the history: 10 
+Total local msgs received: 0 
+Total msgs received: 10 
+Total notifs: 9 
+Total acks: 6 
+------------------------------------- 
+Node 2 is finished 

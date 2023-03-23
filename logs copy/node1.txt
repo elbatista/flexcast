@@ -1,0 +1,115 @@
+Node1 [127.0.0.1:11005] Start listening... Queues: 2 
+Channel to node 5 : [id: 0x92b996aa, L:/127.0.0.1:55894 - R:/127.0.0.1:11025] 
+Channel to node 2 : [id: 0x1206725c, L:/127.0.0.1:55891 - R:/127.0.0.1:11010] 
+Channel to node 3 : [id: 0x40956099, L:/127.0.0.1:55893 - R:/127.0.0.1:11015] 
+Channel to node 4 : [id: 0xdc35fa90, L:/127.0.0.1:55892 - R:/127.0.0.1:11020] 
+Channel to client 0 : [id: 0x947728d8, L:/127.0.0.1:11005 - R:/127.0.0.1:55904] 
+Channel to client 1 : [id: 0x7c6e3786, L:/127.0.0.1:11005 - R:/127.0.0.1:55910] 
+Channel to client 2 : [id: 0xd1396f8d, L:/127.0.0.1:11005 - R:/127.0.0.1:55912] 
+Channel to client 3 : [id: 0xa52195c0, L:/127.0.0.1:11005 - R:/127.0.0.1:55922] 
+Channel to client 4 : [id: 0x18c956a7, L:/127.0.0.1:11005 - R:/127.0.0.1:55928] 
+Channel to client 5 : [id: 0x75c91168, L:/127.0.0.1:11005 - R:/127.0.0.1:55935] 
+delivered 5 MSG [1, 2, 5]   
+sent notif 3 NOTIF [1, 3]   to 2 
+delivered 3 MSG [1, 3]   
+sent notif 4 NOTIF [1, 4]   to 2 
+sent notif 4 NOTIF [1, 4]   to 3 
+delivered 4 MSG [1, 4]   
+<<--- 
+Pend{id:6, msg:6 MSG [0, 1, 3, 4, 5]  , deps:[]} 
+sent notif 6 NOTIF [0, 1, 3, 4, 5]   to 2 
+sent ack 6 ACK [0, 1, 3, 4, 5] sender: 1  to 3 
+sent ack 6 ACK [0, 1, 3, 4, 5] sender: 1  to 4 
+sent ack 6 ACK [0, 1, 3, 4, 5] sender: 1  to 5 
+delivered 6 MSG [0, 1, 3, 4, 5]   
+--->> 
+<<--- 
+Pend{id:1, msg:1 MSG [0, 1, 2, 3, 4, 5]  , deps:[]} 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 2 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 3 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 4 
+sent ack 1 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 5 
+delivered 1 MSG [0, 1, 2, 3, 4, 5]   
+--->> 
+<<--- 
+Pend{id:9, msg:9 MSG [0, 1, 2, 3, 4, 5]  , deps:[]} 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 2 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 3 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 4 
+sent ack 9 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 5 
+delivered 9 MSG [0, 1, 2, 3, 4, 5]   
+--->> 
+<<--- 
+Pend{id:10, msg:10 MSG [0, 1, 2, 4, 5]  , deps:[]} 
+sent notif 10 NOTIF [0, 1, 2, 4, 5]   to 3 
+sent ack 10 ACK [0, 1, 2, 4, 5] sender: 1  to 2 
+sent ack 10 ACK [0, 1, 2, 4, 5] sender: 1  to 4 
+sent ack 10 ACK [0, 1, 2, 4, 5] sender: 1  to 5 
+delivered 10 MSG [0, 1, 2, 4, 5]   
+--->> 
+<<--- 
+Pend{id:12, msg:12 MSG [0, 1, 3, 4, 5]  , deps:[]} 
+sent notif 12 NOTIF [0, 1, 3, 4, 5]   to 2 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 1  to 3 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 1  to 4 
+sent ack 12 ACK [0, 1, 3, 4, 5] sender: 1  to 5 
+delivered 12 MSG [0, 1, 3, 4, 5]   
+--->> 
+delivered 8 MSG [1, 2]   
+<<--- 
+Pend{id:14, msg:14 MSG [0, 1, 2, 3, 5]  , deps:[]} 
+sent notif 14 NOTIF [0, 1, 2, 3, 5]   to 4 
+sent ack 14 ACK [0, 1, 2, 3, 5] sender: 1  to 2 
+sent ack 14 ACK [0, 1, 2, 3, 5] sender: 1  to 3 
+sent ack 14 ACK [0, 1, 2, 3, 5] sender: 1  to 5 
+delivered 14 MSG [0, 1, 2, 3, 5]   
+--->> 
+<<--- 
+PendNotif{id:11, msg:null, deps:[], notifs:[11 NOTIF [0, 5]  ]} 
+sent notif 11 NOTIF [0, 5]   to 2 
+sent notif 11 NOTIF [0, 5]   to 3 
+sent notif 11 NOTIF [0, 5]   to 4 
+sent ack 11 ACK [0, 5] sender: 1, notifier: 0  to 5 
+--->> 
+<<--- 
+Pend{id:7, msg:7 MSG [0, 1]  , deps:[]} 
+delivered 7 MSG [0, 1]   
+--->> 
+delivered 13 MSG [1, 2, 3, 4, 5]   
+sent notif 16 NOTIF [1, 3, 4, 5]   to 2 
+delivered 16 MSG [1, 3, 4, 5]   
+<<--- 
+Pend{id:18, msg:18 MSG [0, 1, 2, 3, 4, 5]  , deps:[]} 
+End msgs from 2 
+End msgs from 1 
+End msgs from 4 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 2 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 3 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 4 
+sent ack 18 ACK [0, 1, 2, 3, 4, 5] sender: 1  to 5 
+delivered 18 MSG [0, 1, 2, 3, 4, 5]   
+--->> 
+sent notif 15 NOTIF [1, 3]   to 2 
+delivered 15 MSG [1, 3]   
+<<--- 
+Pend{id:17, msg:17 MSG [0, 1, 2, 4, 5]  , deps:[]} 
+sent notif 17 NOTIF [0, 1, 2, 4, 5]   to 3 
+sent ack 17 ACK [0, 1, 2, 4, 5] sender: 1  to 2 
+sent ack 17 ACK [0, 1, 2, 4, 5] sender: 1  to 4 
+End msgs from 0 
+sent ack 17 ACK [0, 1, 2, 4, 5] sender: 1  to 5 
+delivered 17 MSG [0, 1, 2, 4, 5]   
+--->> 
+End msgs from 3 
+End msgs from 5 
+All 6  clients done! 
+All Queues empty ! =] 
+Messages persisted 
+------------------------------------- 
+Total msgs in the history: 16 
+Total local msgs received: 0 
+Total msgs received: 16 
+Total notifs: 1 
+Total acks: 0 
+------------------------------------- 
+Node 1 is finished 

@@ -1,0 +1,75 @@
+TPCC Client 
+Channel to node 0 : [id: 0x6e00a1bd, L:/127.0.0.1:55916 - R:/127.0.0.1:11000] 
+Channel to node 3 : [id: 0x95d05012, L:/127.0.0.1:55917 - R:/127.0.0.1:11015] 
+Channel to node 1 : [id: 0x45c8c979, L:/127.0.0.1:55912 - R:/127.0.0.1:11005] 
+Channel to node 2 : [id: 0x249f6d56, L:/127.0.0.1:55913 - R:/127.0.0.1:11010] 
+Channel to node 4 : [id: 0x936275d3, L:/127.0.0.1:55914 - R:/127.0.0.1:11020] 
+Channel to node 5 : [id: 0xab4b9c91, L:/127.0.0.1:55915 - R:/127.0.0.1:11025] 
+Init OK - Server 0 
+Init OK - Server 1 
+Init OK - Server 2 
+Init OK - Server 3 
+Init OK - Server 4 
+Init OK - Server 5 
+Ready OK - Server 0 
+All other clients ready! 
+Started tpcc experiment. Num nodes: 6 
+My home warehouse: 2 
+Start tp measurements
+ONLY 2 DESTS MSGS 
+Send 2 MSG [2, 3, 5]   
+Send 8 MSG [1, 2]   
+Send 14 MSG [0, 1, 2, 3, 5]   
+Finished tpcc experiment. Elapsed:  0.262203244 seconds 
+LOCAL STATS: 
+--------------
+Stats:
+	Total: 3
+	Mean: 87400.66666666667
+	StdDev: 99845.57426512871
+	Max: 199600
+	Percentile (25, 50, 75, 95, 99): (54271, 199600, 199600, 199600, 199600)
+--------------
+
+ 
+End OK - Server 0 
+End OK - Server 1 
+End OK - Server 2 
+End OK - Server 3 
+End OK - Server 4 
+End OK - Server 5 
+
+Ratio of NewOrder Txs: 0.0%
+Ratio of Payment Txs: 0.0%
+Ratio of OrderStatus Txs: 0.0%
+Ratio of Delivery Txs: 0.0%
+Ratio of StockLevel Txs: 0.0%
+
+Multi-partition Txs: 0.0
+# of partitions accessed (multi-partition Txs): 0.0
+# of partitions accessed (all Txs): 0.0
+
+Ratio of multi-partition Txs: 0.0%
+Average # of partitions accessed (in multi-partition Txs): NaN
+Average # of partitions accessed (in all Txs): 0.0
+
+Average # of items accessed in NewOrder Txs: NaN
+
+# of Txs that targets 1 WH: 0
+# of Txs that targets 2 WH: 0 (New Order: 0, Payment: 0)
+# of Txs that targets 3 WH: 0
+# of Txs that targets 4 WH: 0
+# of Txs that targets 5 WH: 0
+# of Txs that targets 6 WH: 0
+# of Txs that targets 7 WH: 0
+# of Txs that targets 8 WH: 0
+# of Txs that targets 9 WH: 0
+# of Txs that targets 10 WH: 0
+
+Wload for destination size 2: 
+# of msgs to [ 1 2 ]: 1 
+Wload for destination size 3: 
+# of msgs to [ 2 3 5 ]: 1 
+Wload for destination size 4: 
+Wload for destination size 5: 
+# of msgs to [ 0 1 2 3 5 ]: 1 
