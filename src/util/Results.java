@@ -77,11 +77,11 @@ public class Results {
     public static void main(String ... args){
         ArrayList<Double> latencies = new ArrayList<>();
         
-        String algo     = "flex";
-        String locality = "90";
+        String algo     = "byzcast/tree2";
+        String locality = "95";
         int nodes       = 6;
         int dur         = 60;
-        int cli         = 12;
+        int cli         = 192;
 
         latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/america"));
         latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/europe"));

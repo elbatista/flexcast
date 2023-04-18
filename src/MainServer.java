@@ -1,3 +1,4 @@
+import byzcast.ByzCastNode;
 import core.ServerNodeFunctions;
 import skeen.SkeenNode;
 import util.ArgsParser;
@@ -5,11 +6,11 @@ import util.ArgsParser;
 public class MainServer {
     public static void main(String args[]){
         ArgsParser p = ArgsParser.getServerParser(args);
-        if(p.isSkeen()){
-            new SkeenNode(p.getId(), p);
-        }
-        else {
-            new ServerNodeFunctions(p.getId(), p);
+        switch(p.getAlgorithm()){
+            case 0: new ServerNodeFunctions(p.getId(), p); break;   // FLEXCAST
+            case 1: new SkeenNode(p.getId(), p); break;             // SKEEN
+            case 2: new ByzCastNode(p.getId(), p); break;           // BYZCAST
+            default: return;
         }
     }
 }

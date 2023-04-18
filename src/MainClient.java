@@ -1,3 +1,7 @@
+import java.io.ObjectInputStream.GetField;
+
+import byzcast.ByzCastClient;
+import byzcast.TpccByzCastClient;
 import core.Client;
 import skeen.SkeenClient;
 import skeen.TpccSkeenClient;
@@ -7,17 +11,27 @@ import core.TpccClient;
 public class MainClient {
     public static void main(String args[]){
         ArgsParser p = ArgsParser.getClientParser(args);
-        if(p.isSkeen()){
-            if(p.isTpcc())
-                new TpccSkeenClient(p.getId(), p);
-            else
-                new SkeenClient(p.getId(), p, true);
-        }
-        else {
-            if(p.isTpcc())
-                new TpccClient(p.getId(), p);
-            else
-                new Client(p.getId(), p, true);
+
+        switch(p.getAlgorithm()){
+            case 0: {
+                if(p.isTpcc())
+                    new TpccClient(p.getId(), p);
+                else
+                    new Client(p.getId(), p, true);
+            }; break;
+            case 1: {
+                if(p.isTpcc())
+                    new TpccSkeenClient(p.getId(), p);
+                else
+                    new SkeenClient(p.getId(), p, true);
+                }; break;
+            case 2: {
+                if(p.isTpcc())
+                    new TpccByzCastClient(p.getId(), p);
+                else
+                    new ByzCastClient(p.getId(), p, true);
+            }; break;
+            default: return;
         }
     }
 }

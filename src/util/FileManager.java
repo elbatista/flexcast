@@ -11,10 +11,16 @@ import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import org.javatuples.Pair;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.builder.GraphTypeBuilder;
+
 import base.Host;
 import base.Node;
 import messages.LightMessage;
@@ -196,6 +202,66 @@ public class FileManager extends BaseObj {
             print("Node", id, "is finished");
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public Collection<Pair<Short, Short>> loadByzCastTree() {
+        try{
+            ArrayList<Pair<Short, Short>> pairs = new ArrayList<>();
+            FileReader fr = new FileReader("config"+sep+"byzcast.config");
+            BufferedReader rd = new BufferedReader(fr);
+            String line = null;
+            while((line = rd.readLine()) != null){
+                if(!line.startsWith("#")){ // ignore comments #
+                    StringTokenizer str = new StringTokenizer(line, "->");
+                    if(str.countTokens() > 1){
+                        short id1 = Short.valueOf(str.nextToken());
+                        short id2 = Short.valueOf(str.nextToken());
+                        pairs.add(new Pair<Short,Short>(id1, id2));
+                    }
+                }
+            }
+            fr.close();
+            rd.close();
+            return pairs;
+        }
+        catch(Exception e){
+            e.printStackTrace(System.out);
+            return null;
+        }
+    }
+
+    public Graph<Short,DefaultEdge> loadByzCastTreeAsGraph() {
+        try{
+            Graph<Short,DefaultEdge> graph = GraphTypeBuilder.<Short, DefaultEdge> directed()
+            .allowingMultipleEdges(false)
+            .allowingSelfLoops(false)
+            .weighted(false)
+            .edgeClass(DefaultEdge.class)
+            .buildGraph();
+
+            FileReader fr = new FileReader("config"+sep+"byzcast.config");
+            BufferedReader rd = new BufferedReader(fr);
+            String line = null;
+            while((line = rd.readLine()) != null){
+                if(!line.startsWith("#")){ // ignore comments #
+                    StringTokenizer str = new StringTokenizer(line, "->");
+                    if(str.countTokens() > 1){
+                        short id1 = Short.valueOf(str.nextToken());
+                        short id2 = Short.valueOf(str.nextToken());
+                        graph.addVertex(id1);
+                        graph.addVertex(id2);
+                        graph.addEdge(id1, id2);
+                    }
+                }
+            }
+            fr.close();
+            rd.close();
+            return graph;
+        }
+        catch(Exception e){
+            e.printStackTrace(System.out);
+            return null;
         }
     }
 }

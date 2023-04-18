@@ -11,7 +11,7 @@ import org.apache.commons.cli.ParseException;
 public class ArgsParser {
     private Option id, numMsgs, clientCount, duration, msgSize, readMsgsFromFile, skeen, debug, 
     warmup, tpcc, profiler, numPartitions, cpuUsage, batchSize, batchTimeout, locality, disjoint,
-    homewarehouse, region;
+    homewarehouse, region, algorithm;
     private Options options;
     private CommandLineParser parser;
     private CommandLine line;
@@ -19,6 +19,7 @@ public class ArgsParser {
 
     private ArgsParser() {
         id = Option.builder("i").desc("server id").argName("id").hasArg().numberOfArgs(1).type(Short.class).build();
+        algorithm = Option.builder("a").desc("algorithm").argName("algorithm").hasArg().numberOfArgs(1).type(Short.class).build();
         clientCount = Option.builder("c").desc("total number of clients").argName("clients").hasArg().numberOfArgs(1).type(Short.class).build();
         numMsgs = Option.builder("m").desc("number of messages each client send (defaults to -1)").argName("messages").hasArg().numberOfArgs(1).type(Integer.class).build();
         duration = Option.builder("d").desc("time to execute in seconds (defaults to 120)").argName("seconds").hasArg().numberOfArgs(1).type(Short.class).build();
@@ -47,7 +48,9 @@ public class ArgsParser {
         parser.command = "Client";
         parser.id.setRequired(true);
         parser.clientCount.setRequired(true);
+        parser.algorithm.setRequired(true);
         parser.options.addOption(parser.id);
+        parser.options.addOption(parser.algorithm);
         parser.options.addOption(parser.clientCount);
         parser.options.addOption(parser.duration);
         parser.options.addOption(parser.msgSize);
@@ -70,7 +73,9 @@ public class ArgsParser {
         parser.command = "Server";
         parser.id.setRequired(true);
         parser.clientCount.setRequired(true);
+        parser.algorithm.setRequired(true);
         parser.options.addOption(parser.id);
+        parser.options.addOption(parser.algorithm);
         parser.options.addOption(parser.clientCount);
         parser.options.addOption(parser.duration);
         parser.options.addOption(parser.skeen);
@@ -86,6 +91,10 @@ public class ArgsParser {
 
     public short getId() {
         return Short.valueOf(line.getOptionValue("i"));
+    }
+
+    public short getAlgorithm() {
+        return Short.valueOf(line.getOptionValue("a"));
     }
 
     public int getNumMessages() {
