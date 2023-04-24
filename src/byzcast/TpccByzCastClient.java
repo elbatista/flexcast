@@ -173,6 +173,7 @@ public class TpccByzCastClient extends ByzCastClient {
         print("Finished ByzCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
     }
 
+    @SuppressWarnings("unused")
     private short[] disjointDsts() {
         int rand = randomNumber(1, 3, gen);
         switch (rand) {
