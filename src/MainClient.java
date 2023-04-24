@@ -1,10 +1,10 @@
 import byzcast.ByzCastClient;
 import byzcast.TpccByzCastClient;
-import core.Client;
+import flexcast.Client;
+import flexcast.TpccClient;
 import skeen.SkeenClient;
 import skeen.TpccSkeenClient;
 import util.ArgsParser;
-import core.TpccClient;
 
 public class MainClient {
     public static void main(String args[]){

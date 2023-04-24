@@ -7,10 +7,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import datastructures.MessageDepGraph;
-import datastructures.NotifList;
 import io.netty.channel.Channel;
 import util.BaseObj;
 
@@ -21,8 +17,6 @@ public class Message extends BaseObj implements Externalizable {
     private Type type;
     private short [] dst;
     private boolean ackIsFromDst = false;
-    private MessageDepGraph depGraph;
-    private ArrayList<NotifList> notifList = new ArrayList<>();
 
     // "transient" fields
     private ArrayList<Message> acks = new ArrayList<>();
@@ -32,13 +26,11 @@ public class Message extends BaseObj implements Externalizable {
     // constructor
     public Message(){
         this.acks = new ArrayList<>();
-        this.notifList = new ArrayList<>();
     }
 
     public Message(int id){
         this.id = id;
         this.acks = new ArrayList<>();
-        this.notifList = new ArrayList<>();
     }
 
     // methods
@@ -66,14 +58,6 @@ public class Message extends BaseObj implements Externalizable {
         this.ackIsFromDst = ackIsFromDst;
     }
 
-    public MessageDepGraph getDepGraph() {
-        return depGraph;
-    }
-
-    public void setDepGraph(MessageDepGraph depGraph) {
-        this.depGraph = depGraph;
-    }
-
     public short getIdNotifier() {
         return idNotifier;
     }
@@ -82,14 +66,6 @@ public class Message extends BaseObj implements Externalizable {
         this.idNotifier = idNotifier;
     }
 
-    public ArrayList<NotifList> getNotifList() {
-        return notifList;
-    }
-
-    public void addNotifList(Set<Short> notifList, short notifier) {
-        this.notifList.add(new NotifList(notifier, notifList));
-    }
-    
     public int getCliId() {
         return cliId;
     }
@@ -189,36 +165,6 @@ public class Message extends BaseObj implements Externalizable {
         }
     }
 
-    // private void writeExtBatch(ObjectOutput out) throws IOException {
-    //     // type
-    //     out.writeByte(6);
-
-    //     // sender
-    //     out.writeByte(getSender());
-
-    //     // batch size
-    //     out.writeInt(getBatch().size());
-
-    //     for(Message m : getBatch()){
-    //         switch(m.getType()){
-    //             case MSG: writeExtMsg(m, out, true); break;
-    //             case ACK: writeExtAck(m, out, true); break;
-    //             case NOTIF: writeExtNotif(m, out, true); break;
-    //             default: break;
-    //         }
-    //     }
-
-    //     // dependency graph
-    //     for(List<LightMessage> list : getDepGraph().getGraph()){
-    //         out.writeInt(list.size());
-    //         for(LightMessage lm : list){
-    //             out.writeInt(lm.getId());
-    //             out.writeByte(lm.getDst().length);
-    //             for(short d : lm.getDst()) out.writeByte(d);
-    //         }
-    //     }
-    // }
-
     private void writeExtMsg(Message msg, ObjectOutput out, boolean batch) throws IOException {
         // type
         out.writeByte(1);
@@ -236,35 +182,6 @@ public class Message extends BaseObj implements Externalizable {
         out.writeByte(msg.getDst().length);
         for(short i : msg.getDst()) out.writeByte(i);
 
-        // notiflists
-        if(msg.getNotifList() == null){
-            out.writeInt(0);
-        }
-        else {
-            out.writeInt(msg.getNotifList().size());
-            for(NotifList nl : msg.getNotifList()){
-                out.writeByte(nl.getNotifier());
-                out.writeInt(nl.getNotifList().size());
-                for(short notified : nl.getNotifList()){
-                    out.writeByte(notified);
-                }
-            }
-        }
-
-        // dependecy graph
-        if(batch || msg.getDepGraph() == null){
-            out.writeBoolean(false);
-            return;
-        }
-        out.writeBoolean(true);
-        for(List<LightMessage> list : msg.getDepGraph().getGraph()){
-            out.writeInt(list.size());
-            for(LightMessage lm : list){
-                out.writeInt(lm.getId());
-                out.writeByte(lm.getDst().length);
-                for(short d : lm.getDst()) out.writeByte(d);
-            }
-        }
     }
 
     private void writeExtAck(Message ack, ObjectOutput out, boolean batch) throws IOException {
@@ -287,35 +204,6 @@ public class Message extends BaseObj implements Externalizable {
         // flag ack-is-from-dst
         out.writeBoolean(ack.ackIsFromDst());
 
-        // notiflists
-        if(ack.getNotifList() == null){
-            out.writeInt(0);
-        }
-        else {
-            out.writeInt(ack.getNotifList().size());
-            for(NotifList nl : ack.getNotifList()){
-                out.writeByte(nl.getNotifier());
-                out.writeInt(nl.getNotifList().size());
-                for(short notified : nl.getNotifList()){
-                    out.writeByte(notified);
-                }
-            }
-        }
-
-        // dependecy graph
-        if(batch){
-            out.writeBoolean(false);
-            return;
-        }
-        out.writeBoolean(true);
-        for(List<LightMessage> list : ack.getDepGraph().getGraph()){
-            out.writeInt(list.size());
-            for(LightMessage lm : list){
-                out.writeInt(lm.getId());
-                out.writeByte(lm.getDst().length);
-                for(short d : lm.getDst()) out.writeByte(d);
-            }
-        }
     }
 
     private void writeExtNotif(Message notif, ObjectOutput out, boolean batch) throws IOException {
@@ -332,35 +220,6 @@ public class Message extends BaseObj implements Externalizable {
         out.writeByte(notif.getDst().length);
         for(short i : notif.getDst()) out.writeByte(i);
 
-        // notiflist
-        if(notif.getNotifList() == null){
-            out.writeInt(0);
-        }
-        else {
-            out.writeInt(notif.getNotifList().size());
-            for(NotifList nl : notif.getNotifList()){
-                out.writeByte(nl.getNotifier());
-                out.writeInt(nl.getNotifList().size());
-                for(short notified : nl.getNotifList()){
-                    out.writeByte(notified);
-                }
-            }
-        }
-
-        // dependecy graph
-        if(batch){
-            out.writeBoolean(false);
-            return;
-        }
-        out.writeBoolean(true);
-        for(List<LightMessage> list : notif.getDepGraph().getGraph()){
-            out.writeInt(list.size());
-            for(LightMessage lm : list){
-                out.writeInt(lm.getId());
-                out.writeByte(lm.getDst().length);
-                for(short d : lm.getDst()) out.writeByte(d);
-            }
-        }
     }
 
     private void writeExtConn(ObjectOutput out) throws IOException {
@@ -449,32 +308,6 @@ public class Message extends BaseObj implements Externalizable {
         for(short i = 0; i < dstLen; i++) dstAux[i] = in.readByte();
         msg.setDst(dstAux);
 
-        // notiflist
-        int notifListSize = in.readInt();
-        for(int i = 0; i < notifListSize; i++){
-            short idNotifier = in.readByte();
-            int notifiedsSize = in.readInt();
-            Set<Short> notifiedNodes = new HashSet<>();
-            for(int j = 0; j < notifiedsSize; j++){
-                notifiedNodes.add((short)in.readByte());
-            }
-            msg.addNotifList(notifiedNodes, idNotifier);
-        }
-
-        if(in.readBoolean()){
-            msg.setDepGraph(new MessageDepGraph((short)(msg.getSender()+1)));
-            for(int i = 0; i <= msg.getSender(); i++){
-                int listSize = in.readInt();
-                for(int j = 0; j < listSize; j++){
-                    LightMessage lm = new LightMessage(in.readInt());
-                    dstLen = in.readByte();
-                    short[] lmDsts = new short[dstLen];
-                    for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
-                    lm.setDst(lmDsts);
-                    msg.getDepGraph().add(lm, (short) i);
-                }
-            }
-        }
     }
 
     private void readExtAck(Message ack, ObjectInput in) throws IOException {
@@ -498,32 +331,6 @@ public class Message extends BaseObj implements Externalizable {
         // flag ack-is-from-dst
         ack.ackIsFromDst(in.readBoolean());
 
-        // notiflist
-        int notifListSize = in.readInt();
-        for(int i = 0; i < notifListSize; i++){
-            short idNotifier = in.readByte();
-            int notifiedsSize = in.readInt();
-            Set<Short> notifiedNodes = new HashSet<>();
-            for(int j = 0; j < notifiedsSize; j++){
-                notifiedNodes.add((short)in.readByte());
-            }
-            ack.addNotifList(notifiedNodes, idNotifier);
-        }
-
-        if(in.readBoolean()){
-            ack.setDepGraph(new MessageDepGraph((short)(ack.getSender()+1)));
-            for(int i = 0; i <= ack.getSender(); i++){
-                int listSize = in.readInt();
-                for(int j = 0; j < listSize; j++){
-                    LightMessage lm = new LightMessage(in.readInt());
-                    dstLen = in.readByte();
-                    short[] lmDsts = new short[dstLen];
-                    for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
-                    lm.setDst(lmDsts);
-                    ack.getDepGraph().add(lm, (short) i);
-                }
-            }
-        }
     }
 
     private void readExtNotif(Message notif, ObjectInput in) throws IOException {
@@ -541,32 +348,6 @@ public class Message extends BaseObj implements Externalizable {
         for(short i = 0; i < dstLen; i++) dstAux[i] = in.readByte();
         notif.setDst(dstAux);
 
-        // notiflist
-        int notifListSize = in.readInt();
-        for(int i = 0; i < notifListSize; i++){
-            short idNotifier = in.readByte();
-            int notifiedsSize = in.readInt();
-            Set<Short> notifiedNodes = new HashSet<>();
-            for(int j = 0; j < notifiedsSize; j++){
-                notifiedNodes.add((short)in.readByte());
-            }
-            notif.addNotifList(notifiedNodes, idNotifier);
-        }
-
-        if(in.readBoolean()){
-            notif.setDepGraph(new MessageDepGraph((short)(notif.getSender()+1)));
-            for(int i = 0; i <= notif.getSender(); i++){
-                int listSize = in.readInt();
-                for(int j = 0; j < listSize; j++){
-                    LightMessage lm = new LightMessage(in.readInt());
-                    dstLen = in.readByte();
-                    short[] lmDsts = new short[dstLen];
-                    for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
-                    lm.setDst(lmDsts);
-                    notif.getDepGraph().add(lm, (short) i);
-                }
-            }
-        }
     }
 
     private void readExtConn(ObjectInput in) throws IOException {
