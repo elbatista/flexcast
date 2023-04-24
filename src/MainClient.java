@@ -1,5 +1,3 @@
-import java.io.ObjectInputStream.GetField;
-
 import byzcast.ByzCastClient;
 import byzcast.TpccByzCastClient;
 import core.Client;

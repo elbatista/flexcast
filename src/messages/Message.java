@@ -15,7 +15,7 @@ import io.netty.channel.Channel;
 import util.BaseObj;
 
 public class Message extends BaseObj implements Externalizable {
-    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, BATCH, END, READY}
+    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY}
     private short sender = -1, idNotifier = -1;
     private int id = -1, cliId = -1;
     private Type type;
@@ -28,19 +28,16 @@ public class Message extends BaseObj implements Externalizable {
     private ArrayList<Message> acks = new ArrayList<>();
     private Channel channelIn;
     private HashSet<Integer> pendNotifOrigins;
-    private ArrayList<Message> batch;
 
     // constructor
     public Message(){
         this.acks = new ArrayList<>();
-        this.batch = new ArrayList<>();
         this.notifList = new ArrayList<>();
     }
 
     public Message(int id){
         this.id = id;
         this.acks = new ArrayList<>();
-        this.batch = new ArrayList<>();
         this.notifList = new ArrayList<>();
     }
 
@@ -67,10 +64,6 @@ public class Message extends BaseObj implements Externalizable {
 
     public void ackIsFromDst(boolean ackIsFromDst) {
         this.ackIsFromDst = ackIsFromDst;
-    }
-    
-    public ArrayList<Message> getBatch() {
-        return batch;
     }
 
     public MessageDepGraph getDepGraph() {
@@ -193,39 +186,38 @@ public class Message extends BaseObj implements Externalizable {
             case END: writeExtEnd(out); break;
             case READY: writeExtReady(out); break;
             case REPLY: writeExtReply(out); break;
-            case BATCH: writeExtBatch(out);
         }
     }
 
-    private void writeExtBatch(ObjectOutput out) throws IOException {
-        // type
-        out.writeByte(6);
+    // private void writeExtBatch(ObjectOutput out) throws IOException {
+    //     // type
+    //     out.writeByte(6);
 
-        // sender
-        out.writeByte(getSender());
+    //     // sender
+    //     out.writeByte(getSender());
 
-        // batch size
-        out.writeInt(getBatch().size());
+    //     // batch size
+    //     out.writeInt(getBatch().size());
 
-        for(Message m : getBatch()){
-            switch(m.getType()){
-                case MSG: writeExtMsg(m, out, true); break;
-                case ACK: writeExtAck(m, out, true); break;
-                case NOTIF: writeExtNotif(m, out, true); break;
-                default: break;
-            }
-        }
+    //     for(Message m : getBatch()){
+    //         switch(m.getType()){
+    //             case MSG: writeExtMsg(m, out, true); break;
+    //             case ACK: writeExtAck(m, out, true); break;
+    //             case NOTIF: writeExtNotif(m, out, true); break;
+    //             default: break;
+    //         }
+    //     }
 
-        // dependency graph
-        for(List<LightMessage> list : getDepGraph().getGraph()){
-            out.writeInt(list.size());
-            for(LightMessage lm : list){
-                out.writeInt(lm.getId());
-                out.writeByte(lm.getDst().length);
-                for(short d : lm.getDst()) out.writeByte(d);
-            }
-        }
-    }
+    //     // dependency graph
+    //     for(List<LightMessage> list : getDepGraph().getGraph()){
+    //         out.writeInt(list.size());
+    //         for(LightMessage lm : list){
+    //             out.writeInt(lm.getId());
+    //             out.writeByte(lm.getDst().length);
+    //             for(short d : lm.getDst()) out.writeByte(d);
+    //         }
+    //     }
+    // }
 
     private void writeExtMsg(Message msg, ObjectOutput out, boolean batch) throws IOException {
         // type
@@ -403,42 +395,41 @@ public class Message extends BaseObj implements Externalizable {
             case 3: readExtNotif(this, in); break;
             case 4: readExtConn(in); break;
             case 5: readExtReply(in); break;
-            case 6: readExtBatch(in); break;
             case 9: readExtReady(in); break;
             case 10: readExtEnd(in); break;
         }
     }
 
-    private void readExtBatch(ObjectInput in) throws IOException {
-        setType(Type.BATCH);
-        setSender(in.readByte());
-        int size = in.readInt();
+    // private void readExtBatch(ObjectInput in) throws IOException {
+    //     setType(Type.BATCH);
+    //     setSender(in.readByte());
+    //     int size = in.readInt();
 
-        for(int i = 0; i < size; i++){
-            Message m = new Message();
-            short type = in.readByte();
-            switch (type){
-                case 1: readExtMsg(m, in); break;
-                case 2: readExtAck(m, in); break;
-                case 3: readExtNotif(m, in); break;
-                default: break;
-            }
-            getBatch().add(m);
-        }
+    //     for(int i = 0; i < size; i++){
+    //         Message m = new Message();
+    //         short type = in.readByte();
+    //         switch (type){
+    //             case 1: readExtMsg(m, in); break;
+    //             case 2: readExtAck(m, in); break;
+    //             case 3: readExtNotif(m, in); break;
+    //             default: break;
+    //         }
+    //         getBatch().add(m);
+    //     }
 
-        setDepGraph(new MessageDepGraph((short)(getSender()+1)));
-        for(int i = 0; i <= getSender(); i++){
-            int listSize = in.readInt();
-            for(int j = 0; j < listSize; j++){
-                LightMessage lm = new LightMessage(in.readInt());
-                short dstLen = in.readByte();
-                short[] lmDsts = new short[dstLen];
-                for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
-                lm.setDst(lmDsts);
-                getDepGraph().add(lm, (short) i);
-            }
-        }
-    }
+    //     setDepGraph(new MessageDepGraph((short)(getSender()+1)));
+    //     for(int i = 0; i <= getSender(); i++){
+    //         int listSize = in.readInt();
+    //         for(int j = 0; j < listSize; j++){
+    //             LightMessage lm = new LightMessage(in.readInt());
+    //             short dstLen = in.readByte();
+    //             short[] lmDsts = new short[dstLen];
+    //             for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
+    //             lm.setDst(lmDsts);
+    //             getDepGraph().add(lm, (short) i);
+    //         }
+    //     }
+    // }
 
     private void readExtMsg(Message msg, ObjectInput in) throws IOException {
         msg.setType(Type.MSG);

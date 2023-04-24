@@ -38,10 +38,9 @@ public abstract class ServerProxy extends ClientProxy {
     }
     private void receive(Message m) {
         switch(m.getType()){
-            case MSG: receiveMsg(m, true); break;
-            case ACK: receiveAck(m, true); break;
-            case NOTIF: receiveNotif(m, true); break;
-            case BATCH: receiveBatch(m); break;
+            case MSG: receiveMsg(m); break;
+            case ACK: receiveAck(m); break;
+            case NOTIF: receiveNotif(m); break;
             // message used only to establish a connection to each client
             case CONN: {
                 cliChannels.put(m.getCliId(), m.getChannelIn());
@@ -80,18 +79,6 @@ public abstract class ServerProxy extends ClientProxy {
         }
     }
 
-    private void receiveBatch(Message batch) {
-        updateDG(batch);
-        for(Message m : batch.getBatch()){
-            switch(m.getType()){
-                case MSG: receiveMsg(m, false); break;
-                case ACK: receiveAck(m, false); break;
-                case NOTIF: receiveNotif(m, false); break;
-                default: break;
-            } 
-        }
-    }
-
     protected void sendReply(Message m){
         Message reply = new Message(m.getId());
         reply.setSender(getId());
@@ -100,8 +87,7 @@ public abstract class ServerProxy extends ClientProxy {
     }
 
     protected abstract void finish();
-    protected abstract void updateDG(Message m);
-    protected abstract void receiveMsg(Message m, boolean shouldUPdateDG);
-    protected abstract void receiveAck(Message m, boolean shouldUPdateDG);
-    protected abstract void receiveNotif(Message m, boolean shouldUPdateDG);
+    protected abstract void receiveMsg(Message m);
+    protected abstract void receiveAck(Message m);
+    protected abstract void receiveNotif(Message m);
 }

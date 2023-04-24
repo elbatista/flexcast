@@ -14,11 +14,7 @@ import java.util.Vector;
 public class Stats {
     private Vector<Long> values;
     private Vector<Boolean> isGlobal;
-    //private Vector<Integer> dstSize;
     private int accCount, limit;
-    // private Vector<Value> valuesPerNode;
-    // private int numNodes;
-
     private int [] throughput;
     private int now = 0;
 
@@ -26,12 +22,10 @@ public class Stats {
         short node;
         long value;
         boolean isGlobal;
-        //int dstSize;
-        public Value(short node, long value, boolean isGlobal, int dstSize) {
+        public Value(short node, long value, boolean isGlobal) {
             this.node = node;
             this.value = value;
             this.isGlobal = isGlobal;
-            //this.dstSize = dstSize;
         }
     }
 
@@ -40,9 +34,7 @@ public class Stats {
      */
     public Stats() {
         values = new Vector<>();
-        // valuesPerNode = new Vector<>();
         isGlobal = new Vector<>();
-        //dstSize = new Vector<>();
         accCount = 0;
     }
 
@@ -62,17 +54,12 @@ public class Stats {
         return values.size();
     }
 
-    public void store(long value, boolean isGlobal){//, int dstSize) {
+    public void store(long value, boolean isGlobal){
         values.add(value);
         this.isGlobal.add(isGlobal);
-        //this.dstSize.add(dstSize);
         accCount++;
         try{throughput[now]++;}catch(Exception e){}
     }
-
-    // public void store(short node, long value, boolean isGlobal, int dstSize) {
-    //     valuesPerNode.add(new Value(node, value, isGlobal, dstSize));
-    // }
 
     public int getPartialCount() {
         int temp = accCount;
@@ -142,45 +129,20 @@ public class Stats {
     }
 
     public void persist(String fileName, int discardPercent) {
-        // File f = new File(fileName.replace(".txt", "Geral.txt"));
         File f = new File(fileName);
         long abs = 0;
         int order = 0;
         try {
             FileWriter fw = new FileWriter(f);
-            // fw.write("ORDER\tLATENCY\tABS\tTYPE\tDSTSIZE\n");
             fw.write("ORDER\tLATENCY\tABS\tTYPE\n");
             for (int i = 0; i < values.size(); i++) {
                 abs += values.get(i);
                 fw.write(++order + "\t" + values.get(i) + "\t" + abs + "\t" + (isGlobal.get(i) ? "global" : "local") /*+ "\t" + this.dstSize.get(i)*/ +  "\n");
             }
-
             fw.write("\n");
             fw.write(toString(discardPercent));
             fw.flush();
             fw.close();
-
-            // separate latencies
-            // FileWriter [] files = new FileWriter[numNodes];
-            // for(int i=0; i < numNodes; i++) 
-            //     files[i] = new FileWriter(new File(fileName.replace(".txt", "Node"+i+".txt")));
-            
-            // abs = 0;
-            // order = 0;
-            
-            // for(int i=0; i < numNodes; i++)
-            //     files[i].write("ORDER\tLATENCY\tABS\tTYPE\tDSTSIZE\n");
-
-            // for (int i = 0; i < valuesPerNode.size(); i++) {
-            //     abs += valuesPerNode.get(i).value;
-            //     files[valuesPerNode.get(i).node].write(++order +  "\t" + valuesPerNode.get(i).value + "\t" + abs + "\t" + (valuesPerNode.get(i).isGlobal ? "global" : "local") + "\t" + valuesPerNode.get(i).dstSize + "\n");
-            // }
-
-            // for(int i=0; i < numNodes; i++){
-            //     files[i].flush();
-            //     files[i].close();
-            // }
-
         } catch (IOException ex) {
             System.err.println("Unable to save stats to file");
             ex.printStackTrace();

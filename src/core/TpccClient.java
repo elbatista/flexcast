@@ -54,7 +54,7 @@ public class TpccClient extends Client {
     public TpccClient(short id, ArgsParser args) {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
-        print("TPCC Client");
+        print("FlexCast TPCC Client");
         run();
     }
     
@@ -71,11 +71,12 @@ public class TpccClient extends Client {
         sendReadyMessage();
         print("All other clients ready!");
 
-        print("Started tpcc experiment. Num nodes:", numNodes);
+        print("Started FlexCast tpcc experiment. Num nodes:", numNodes);
         print("My home warehouse:", warehouseID);
 
         if(args.getLocality() == 0) print("No locality");
         stats = new Stats(totalTime);
+
         executeTransactions();
 
         if (stats.getCount() > 0) {
@@ -127,7 +128,7 @@ public class TpccClient extends Client {
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
 
-        // print("ONLY 2 DESTS MSGS");
+        print("ONLY GLOBAL MSGS");
 
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
@@ -150,7 +151,15 @@ public class TpccClient extends Client {
                 numDests = doStockLevel();
             }
 
+            if(numDests < 2) {
+                dest1--;
+                numDests = 2;
+            }
+
             Message m = newMessageTo(generateDests(numDests));
+            
+            // Message m = newMessageTo(disjointDsts());
+
             multicast(m);
             computeDistribution(m);
 
@@ -160,7 +169,17 @@ public class TpccClient extends Client {
             usLat = now;
             NUM_TX++;
         }
-        print("Finished tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
+        print("Finished FlexCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
+    }
+
+    private short[] disjointDsts() {
+        int rand = randomNumber(1, 3, gen);
+        switch (rand) {
+            case 1: return new short[]{0,1};
+            case 2: return new short[]{2,3};
+            case 3: return new short[]{4,5};
+        }
+        return null;
     }
 
     private short[] generateDests(int numDests) {

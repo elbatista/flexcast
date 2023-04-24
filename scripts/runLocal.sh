@@ -21,14 +21,14 @@ do
     # Start servers
     ((START = $6-1))
     for ((i = START; i >= 0; i-=1)) ; do
-        java -cp "bin/*:lib/*" MainServer -i $i -a $3 -d $1 $dbg $p $bs -c $5 >> logs/node$i.txt & sleep .05
+        java -cp "bin/*:lib/*" MainServer -i $i -a $3 -d $1  -c $5 >> logs/node$i.txt & sleep .05
     done
     echo started $6 servers >> logs/executions.log
 
     # Start clients
     ((END = $5-1))
     # for j in $(seq 0 $END); do
-        java -cp "bin/*:lib/*" MainClient -c $5 -i 0 -d $1 $f $dbg -a $3 $tpcc $np $nmsgs $locality -w 0 >> logs/cli0.txt &
+        java -cp "bin/*:lib/*" MainClient -c $5 -i 0 -d $1 -a $3 $tpcc  $locality -w 0 >> logs/cli0.txt &
         # java -cp "bin/*:lib/*" MainClient -c $5 -i 1 -d $1 $f $dbg -a $3 $tpcc $np $nmsgs $locality -w 1 >> logs/cli1.txt &
         # java -cp "bin/*:lib/*" MainClient -c $5 -i 2 -d $1 $f $dbg -a $3 $tpcc $np $nmsgs $locality -w 2 >> logs/cli2.txt &
         # java -cp "bin/*:lib/*" MainClient -c $5 -i 3 -d $1 $f $dbg -a $3 $tpcc $np $nmsgs $locality -w 3 >> logs/cli3.txt &

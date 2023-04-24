@@ -73,6 +73,7 @@ public class TpccByzCastClient extends ByzCastClient {
         print("All other clients ready!");
 
         print("Started ByzCast tpcc experiment. Num nodes:", numNodes);
+        print("ByzCast tree:", args.getTree());
         print("My home warehouse:", warehouseID);
 
         if(args.getLocality() == 0) print("No locality");
@@ -128,7 +129,7 @@ public class TpccByzCastClient extends ByzCastClient {
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
 
-        // print("ONLY 2 DESTS MSGS");
+        print("ONLY GLOBAL MSGS");
 
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
@@ -151,8 +152,14 @@ public class TpccByzCastClient extends ByzCastClient {
                 numDests = doStockLevel();
             }
 
+            if(numDests < 2) {
+                dest1--;
+                numDests = 2;
+            }
+
             ByzCastMessage m = newMessageTo(generateDests(numDests));
             
+            // ByzCastMessage m = newMessageTo(disjointDsts());
             multicast(m);
 
             computeDistribution(m);
@@ -164,6 +171,16 @@ public class TpccByzCastClient extends ByzCastClient {
             NUM_TX++;
         }
         print("Finished ByzCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
+    }
+
+    private short[] disjointDsts() {
+        int rand = randomNumber(1, 3, gen);
+        switch (rand) {
+            case 1: return new short[]{0,1};
+            case 2: return new short[]{2,3};
+            case 3: return new short[]{4,5};
+        }
+        return null;
     }
 
     private short[] generateDests(int numDests) {
@@ -210,13 +227,25 @@ public class TpccByzCastClient extends ByzCastClient {
 
     private short getNearestWH() {
         if(numNodes == 6){
-            switch(warehouseID){
-                case 0: return 1;
-                case 1: return 0;
-                case 2: return 5;
-                case 3: return 4;
-                case 4: return 3;
-                case 5: return 2;
+            if(args.getTree() == 1 || args.getTree() == 2){
+                switch(warehouseID){
+                    case 0: return 1;
+                    case 1: return 0;
+                    case 2: return 5;
+                    case 3: return 4;
+                    case 4: return 3;
+                    case 5: return 2;
+                }
+            }
+            else if (args.getTree() == 4){
+                switch(warehouseID){
+                    case 0: return 1;
+                    case 1: return 0;
+                    case 2: return 3;
+                    case 3: return 2;
+                    case 4: return 5;
+                    case 5: return 4;
+                }
             }
         }
         // simply get the next HW in order of id
@@ -227,13 +256,25 @@ public class TpccByzCastClient extends ByzCastClient {
 
     private short getSecondNearestWH() {
         if(numNodes == 6){
-            switch(warehouseID){
-                case 0: return 3;
-                case 1: return 2;
-                case 2: return 1;
-                case 3: return 0;
-                case 4: return 1;
-                case 5: return 0;
+            if(args.getTree() == 1 || args.getTree() == 2){
+                switch(warehouseID){
+                    case 0: return 3;
+                    case 1: return 2;
+                    case 2: return 1;
+                    case 3: return 0;
+                    case 4: return 1;
+                    case 5: return 0;
+                }
+            }
+            else if (args.getTree() == 4){
+                switch(warehouseID){
+                    case 0: return 2;
+                    case 1: return 3;
+                    case 2: return 1;
+                    case 3: return 4;
+                    case 4: return 2;
+                    case 5: return 3;
+                }
             }
         }
         // simply get the next HW in order of id

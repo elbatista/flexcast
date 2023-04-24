@@ -20,7 +20,6 @@ import org.javatuples.Pair;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
-
 import base.Host;
 import base.Node;
 import messages.LightMessage;
@@ -205,13 +204,15 @@ public class FileManager extends BaseObj {
         }
     }
 
-    public Collection<Pair<Short, Short>> loadByzCastTree() {
+    public Collection<Pair<Short, Short>> loadByzCastTree(ArrayList<String[]> mappings, short id) {
         try{
             ArrayList<Pair<Short, Short>> pairs = new ArrayList<>();
             FileReader fr = new FileReader("config"+sep+"byzcast.config");
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
+
             while((line = rd.readLine()) != null){
+                if(line.startsWith("-")) break; // gonna start reading the mappings
                 if(!line.startsWith("#")){ // ignore comments #
                     StringTokenizer str = new StringTokenizer(line, "->");
                     if(str.countTokens() > 1){
@@ -221,6 +222,13 @@ public class FileManager extends BaseObj {
                     }
                 }
             }
+
+            while((line = rd.readLine()) != null){
+                if(line.startsWith("#") || line.isEmpty()) continue; // ignore comments #
+                String [] map = line.split(",");
+                if(map != null && map.length > 0 && Short.valueOf(map[0]) == id) mappings.add(map);
+            }
+
             fr.close();
             rd.close();
             return pairs;

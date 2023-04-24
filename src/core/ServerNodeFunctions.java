@@ -1,11 +1,9 @@
 package core;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 import messages.LightMessage;
 import messages.LightMessagesList;
 import messages.Message;
@@ -15,28 +13,11 @@ import datastructures.MessageDepGraph;
 import datastructures.NotifList;
 import messages.Message.Type;
 import util.ArgsParser;
-import datastructures.SPSCQueue;
 
 public class ServerNodeFunctions extends ServerNode {
 
-    private int batchSize = 0, batchTimeout = 1000;
-    private HashMap<Short, SPSCQueue<Message>> batches2;
-    private ReentrantLock lock = new ReentrantLock();
-
     public ServerNodeFunctions(short id, ArgsParser args) {
         super(id, args.getClientCount());
-        this.batchSize = args.getBatchSize();
-        this.batchTimeout = args.getBatchTimeout();
-        if(getId() < (getNumNodes()-1) && batchSize > 0){
-            batches2 = new HashMap<>();
-            for(short i = (short)(id+1); i < (getNumNodes()); i++){
-                batches2.put(i, new SPSCQueue<>(10000000));
-                final short ii = i;
-                new Thread(new Runnable(){ public void run(){
-                    try {sendBatches(ii);} catch (InterruptedException e) {}
-                }}).start();
-            }
-        }
     }
 
     @Override
@@ -57,9 +38,7 @@ public class ServerNodeFunctions extends ServerNode {
 
     @Override
     protected void aDeliver(Message m, boolean lca) {
-        lock.lock();
         ItemHst myHstItem = depGraph.addToHst(new LightMessage(m.getId(), m.getDst()));
-        lock.unlock();
         if(lca){
             forward(m);
         }
@@ -89,9 +68,7 @@ public class ServerNodeFunctions extends ServerNode {
 
     @Override
     protected void aDeliverSpecial(Message m) {
-        lock.lock();
         depGraph.addToHst(new LightMessage(m.getId(), m.getDst()));
-        lock.unlock();
         sendAck(m);            
         sendReply(m);
         //print("delivered", m);
@@ -140,20 +117,12 @@ public class ServerNodeFunctions extends ServerNode {
                 if(m.getType() == Type.NOTIF) ack.setIdNotifier(m.getSender());
                 ack.ackIsFromDst(m.getType() == Type.MSG && m.isAddressedTo(getId()));
 
-                if(batchSize == 0) newHst(ack, dst);
+                newHst(ack, dst);
 
                 if(notifList != null && notifList.size() > 0)
                     ack.addNotifList(notifList, getId());
 
-                if(batchSize == 0) {
-                    send(ack, dst);
-                    //print("sent ack", ack, "to", dst);
-                }
-                else {
-                    boolean inserted = false;
-                    while (!inserted)
-                        inserted = batches2.get(dst).offer(ack);
-                }
+                send(ack, dst);
             }
         }
     }
@@ -182,65 +151,16 @@ public class ServerNodeFunctions extends ServerNode {
                 toSend.setDst(m.getDst());
                 toSend.setCliId(m.getCliId());
                 toSend.setSender(getId());
-
-                if(batchSize == 0) newHst(toSend, dst);
+                newHst(toSend, dst);
 
                 if(notifList != null && notifList.size() > 0)
                     toSend.addNotifList(notifList, getId());
 
-                if(batchSize == 0){
-                    send(toSend, dst);
-                    //print("fwd", toSend, "to", dst);
-                }
-                else {
-                    boolean inserted = false;
-                    while (!inserted)
-                        inserted = batches2.get(dst).offer(toSend);
-                }
+                send(toSend, dst);
             }
         }
     }
 
-    private void sendBatches(short node) throws InterruptedException{
-        print("Started thread for batching messages (variable size) to node", node, batchTimeout == 0 ? "no timeout" : (batchTimeout + " nanos"), "(SPSCQueue)");
-        while(true){
-            Message m1;
-            while(true) {
-                m1 = batches2.get(node).poll();
-                if(m1 != null) break;
-            }
-
-            if(batchTimeout > 0) Thread.sleep(0, batchTimeout);
-        
-            Message m2 = batches2.get(node).poll();
-
-            if(m2 == null){
-                lock.lock();
-                newHst(m1, node);
-                lock.unlock();
-                send(m1, node);
-                continue;
-            }
-            
-            Message msgBatch = new Message();
-            msgBatch.setType(Type.BATCH);
-            msgBatch.setSender(getId());
-            msgBatch.getBatch().add(m1);
-            msgBatch.getBatch().add(m2);
-            
-            while(true){
-                Message m3 = batches2.get(node).poll();
-                if(m3 == null) break;
-                msgBatch.getBatch().add(m3);
-            }
-
-            lock.lock();
-            newHst(msgBatch, node);
-            lock.unlock();
-            send(msgBatch, node);
-        }
-    }
-    
     private void newHst(Message m, short dst) {
         MessageDepGraph mg = new MessageDepGraph((short)(getId()+1));
         for(short anc = 0; anc <= getId(); anc++){
@@ -275,28 +195,15 @@ public class ServerNodeFunctions extends ServerNode {
             for (NotifList nl : m.getNotifList())
                 notif.addNotifList(nl.getNotifList(), nl.getNotifier());
             notif.addNotifList(notifList, getId());
-
-            if(batchSize == 0) newHst(notif, node);
-
-            if(batchSize > 0){
-                boolean inserted = false;
-                while (!inserted) 
-                    inserted = batches2.get(node).offer(notif);
-            }
-            else {
-                send(notif, node);
-                //print("sent notif", notif, "to", node);
-            }
+            newHst(notif, node);
+            send(notif, node);
         }
         return notifList;
     }
 
     private boolean isThereMsgTo(short lca, short son, short dst, boolean shouldUpdateLast) {
-        //Item [] last = ancDstInfo[lca][son][dst].getLastInNotif();
-
         for(short i = 0; i <= getId(); i++){
             Item start = notifPointers[lca][son][dst][i] == null ? depGraph.getGraph()[i].getFirst() : notifPointers[lca][son][dst][i];
-            //if(start != null) print("Starting from", start.get());
             while(start != null){
                 if(shouldUpdateLast) notifPointers[lca][son][dst][i] = start.getNext() == null ? start : start.getNext();
                 if(start.get().isAddressedTo(son))
@@ -341,7 +248,7 @@ public class ServerNodeFunctions extends ServerNode {
                     }
 
                     // Exception 2 - i will follow lcd's order
-                    if(lcd != getId() && depGraph.doesMessageComesFirstThan(lcd, lm, m2)){
+                    if(lcd != getId() && depGraph.doesMessageComesFirstThan(lcd, lm, m2, dgPointers)){
                         item = item.getNext();
                         continue;
                     }

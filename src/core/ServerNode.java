@@ -60,31 +60,23 @@ public abstract class ServerNode extends ServerProxy {
         }
         for(short i = 0; i < numNodes; i++)
             for(short j = 0; j < numNodes; j++)
-                ancDstInfo[i][j] = new AncDst((short)(id+1));
-        print(this, "Start listening... Queues:", this.queues.size());
-        print("########################################################");
-        print("ADJUSTED NOTIF POINTERS, NO PTRS ON LOCALDEPGRAPH CLASS");
-        print("########################################################");
+                ancDstInfo[i][j] = new AncDst();
+        print(this, "FlexCast - Start listening... Queues:", this.queues.size());
     }
 
     public short getNumNodes() {
         return numNodes;
     }
 
-    protected void updateDG(Message m){
-        depGraph.update(m);
-    }
-
     @Override
-    protected void receiveMsg(Message m, boolean updateDG){
-        //print("receiveMsg", m);
+    protected void receiveMsg(Message m){
         msgs++;
         boolean isLca = (m.getLca() == getId());
         if(isLca){
             aDeliver(m, isLca);
         }
         else {
-            if(updateDG) depGraph.update(m);
+            depGraph.update(m);
             if(special){
                 aDeliverSpecial(m);
                 return;
@@ -96,10 +88,9 @@ public abstract class ServerNode extends ServerProxy {
     }
 
     @Override
-    protected void receiveAck(Message ack, boolean updateDG){
-        //print("receiveAck", ack);
+    protected void receiveAck(Message ack){
         acks++;
-        if(updateDG) depGraph.update(ack);
+        depGraph.update(ack);
         Message m = tempQueuedMessages.get(ack.getId());
         // if not found, stores the ack in pending acks set and returns without reprocessing queues
         if(m == null){
@@ -117,10 +108,9 @@ public abstract class ServerNode extends ServerProxy {
     }
     
     @Override
-    protected void receiveNotif(Message notif, boolean updateDG){
-        //print("receiveNotif", notif);
+    protected void receiveNotif(Message notif){
         notifs++;
-        if(updateDG) depGraph.update(notif);
+        depGraph.update(notif);
         if(!specialNotif){
             if(pendingNotifs.size() > 0){
                 pendingNotifs.add(notif);
