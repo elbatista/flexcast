@@ -1,4 +1,4 @@
-package messages;
+package flexcast.messages;
 
 public class LightMessagesList {
     private Item first = null, last = null;

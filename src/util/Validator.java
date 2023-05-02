@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import base.Node;
-import messages.LightMessage;
+import flexcast.messages.LightMessage;
 import org.javatuples.Pair;
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.CycleDetector;

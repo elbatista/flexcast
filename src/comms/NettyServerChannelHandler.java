@@ -1,8 +1,8 @@
 package comms;
 
+import flexcast.messages.Message;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import messages.Message;
 import proxies.ServerProxy;
 
 public class NettyServerChannelHandler extends ChannelInboundHandlerAdapter {

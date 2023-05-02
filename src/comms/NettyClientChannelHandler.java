@@ -1,10 +1,11 @@
 package comms;
 
 import java.util.concurrent.CyclicBarrier;
+
+import flexcast.messages.Message;
+import flexcast.messages.Message.Type;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import messages.Message;
-import messages.Message.Type;
 import proxies.ClientProxy;
 
 public class NettyClientChannelHandler extends ChannelInboundHandlerAdapter {

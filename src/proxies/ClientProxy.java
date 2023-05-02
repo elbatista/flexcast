@@ -7,9 +7,9 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
 import base.Node;
 import comms.NettyClientChannel;
+import flexcast.messages.Message;
+import flexcast.messages.Message.Type;
 import io.netty.channel.Channel;
-import messages.Message;
-import messages.Message.Type;
 
 public class ClientProxy extends Node{
     private HashMap<Short, Channel> outChannels;

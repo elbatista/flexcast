@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
-import messages.Message;
+
+import flexcast.messages.Message;
 import util.ArgsParser;
 import util.Stats;
 
@@ -130,7 +131,7 @@ public class TpccClient extends Client {
 
         print("ONLY GLOBAL MSGS");
 
-        while (elapsed / 1e9 < totalTime) {
+        // while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;
 
@@ -168,7 +169,7 @@ public class TpccClient extends Client {
             stats.store((now - usLat) / 1000, (numDests > 1));
             usLat = now;
             NUM_TX++;
-        }
+        // }
         print("Finished FlexCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
     }
 

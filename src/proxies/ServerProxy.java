@@ -3,12 +3,12 @@ package proxies;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import comms.NettyServerChannel;
+import flexcast.messages.Message;
+import flexcast.messages.Message.Type;
 import io.netty.channel.Channel;
-import messages.Message;
-import messages.Message.Type;
 
 public abstract class ServerProxy extends ClientProxy {
-    private ConcurrentLinkedQueue<Message> bufferQueue;
+    protected ConcurrentLinkedQueue<Message> bufferQueue;
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs;
 
@@ -28,7 +28,7 @@ public abstract class ServerProxy extends ClientProxy {
         }).start();
     }
     public void buffer(Message m){
-        // client local msgs are immediatly delivered 
+        // client local msgs are immediately delivered 
         if(m.getType() == Type.MSG && m.getDst().length == 1){
             localMsgs++;
             sendReply(m);
@@ -40,7 +40,7 @@ public abstract class ServerProxy extends ClientProxy {
         switch(m.getType()){
             case MSG: receiveMsg(m); break;
             case ACK: receiveAck(m); break;
-            case NOTIF: receiveNotif(m); break;
+            // case NOTIF: receiveNotif(m); break;
             // message used only to establish a connection to each client
             case CONN: {
                 cliChannels.put(m.getCliId(), m.getChannelIn());
@@ -89,5 +89,5 @@ public abstract class ServerProxy extends ClientProxy {
     protected abstract void finish();
     protected abstract void receiveMsg(Message m);
     protected abstract void receiveAck(Message m);
-    protected abstract void receiveNotif(Message m);
+    // protected abstract void receiveNotif(Message m);
 }

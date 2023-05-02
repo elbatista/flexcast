@@ -2,6 +2,8 @@ package comms;
 
 import java.net.InetSocketAddress;
 import base.Node;
+import flexcast.messages.MessageDecoder;
+import flexcast.messages.MessageEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -10,8 +12,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import messages.MessageDecoder;
-import messages.MessageEncoder;
 import proxies.ServerProxy;
 
 public class NettyServerChannel extends Thread {

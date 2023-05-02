@@ -12,8 +12,8 @@ import base.Host;
 import base.Node;
 import byzcast.messages.ByzCastMessage;
 import byzcast.proxies.ByzCastServerProxy;
-import messages.LightMessage;
-import messages.LightMessagesList;
+import flexcast.messages.LightMessage;
+import flexcast.messages.LightMessagesList;
 
 public class ByzCastNode extends ByzCastServerProxy {
     protected int numNodes;

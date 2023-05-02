@@ -1,4 +1,4 @@
-package messages;
+package flexcast.messages;
 
 import java.io.Serializable;
 import java.util.Arrays;

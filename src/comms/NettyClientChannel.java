@@ -2,6 +2,8 @@ package comms;
 
 import java.util.concurrent.CyclicBarrier;
 import base.Node;
+import flexcast.messages.MessageDecoder;
+import flexcast.messages.MessageEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -11,8 +13,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import messages.MessageDecoder;
-import messages.MessageEncoder;
 import proxies.ClientProxy;
 
 public class NettyClientChannel extends Thread {

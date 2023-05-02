@@ -1,4 +1,4 @@
-package messages;
+package flexcast.messages;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;

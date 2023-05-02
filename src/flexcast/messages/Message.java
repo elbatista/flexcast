@@ -1,4 +1,4 @@
-package messages;
+package flexcast.messages;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -6,31 +6,58 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import io.netty.channel.Channel;
 import util.BaseObj;
 
 public class Message extends BaseObj implements Externalizable {
-    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY}
-    private short sender = -1, idNotifier = -1;
+    public enum Type {MSG, ACK, CONN, REPLY, END, READY}
+    private short sender = -1;
     private int id = -1, cliId = -1;
     private Type type;
     private short [] dst;
-    private boolean ackIsFromDst = false;
-
+    private HashMap<Short, ArrayList<LightMessage>> hst = new HashMap<>();
+    
     // "transient" fields
-    private ArrayList<Message> acks = new ArrayList<>();
     private Channel channelIn;
-    private HashSet<Integer> pendNotifOrigins;
+    private int acksFromAncsDeps=0;
+    private HashSet<Integer> msgDeps = new HashSet<>();
+    private HashMap<Short, HashMap<Integer, Boolean>> ancHstMsgsDelivered = new HashMap<>();
+    private boolean updtOrigin = false;
 
-    // constructor
-    public Message(){
-        this.acks = new ArrayList<>();
+    public boolean alreadyUpdtOrigin() {
+        return updtOrigin;
     }
 
+    public void alreadyUpdtOrigin(boolean updtOrigin) {
+        this.updtOrigin = updtOrigin;
+    }
+
+    public HashSet<Integer> getMsgDeps() {
+        return msgDeps;
+    }
+
+    public HashMap<Short, ArrayList<LightMessage>> getHst() {
+        return hst;
+    }
+
+    public int getAcksFromAncsDeps() {
+        return acksFromAncsDeps;
+    }
+
+    public void addAckFromAncDep(){
+        acksFromAncsDeps++;
+    }
+
+    public void recvAckFromAnc(){
+        acksFromAncsDeps--;
+    }
+
+    // constructors
+    public Message(){}
     public Message(int id){
         this.id = id;
-        this.acks = new ArrayList<>();
     }
 
     // methods
@@ -50,33 +77,12 @@ public class Message extends BaseObj implements Externalizable {
         this.channelIn = channelIn;
     }
 
-    public boolean ackIsFromDst() {
-        return this.ackIsFromDst;
-    }
-
-    public void ackIsFromDst(boolean ackIsFromDst) {
-        this.ackIsFromDst = ackIsFromDst;
-    }
-
-    public short getIdNotifier() {
-        return idNotifier;
-    }
-
-    public void setIdNotifier(short idNotifier) {
-        this.idNotifier = idNotifier;
-    }
-
     public int getCliId() {
         return cliId;
     }
 
     public void setCliId(int cliId) {
         this.cliId = cliId;
-    }
-
-    public ArrayList<Message> getAcks() {
-        if(this.acks == null) this.acks = new ArrayList<>();
-        return this.acks;
     }
 
     public Type getType() {
@@ -107,18 +113,13 @@ public class Message extends BaseObj implements Externalizable {
         return this.dst[0];
     }
 
-    public HashSet<Integer> getPendNotifOrigins() {
-        if(pendNotifOrigins == null) pendNotifOrigins = new HashSet<>();
-        return pendNotifOrigins;
-    }
-
     @Override
     public boolean equals(Object m){
         return ((Message)m).getId() == getId();
     }
 
     public String toString(){
-        return toString(getId(), getType(), Arrays.toString(getDst()));
+        return toString(getId(), getType(), Arrays.toString(getDst()), getHst());
     }
 
     public boolean isAddressedTo(short d){
@@ -157,7 +158,6 @@ public class Message extends BaseObj implements Externalizable {
         switch(getType()){
             case MSG: writeExtMsg(this, out, false); break;
             case ACK: writeExtAck(this, out, false); break;
-            case NOTIF: writeExtNotif(this, out, false); break;
             case CONN: writeExtConn(out); break;
             case END: writeExtEnd(out); break;
             case READY: writeExtReady(out); break;
@@ -182,6 +182,17 @@ public class Message extends BaseObj implements Externalizable {
         out.writeByte(msg.getDst().length);
         for(short i : msg.getDst()) out.writeByte(i);
 
+        // hst
+        out.writeShort((short) getHst().size());
+        for(short anc : getHst().keySet()){
+            out.writeShort(anc);
+            out.writeInt(getHst().get(anc).size());
+            for(LightMessage lm : getHst().get(anc)){
+                out.writeInt(lm.getId());
+                out.writeByte(lm.getDst().length);
+                for(short d : lm.getDst()) out.writeByte(d);
+            }
+        }
     }
 
     private void writeExtAck(Message ack, ObjectOutput out, boolean batch) throws IOException {
@@ -198,27 +209,18 @@ public class Message extends BaseObj implements Externalizable {
         out.writeByte(ack.getDst().length);
         for(short i : ack.getDst()) out.writeByte(i);
 
-        // idNotifier
-        out.writeByte(ack.getIdNotifier());
-
-        // flag ack-is-from-dst
-        out.writeBoolean(ack.ackIsFromDst());
-
-    }
-
-    private void writeExtNotif(Message notif, ObjectOutput out, boolean batch) throws IOException {
-        // type
-        out.writeByte(3);
-
-        // msg id
-        out.writeInt(notif.getId());
+        // hst
+        out.writeShort((short) getHst().size());
+        for(short anc : getHst().keySet()){
+            out.writeShort(anc);
+            out.writeInt(getHst().get(anc).size());
+            for(LightMessage lm : getHst().get(anc)){
+                out.writeInt(lm.getId());
+                out.writeByte(lm.getDst().length);
+                for(short d : lm.getDst()) out.writeByte(d);
+            }
+        }
         
-        // sender
-        out.writeByte(notif.getSender());
-
-        // dests
-        out.writeByte(notif.getDst().length);
-        for(short i : notif.getDst()) out.writeByte(i);
 
     }
 
@@ -251,44 +253,12 @@ public class Message extends BaseObj implements Externalizable {
         switch(type){
             case 1: readExtMsg(this, in); break;
             case 2: readExtAck(this, in); break;
-            case 3: readExtNotif(this, in); break;
             case 4: readExtConn(in); break;
             case 5: readExtReply(in); break;
             case 9: readExtReady(in); break;
             case 10: readExtEnd(in); break;
         }
     }
-
-    // private void readExtBatch(ObjectInput in) throws IOException {
-    //     setType(Type.BATCH);
-    //     setSender(in.readByte());
-    //     int size = in.readInt();
-
-    //     for(int i = 0; i < size; i++){
-    //         Message m = new Message();
-    //         short type = in.readByte();
-    //         switch (type){
-    //             case 1: readExtMsg(m, in); break;
-    //             case 2: readExtAck(m, in); break;
-    //             case 3: readExtNotif(m, in); break;
-    //             default: break;
-    //         }
-    //         getBatch().add(m);
-    //     }
-
-    //     setDepGraph(new MessageDepGraph((short)(getSender()+1)));
-    //     for(int i = 0; i <= getSender(); i++){
-    //         int listSize = in.readInt();
-    //         for(int j = 0; j < listSize; j++){
-    //             LightMessage lm = new LightMessage(in.readInt());
-    //             short dstLen = in.readByte();
-    //             short[] lmDsts = new short[dstLen];
-    //             for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
-    //             lm.setDst(lmDsts);
-    //             getDepGraph().add(lm, (short) i);
-    //         }
-    //     }
-    // }
 
     private void readExtMsg(Message msg, ObjectInput in) throws IOException {
         msg.setType(Type.MSG);
@@ -308,6 +278,25 @@ public class Message extends BaseObj implements Externalizable {
         for(short i = 0; i < dstLen; i++) dstAux[i] = in.readByte();
         msg.setDst(dstAux);
 
+
+        //hst
+        short hstSize = in.readShort();
+        for(short i = 0; i < hstSize; i++){
+            short anc = in.readShort();
+            int nMsgs = in.readInt();
+            ArrayList<LightMessage> msgs = new ArrayList<>();
+            for(int j = 0; j < nMsgs; j++){
+                LightMessage lm = new LightMessage(in.readInt());
+                dstLen = in.readByte();
+                short[] lmDsts = new short[dstLen];
+                for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
+                lm.setDst(lmDsts);
+                msgs.add(lm);
+            }
+            getHst().put(anc, msgs);
+        }
+        
+
     }
 
     private void readExtAck(Message ack, ObjectInput in) throws IOException {
@@ -325,28 +314,22 @@ public class Message extends BaseObj implements Externalizable {
         for(short i = 0; i < dstLen; i++) dstAux[i] = in.readByte();
         ack.setDst(dstAux);
 
-        // idNotifier
-        ack.setIdNotifier(in.readByte());
-
-        // flag ack-is-from-dst
-        ack.ackIsFromDst(in.readBoolean());
-
-    }
-
-    private void readExtNotif(Message notif, ObjectInput in) throws IOException {
-        notif.setType(Type.NOTIF);
-
-        // msg id
-        notif.setId(in.readInt());
-                
-        // sender
-        notif.setSender(in.readByte());
-
-        // dests
-        short dstLen = in.readByte();
-        short [] dstAux = new short[dstLen];
-        for(short i = 0; i < dstLen; i++) dstAux[i] = in.readByte();
-        notif.setDst(dstAux);
+        //hst
+        short hstSize = in.readShort();
+        for(short i = 0; i < hstSize; i++){
+            short anc = in.readShort();
+            int nMsgs = in.readInt();
+            ArrayList<LightMessage> msgs = new ArrayList<>();
+            for(int j = 0; j < nMsgs; j++){
+                LightMessage lm = new LightMessage(in.readInt());
+                dstLen = in.readByte();
+                short[] lmDsts = new short[dstLen];
+                for(int k = 0; k < dstLen; k++) lmDsts[k] = in.readByte();
+                lm.setDst(lmDsts);
+                msgs.add(lm);
+            }
+            getHst().put(anc, msgs);
+        }
 
     }
 
@@ -371,6 +354,51 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtReply(ObjectInput in) throws IOException {
         setType(Type.REPLY);
         setSender(in.readByte());
+    }
+
+    public void updateAncHst(Message m) {
+        for(short anc : m.getHst().keySet()){
+            for(LightMessage lm : m.getHst().get(anc)){
+                if(ancHstMsgsDelivered.get(anc) == null) ancHstMsgsDelivered.put(anc, new HashMap<>());
+                if(ancHstMsgsDelivered.get(anc).get(lm.getId()) == null){
+                    if(getHst().get(anc)==null) getHst().put(anc, new ArrayList<>());
+                    getHst().get(anc).add(lm);
+                    ancHstMsgsDelivered.get(anc).put(lm.getId(), true);
+                }
+            }
+        }
+    }
+
+    public void updateDeps(short nodeid, HashMap<Integer, Boolean> msgsDelivered, HashMap<Integer, HashSet<Message>> msgsThatAreDeps) {
+        // crio uma pendencia de msg para cada msg anterior a m addr pra mim que esta no hst atualizado dessa msg q eu nao entreguei ainda
+        for(short anc : getHst().keySet()){
+            for(LightMessage lm : getHst().get(anc)){
+                if(lm.getId() == getId()) break;
+                if(lm.isAddressedTo(nodeid) && msgsDelivered.get(lm.getId()) == null){
+                    getMsgDeps().add(lm.getId());
+                    if(msgsThatAreDeps.get(lm.getId()) == null){
+                        msgsThatAreDeps.put(lm.getId(), new HashSet<>());
+                    }
+                    msgsThatAreDeps.get(lm.getId()).add(this);
+                }
+            }
+        }
+    }
+
+    public void updateDeps(short nodeid, HashMap<Integer, Boolean> msgsDelivered, HashMap<Integer, HashSet<Message>> msgsThatAreDeps, HashMap<Short, ArrayList<LightMessage>> hstAck) {
+        // crio uma pendencia de msg para cada msg anterior a m addr pra mim que esta no hst do ack por paramero
+        for(short anc : hstAck.keySet()){
+            for(LightMessage lm : hstAck.get(anc)){
+                if(lm.getId() == getId()) break;
+                if(lm.isAddressedTo(nodeid) && msgsDelivered.get(lm.getId()) == null){
+                    getMsgDeps().add(lm.getId());
+                    if(msgsThatAreDeps.get(lm.getId()) == null){
+                        msgsThatAreDeps.put(lm.getId(), new HashSet<>());
+                    }
+                    msgsThatAreDeps.get(lm.getId()).add(this);
+                }
+            }
+        }
     }
 
 }

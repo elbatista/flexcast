@@ -12,8 +12,8 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 import base.Node;
-import messages.Message;
-import messages.Message.Type;
+import flexcast.messages.Message;
+import flexcast.messages.Message.Type;
 import proxies.ClientProxy;
 import util.ArgsParser;
 import util.FileManager;
@@ -79,10 +79,17 @@ public class Client extends ClientProxy {
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
-        
+        int totalMsgs=0;
+        if(getId()==1)totalMsgs++;
         while ((elapsed / 1e9) < totalTime) {
             Message m = newMessage();
             multicast(m);
+
+            // if (getId() == 0) multicast(newMessageTo(new short[]{0,2}));
+            // sleep(80);
+            // if (getId() == 1) multicast(newMessageTo(new short[]{0,1}));
+            // if (getId() == 1) multicast(newMessageTo(new short[]{1,2}));
+
             now = System.nanoTime();
             stats.store((now - usLat) / 1000, (m.getDst().length > 1));
             elapsed = (now - startTime);
@@ -92,6 +99,8 @@ public class Client extends ClientProxy {
             computeDistribution(m);
             
             usLat = now;
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
 
         if (stats.getCount() > 0) {
@@ -221,6 +230,7 @@ public class Client extends ClientProxy {
 
         Set<Short> uniqueNumbers = new HashSet<>();
         int size = r.nextInt(numNodes)+1;
+        if(size == 1) size++;
         while (uniqueNumbers.size() < size)
             uniqueNumbers.add((short)r.nextInt(numNodes));
         short [] tempdst = new short[size];

@@ -22,8 +22,8 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import base.Host;
 import base.Node;
-import messages.LightMessage;
-import messages.LightMessagesList;
+import flexcast.messages.LightMessage;
+import flexcast.messages.LightMessagesList;
 
 public class FileManager extends BaseObj {
     private String sep = System.getProperty("file.separator");
