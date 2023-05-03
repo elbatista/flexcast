@@ -1,6 +1,6 @@
 import byzcast.ByzCastClient;
 import byzcast.TpccByzCastClient;
-import core.Client;
+import core.ClientAWS;
 import skeen.SkeenClient;
 import skeen.TpccSkeenClient;
 import util.ArgsParser;
@@ -15,7 +15,7 @@ public class MainClient {
                 if(p.isTpcc())
                     new TpccClient(p.getId(), p);
                 else
-                    new Client(p.getId(), p, true);
+                    new ClientAWS(p.getId(), p, true);
             }; break;
             case 1: {
                 if(p.isTpcc())

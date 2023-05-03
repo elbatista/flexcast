@@ -96,7 +96,7 @@ public class ArgsParser {
 
     public short getNumPartitions() {
         String v = line.getOptionValue("np");
-        return v == null ? 10 : Short.valueOf(v);
+        return v == null ? 0 : Short.valueOf(v);
     }
 
     public int getLocality(){

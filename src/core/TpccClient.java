@@ -12,7 +12,7 @@ import util.ArgsParser;
 import util.Stats;
 
 public class TpccClient extends Client {
-    private final Random gen;
+    
     private int NUM_TX = 0;
     private int warehouseCount = 10;  // number of warehouses
     private int warehouseID = 0;  // client's main warehouse
@@ -53,7 +53,6 @@ public class TpccClient extends Client {
 
     public TpccClient(short id, ArgsParser args) {
         super(id, args, false);
-        this.gen = new Random(System.nanoTime());
         print("FlexCast TPCC Client");
         run();
     }

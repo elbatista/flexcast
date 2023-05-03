@@ -402,8 +402,6 @@ public class TpccByzCastClient extends ByzCastClient {
         return 1;
     }
 
-    public static int randomNumber(int min, int max, Random r) {
-        return (int) (r.nextDouble() * (max - min + 1) + min);
-    }
+
 
 }
