@@ -55,7 +55,7 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected void receiveMsg(Message m){
-        print("Received msg", m, "; hasPendMsgs", hasPendMsg(), "; queues", queues);
+        // print("Received msg", m, "; hasPendMsgs", hasPendMsg(), "; queues", queues);
 
         // lca entrega e faz fwd
         if(m.getLca() == getId()){
@@ -117,7 +117,7 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected void receiveAck(Message ack){
-        print("Received ack", ack, "from", ack.getSender());
+        // print("Received ack", ack, "from", ack.getSender());
         
         // agrega o cjt de hst recebido em um conjunto de hsts por descendente
         for(HashSet<ArrayList<LightMessage>> set : hstSetsPerDesc.values()){
@@ -168,7 +168,7 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected void receiveNotif(Message notif){
-        print("Received notif", notif, "from", notif.getSender());
+        // print("Received notif", notif, "from", notif.getSender());
         
         // agrega o cjt de hst recebido em um conjunto de hsts por descendente
         for(HashSet<ArrayList<LightMessage>> set : hstSetsPerDesc.values()){
@@ -260,13 +260,13 @@ public class FlexCastNode extends ServerProxy {
                     queues.get(m.getLca()).removeAll(mDepAcks);
                     for(Message ack : mDepAcks){
                         queues.get(m.getLca()).add(0, ack);
-                        print("Passei o ack", ack, "( sender", ack.getSender() ,")", "pra frente na fila do anc", m.getLca());
+                        // print("Passei o ack", ack, "( sender", ack.getSender() ,")", "pra frente na fila do anc", m.getLca());
                     }
                     retry[0]=true;
                 }
             }
 
-            print("Cant deliver", m, "MsgDeps:", pend.getMsgDeps(), "Queues", queues);
+            // print("Cant deliver", m, "MsgDeps:", pend.getMsgDeps(), "Queues", queues);
             return false;
         }
 
@@ -302,7 +302,7 @@ public class FlexCastNode extends ServerProxy {
         // updateNotifFlags(m);
 
         sendReply(m);
-        print("Delivered", m);
+        // print("Delivered", m);
     }
 
     // private void updateNotifFlags(Message m) {
@@ -384,7 +384,7 @@ public class FlexCastNode extends ServerProxy {
             // notif.addNotifList(notifList, getId());
             addHst(notif, d, false);
             send(notif, d);
-            print("Sent notif", notif, "to", d);
+            // print("Sent notif", notif, "to", d);
         }
         return dsts;
     }
@@ -433,7 +433,7 @@ public class FlexCastNode extends ServerProxy {
                 if(notifs != null && notifs.size() > 0) ack.setNotifList(notifs);
 
                 send(ack, dst);
-                print("Sent ack", ack, "to", dst);
+                // print("Sent ack", ack, "to", dst);
             }
         }
     }

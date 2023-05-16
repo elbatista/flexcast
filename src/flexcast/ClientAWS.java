@@ -1,4 +1,4 @@
-package byzcast;
+package flexcast;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -10,14 +10,14 @@ import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import base.Node;
-import byzcast.messages.ByzCastMessage;
-import byzcast.messages.ByzCastMessage.Type;
-import byzcast.proxies.ByzCastClientProxy;
+import flexcast.messages.Message;
+import flexcast.messages.Message.Type;
+import proxies.ClientProxy;
 import util.ArgsParser;
 import util.FileManager;
 import util.Stats;
 
-public class ByzCastClient extends ByzCastClientProxy {
+public class ClientAWS extends ClientProxy {
     protected ArgsParser args;
     protected int seqNumber, totalTime;
     protected short numNodes = 0;
@@ -31,7 +31,7 @@ public class ByzCastClient extends ByzCastClientProxy {
     protected final Random gen;
     private short warehouse;
     
-    public ByzCastClient(short id, ArgsParser args, boolean start){
+    public ClientAWS(short id, ArgsParser args, boolean start){
         super(id);
         this.args = args;
         totalTime = args.getDuration();
@@ -59,8 +59,12 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private void start() {
+        print("Start FlexCast ClientAWS!");
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
+
+        print("Connected to all servers!");
+
         // send initialization message to all servers
         sendInitMessage();
         sleep(3000);
@@ -68,33 +72,33 @@ public class ByzCastClient extends ByzCastClientProxy {
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         print("All other clients ready!");
-        print("Started AWS ByzCast experiment");
+        print("Started AWS FlexCast experiment");
         if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
         print("Locality:", localityPercentage, "%");
-        print("ByzCast Tree:", args.getTree());
         print("My home warehouse:", warehouse);
         stats = new Stats(totalTime);
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
-
+        
         while ((elapsed / 1e9) < totalTime) {
-            ByzCastMessage m = newMessage();
+            Message m = newMessage();
             multicast(m);
             now = System.nanoTime();
             stats.store((now - usLat) / 1000, (m.getDst().length > 1));
             elapsed = (now - startTime);
-
+            
             destsSizes[m.getDst().length-1]++;
 
             computeDistribution(m);
             
             usLat = now;
+            
         }
 
         if (stats.getCount() > 0) {
             try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
-            stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-byzcast.txt", 15);
+            stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client.txt", 15);
             print("LOCAL STATS:", stats);
         }
 
@@ -104,7 +108,7 @@ public class ByzCastClient extends ByzCastClientProxy {
 
         printWloadDistribution();
 
-        print("Finished AWS ByzCast experiment. Elapsed: ", elapsed / 1e9, "seconds");
+        print("Finished AWS FlexCast experiment. Elapsed: ", elapsed / 1e9, "seconds");
         exit();
     }
 
@@ -119,9 +123,10 @@ public class ByzCastClient extends ByzCastClientProxy {
             for(int j = 0; j < numNodes; j++)
                 for(int k = 0; k < numNodes; k++)
                     if(wloadDist3dests[i][j][k] > 0) print("# of msgs to [",i, j, k, "]:", wloadDist3dests[i][j][k]);
+        
     }
 
-    protected void computeDistribution(ByzCastMessage m) {
+    protected void computeDistribution(Message m) {
         if (m.getDst().length == 2){
             wloadDist2dests[m.getDst()[0]][m.getDst()[1]]++;
         } else if (m.getDst().length == 3){
@@ -129,14 +134,14 @@ public class ByzCastClient extends ByzCastClientProxy {
         }
     }
 
-    protected ByzCastMessage newMessageTo(short... dst){
-        ByzCastMessage m = newMessage();
+    protected Message newMessageTo(short... dst){
+        Message m = newMessage();
         m.setDst(dst);
         return m;
     }
 
-    private ByzCastMessage newMessage(){
-        ByzCastMessage m = new ByzCastMessage(nextSeqNumber());
+    private Message newMessage(){
+        Message m = new Message(nextSeqNumber());
         m.setType(Type.MSG);
         m.setDst(generateDests());
         m.setCliId(getId());
@@ -190,58 +195,55 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short getNearestWH(short warehouseparam) {
-        // tree 1
         switch(warehouseparam){
             case 0: return 1;
-            case 1: return 0;
-            case 2: return 3;
+            case 1: return 2;
+            case 2: return 1;
             case 3: return 2;
             case 4: return 5;
-            case 5: return 4;
-            case 6: return 8;
-            case 7: return 8;
-            case 8: return 7;
-            case 9: return 5;
-            case 10: return 5;
-            case 11: return 8;
+            case 5: return 6;
+            case 6: return 7;
+            case 7: return 6;
+            case 8: return 9;
+            case 9: return 8;
+            case 10: return 11;
+            case 11: return 10;
             default: return warehouseparam;
         }
     }
 
     private short getSecondNearestWH(short warehouseparam) {
-        // tree 1
         switch(warehouseparam){
-            case 0: return 3;
-            case 1: return 2;
-            case 2: return 1;
-            case 3: return 0;
-            case 4: return 9;
-            case 5: return 9;
-            case 6: return 7;
-            case 7: return 8;
-            case 8: return 7;
-            case 9: return 5;
-            case 10: return 4;
-            case 11: return 7;
+            case 0: return 2;
+            case 1: return 3;
+            case 2: return 0;
+            case 3: return 1;
+            case 4: return 6;
+            case 5: return 7;
+            case 6: return 4;
+            case 7: return 5;
+            case 8: return 10;
+            case 9: return 6;
+            case 10: return 8;
+            case 11: return 9;
             default: return warehouseparam;
         }
     }
 
     private short getThirdNearestWH(short warehouseparam) {
-        // tree 1
         switch(warehouseparam){
-            case 0: return 6;
-            case 1: return 3;
-            case 2: return 10;
-            case 3: return 1;
-            case 4: return 1;
-            case 5: return 0;
-            case 6: return 11;
-            case 7: return 2;
-            case 8: return 2;
-            case 9: return 10;
-            case 10: return 9;
-            case 11: return 6;
+            case 0: return 3;
+            case 1: return 4;
+            case 2: return 5;
+            case 3: return 0;
+            case 4: return 7;
+            case 5: return 2;
+            case 6: return 3;
+            case 7: return 4;
+            case 8: return 5;
+            case 9: return 6;
+            case 10: return 7;
+            case 11: return 8;
             default: return warehouseparam;
         }
     }

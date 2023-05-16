@@ -117,8 +117,8 @@ public class PendingMessage extends BaseObj {
             if(msgLmPrecedesM(lm2, m)) return true;
         }
 
-        print("Not able to tell which one comes first. lm:", lm, "m:", m);
-        print("Pend hst:", getHsts());
+        // print("Not able to tell which one comes first. lm:", lm, "m:", m);
+        // print("Pend hst:", getHsts());
         //exit();
 
         return false;
