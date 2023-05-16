@@ -23,7 +23,7 @@ echo started $servers servers >> logs/executions.log
 warehouse=0
 for j in $(seq 0 $END); do
     if [ $warehouse -eq $servers ]; then warehouse=0; fi
-    java -cp "bin/*:lib/*" MainClient -c $clis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs >> logs/cli$j.txt &
+    java -cp "bin/*:lib/*" MainClient -c $clis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs -t >> logs/cli$j.txt &
     ((warehouse=$warehouse+1))
 done
 echo started $clis clients >> logs/executions.log

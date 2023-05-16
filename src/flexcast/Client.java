@@ -65,7 +65,7 @@ public class Client extends ClientProxy {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(1000);
+        sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
@@ -73,22 +73,20 @@ public class Client extends ClientProxy {
         
         print("Started experiment");
         if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
-        if(localityPercentage > 0) print("workload with locality", localityPercentage, "%");
+        print("Locality", localityPercentage, "%");
 
         stats = new Stats(totalTime);
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
         int totalMsgs=0;
-        if(getId()==1)totalMsgs++;
+
+        // if(getId()==1)totalMsgs++;
+        // print("FIXED MSGS CLIENT");
+
         while ((elapsed / 1e9) < totalTime) {
             Message m = newMessage();
             multicast(m);
-
-            // if (getId() == 0) multicast(newMessageTo(new short[]{0,2}));
-            // sleep(80);
-            // if (getId() == 1) multicast(newMessageTo(new short[]{0,1}));
-            // if (getId() == 1) multicast(newMessageTo(new short[]{1,2}));
 
             now = System.nanoTime();
             stats.store((now - usLat) / 1000, (m.getDst().length > 1));
@@ -229,6 +227,7 @@ public class Client extends ClientProxy {
         }
 
         Set<Short> uniqueNumbers = new HashSet<>();
+
         int size = r.nextInt(numNodes)+1;
         if(size == 1) size++;
         while (uniqueNumbers.size() < size)

@@ -66,7 +66,7 @@ public class TpccClient extends Client {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(5000);
+        sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
@@ -75,7 +75,8 @@ public class TpccClient extends Client {
         print("Started FlexCast tpcc experiment. Num nodes:", numNodes);
         print("My home warehouse:", warehouseID);
 
-        if(args.getLocality() == 0) print("No locality");
+        print("Locality", args.getLocality(), "%");
+        
         stats = new Stats(totalTime);
 
         executeTransactions();
@@ -128,10 +129,11 @@ public class TpccClient extends Client {
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
-
+        int totalMsgs=0;
+        
         print("ONLY GLOBAL MSGS");
 
-        // while (elapsed / 1e9 < totalTime) {
+        while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;
 
@@ -169,7 +171,10 @@ public class TpccClient extends Client {
             stats.store((now - usLat) / 1000, (numDests > 1));
             usLat = now;
             NUM_TX++;
-        // }
+
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
+        }
         print("Finished FlexCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
     }
 

@@ -100,6 +100,10 @@ public class ClientProxy extends Node{
 
     public void send(Message m, short dst){
         try {
+            while(outChannels.get(dst) == null){
+                print("Channel to dst ", dst, "is null");
+                sleep(500);
+            }
             outChannels.get(dst).writeAndFlush(m);
         }
         catch(Exception e){
@@ -118,7 +122,7 @@ public class ClientProxy extends Node{
     }
 
     public Message multicast(Message m){
-        //print("Send", m);
+        // print("Send", m);
         replies.clear();
         expectedReplies = (short) m.getDst().length;
         send(m, m.getLca());

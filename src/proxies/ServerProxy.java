@@ -22,7 +22,24 @@ public abstract class ServerProxy extends ClientProxy {
             public void run(){
                 while(true) {
                     Message m = bufferQueue.poll();
-                    if(m != null) receive(m);
+                    //Message tmpTest = bufferQueue.peek();
+                    // if(m != null && tmpTest.getType() == Type.MSG && tmpTest.getSender() == -1 && hasPendMsg()) {
+                    //     bufferQueue.add(bufferQueue.poll());
+                    //     continue;
+                    // }
+                    if(m != null) {
+                        if(m.getType() == Type.MSG && m.getSender() == -1 && hasPendMsg()){
+                            // print("recv", m, "but hasPendMsg", hasPendMsg());
+                            bufferQueue.offer(m);
+                            if(bufferQueue.size() == 1) {
+                                sleep(1);
+                                Thread.yield();
+                            }
+                        }
+                        else {
+                            receive(m);
+                        }
+                    }
                 }
             }
         }).start();
@@ -40,7 +57,7 @@ public abstract class ServerProxy extends ClientProxy {
         switch(m.getType()){
             case MSG: receiveMsg(m); break;
             case ACK: receiveAck(m); break;
-            // case NOTIF: receiveNotif(m); break;
+            case NOTIF: receiveNotif(m); break;
             // message used only to establish a connection to each client
             case CONN: {
                 cliChannels.put(m.getCliId(), m.getChannelIn());
@@ -83,11 +100,18 @@ public abstract class ServerProxy extends ClientProxy {
         Message reply = new Message(m.getId());
         reply.setSender(getId());
         reply.setType(Type.REPLY);
+
+        while(cliChannels.get(m.getCliId()) == null){
+            print("Channel to cli ", m.getCliId(), "is null");
+            sleep(500);
+        }
+
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 
+    protected abstract boolean hasPendMsg();
     protected abstract void finish();
     protected abstract void receiveMsg(Message m);
     protected abstract void receiveAck(Message m);
-    // protected abstract void receiveNotif(Message m);
+    protected abstract void receiveNotif(Message m);
 }
