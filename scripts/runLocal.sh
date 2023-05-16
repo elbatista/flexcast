@@ -35,12 +35,12 @@ for exe in $(seq 1 $7); do
     done
     echo "all nodes done"  >> logs/executions.log; pkill -f 'java.*Main*'; echo "processes killed"  >> logs/executions.log
 
-    # # se teve fila nao vazia, para experimentos
-    # if grep -q "true" files/stop; then echo "found stop, exiting..." >> logs/executions.log; exit 0; fi
+    # se teve fila nao vazia, para experimentos
+    if grep -q "true" files/stop; then echo "found stop, exiting..." >> logs/executions.log; exit 0; fi
 
-    # # se teve ciclos, para experimentos
-    # echo "starting cycle validation ("$(date)")" >> logs/executions.log; java -cp "bin/*:lib/*" util.Validator > logs/validationresult.txt
-    # if grep -q "true" logs/validationresult.txt; then echo "cycle detected!" >> logs/executions.log; cat logs/validationresult.txt; exit 0; fi
-    # echo "no cycles detected ("$(date)")" >> logs/executions.log; 
-    # cat logs/validationresult.txt >> logs/executions.log; 
+    # se teve ciclos, para experimentos
+    echo "starting cycle validation ("$(date)")" >> logs/executions.log; java -cp "bin/*:lib/*" util.Validator > logs/validationresult.txt
+    if grep -q "true" logs/validationresult.txt; then echo "cycle detected!" >> logs/executions.log; cat logs/validationresult.txt; exit 0; fi
+    echo "no cycles detected ("$(date)")" >> logs/executions.log; 
+    cat logs/validationresult.txt >> logs/executions.log; 
 done

@@ -64,7 +64,7 @@ public class TpccClient extends Client {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(5000);
+        sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
@@ -73,7 +73,8 @@ public class TpccClient extends Client {
         print("Started FlexCast tpcc experiment. Num nodes:", numNodes);
         print("My home warehouse:", warehouseID);
 
-        if(args.getLocality() == 0) print("No locality");
+        print("Locality", args.getLocality(), "%");
+
         stats = new Stats(totalTime);
 
         executeTransactions();

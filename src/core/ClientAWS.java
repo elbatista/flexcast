@@ -59,11 +59,15 @@ public class ClientAWS extends ClientProxy {
     }
 
     private void start() {
+        print("Start FlexCast ClientAWS!");
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
+
+        print("Connected to all servers!");
+
         // send initialization message to all servers
         sendInitMessage();
-        sleep(1000);
+        sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();

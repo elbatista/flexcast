@@ -77,15 +77,15 @@ public class Results {
     public static void main(String ... args){
         ArrayList<Double> latencies = new ArrayList<>();
         
-        String algo     = "byzcast/tree4/global";
-        String locality = "99";
-        int nodes       = 6;
+        String algo     = "byz";
+        int locality    = 95;
+        int nodes       = 12;
         int dur         = 60;
-        int cli         = 360;
+        int cli         = 192;
 
-        latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/america"));
-        latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/europe"));
-        latencies.addAll(readFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/asia"));
+        latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/america"));
+        latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
+        latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));
         
         System.out.println("Read "+totalFiles+" latency files...");
         System.out.println(Stats.of(latencies).mean() + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(latencies));
@@ -94,9 +94,9 @@ public class Results {
         double avgtp = 0;
         totalFiles = 0;
 
-        avgtp += readTPFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/america");
-        avgtp += readTPFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
-        avgtp += readTPFiles("results/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
+        avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/america");
+        avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
+        avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
 
         System.out.println("Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
         System.out.println("AVG Throughput: "+avgtp+" ops/sec");
