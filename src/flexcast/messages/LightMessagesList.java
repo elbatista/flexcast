@@ -29,18 +29,31 @@ public class LightMessagesList {
         size++;
     }
 
+    public void setAsFirst(int id) {
+        Item i = getFirst();
+        while(i != null){
+            if(id == i.get().getId()){
+                i.setPrev(null);
+                first = i;
+                return;
+            }
+            i = i.getNext();
+        }
+
+        // TODO:
+        // teria que ajustar o size aqui para ficar totalmente consistente
+        // atualmente porem, isso nao afeta em nada
+    }
+
     public String toString(){
         String s="{";
-
         Item i = getFirst();
-
         while(i != null){
             s += i.get().getId();
             if(i.getNext() !=null)
                 s+="-";
             i = i.getNext();
         }
-
         return s+"}";
     }
 
@@ -105,4 +118,5 @@ public class LightMessagesList {
             this.idx = idx;
         }
     }
+
 }

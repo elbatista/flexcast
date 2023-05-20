@@ -2,7 +2,7 @@ if [ "$#" -lt 7 ]; then echo "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-by
 i=0; tpcc=""; locality=""; exe=0; ant clean; ant; rm -f -r logs/*  files/*;
 duration=$1; algo=$2; clis=$3; servers=$4; locality=$5; msgs=$6; pkill -f 'java.*Main*'; sleep 1;
 rm -f -r logs/*.txt  files/*; pkill -f 'java.*Main*' ; echo false > files/stop; 
-log="-log";
+log="";
 for exe in $(seq 1 $7); do
 
 rm -f -r logs/*.txt files/* results/*; echo false > files/stop;

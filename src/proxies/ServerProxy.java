@@ -1,5 +1,6 @@
 package proxies;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import comms.NettyServerChannel;
@@ -20,25 +21,30 @@ public abstract class ServerProxy extends ClientProxy {
         new NettyServerChannel(this, this);
         new Thread(new Runnable() {
             public void run(){
+                ArrayList<Message> tmpCliMsgs = new ArrayList<>();
                 while(true) {
                     Message m = bufferQueue.poll();
-                    //Message tmpTest = bufferQueue.peek();
-                    // if(m != null && tmpTest.getType() == Type.MSG && tmpTest.getSender() == -1 && hasPendMsg()) {
-                    //     bufferQueue.add(bufferQueue.poll());
-                    //     continue;
-                    // }
                     if(m != null) {
-                        // if(m.getType() == Type.MSG && m.getSender() == -1 && hasPendMsg(m)){
-                        //     // printF("recv", m, "but hasPendMsg", hasPendMsg());
-                        //     bufferQueue.offer(m);
-                        //     if(bufferQueue.size() == 1) {
-                        //         //sleep(1);
-                        //         Thread.yield();
-                        //     }
-                        // }
-                        // else {
+
+                        // se for mensagem de cliente
+                        if(m.getType() == Type.MSG && m.getLca() == getId()){
+                            // joga no arraylist tmpCliMsgs
+                            tmpCliMsgs.add(m);
+                        }
+                        else {
+                            // senao recebe:
                             receive(m);
-                        // }
+                        }
+                    }
+                    
+                    // se nao tem nada pendente
+                    if(!hasPendMsg()){
+                        // pega uma msg de tmpCliMsgs e entrega
+                        if(tmpCliMsgs.size() > 0){
+                            Message mc = tmpCliMsgs.get(0);
+                            tmpCliMsgs.remove(0);
+                            receive(mc);
+                        }
                     }
                 }
             }
@@ -109,7 +115,7 @@ public abstract class ServerProxy extends ClientProxy {
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 
-    // protected abstract boolean hasPendMsg(Message m);
+    protected abstract boolean hasPendMsg();
     protected abstract void finish();
     protected abstract void receiveMsg(Message m);
     protected abstract void receiveAck(Message m);

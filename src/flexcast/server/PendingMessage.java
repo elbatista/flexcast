@@ -1,22 +1,10 @@
 package flexcast.server;
 
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.javatuples.Pair;
-import org.jgrapht.Graph;
-import org.jgrapht.alg.shortestpath.*;
-import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.builder.GraphTypeBuilder;
-import org.jgrapht.nio.dot.DOTExporter;
-import flexcast.messages.LightMessage;
-import flexcast.messages.LightMessagesList;
 import flexcast.messages.Message;
-import flexcast.messages.LightMessagesList.Item;
 
 public class PendingMessage {
     private int id;
@@ -25,19 +13,11 @@ public class PendingMessage {
     private Set<Integer> msgDeps;
     private boolean msgsDepsFlag = false;
     private ArrayList<NotifListAckObj> notifLists;
-    private Graph<Integer, DefaultEdge> hstGraph;
-    private HashSet<LightMessage> hstGraphMsgs = new HashSet<>();
 
     public PendingMessage(int id) {
         this.id = id;
         this.msgDeps = new HashSet<>();
         this.notifLists = new ArrayList<>();
-        hstGraph = GraphTypeBuilder.<Integer, DefaultEdge> directed()
-        .allowingMultipleEdges(false)
-        .allowingSelfLoops(false)
-        .weighted(false)
-        .edgeClass(DefaultEdge.class)
-        .buildGraph();
     }
 
     public int getId() {
@@ -50,28 +30,6 @@ public class PendingMessage {
 
     public void setMsgsDepsFlag(boolean msgsDepsFlag) {
         this.msgsDepsFlag = msgsDepsFlag;
-    }
-
-    public Collection<LightMessage> getHstMsgs() {
-        return hstGraphMsgs;
-    }
-
-    public void addHst(HashMap<Short, LightMessagesList> hst) {
-        for(LightMessagesList list : hst.values()){
-            Item item = list.getFirst();
-            while(item != null){
-                hstGraphMsgs.add(item.get());
-                if(!hstGraph.containsVertex(item.get().getId())) {
-                    hstGraph.addVertex(item.get().getId());
-                }
-                if(item.getPrev() != null){
-                    if(!hstGraph.containsEdge(item.getPrev().get().getId(), item.get().getId())) {
-                        hstGraph.addEdge(item.getPrev().get().getId(), item.get().getId());
-                    }
-                }
-                item = item.getNext();
-            }
-        }
     }
 
     public Message getMsg() {
@@ -98,10 +56,6 @@ public class PendingMessage {
         return msgDeps;
     }
 
-    public void setMsgDeps(Set<Integer> msgDeps) {
-        this.msgDeps = msgDeps;
-    }
-
     public ArrayList<NotifListAckObj>  getNotifLists() {
         return notifLists;
     }
@@ -118,18 +72,6 @@ public class PendingMessage {
         if (id != other.id)
             return false;
         return true;
-    }
-
-    public String graphString(){
-        DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>();
-        Writer writer = new StringWriter();
-        exporter.exportGraph(hstGraph, writer);
-        return writer.toString();
-    }
-
-    public boolean msgLmPrecedesM(LightMessage lm, LightMessage m) {
-        BellmanFordShortestPath<Integer, DefaultEdge> bellmanFordShortestPath  = new BellmanFordShortestPath<>(hstGraph);
-        return (bellmanFordShortestPath.getPath(lm.getId(), m.getId()) != null);
     }
 
     public void addNotifList(short notifier, ArrayList<Pair<Short, Integer>> arrayList) {
