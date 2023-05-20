@@ -6,7 +6,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
+import org.javatuples.Pair;
+import flexcast.messages.LightMessagesList.Item;
 import io.netty.channel.Channel;
 import util.BaseObj;
 
@@ -16,21 +18,22 @@ public class Message extends BaseObj implements Externalizable {
     private int id = -1, cliId = -1;
     private Type type;
     private short [] dst;
-    private HashSet<ArrayList<LightMessage>> hst;
-    private ArrayList<Short> notifList;
+    private HashMap<Short, LightMessagesList> hst;
+    private ArrayList<Pair<Short, Integer>> notifList;
+    private int idNotif=-1;
     
     // "transient" fields
     private Channel channelIn;
 
     // constructors
     public Message(){
-        hst = new HashSet<>();
+        hst = new HashMap<>();
         notifList = new ArrayList<>();
     }
 
     public Message(int id){
         this.id = id;
-        hst = new HashSet<>();
+        hst = new HashMap<>();
         notifList = new ArrayList<>();
     }
 
@@ -43,6 +46,14 @@ public class Message extends BaseObj implements Externalizable {
         this.id = id;
     }
 
+    public int getIdNotif() {
+        return idNotif;
+    }
+
+    public void setIdNotif(int idNotif) {
+        this.idNotif = idNotif;
+    }
+
     public short getIdNotifier() {
         return idNotifier;
     }
@@ -51,16 +62,28 @@ public class Message extends BaseObj implements Externalizable {
         this.idNotifier = idNotifier;
     }
 
-    public ArrayList<Short> getNotifList() {
+    public ArrayList<Pair<Short, Integer>> getNotifList() {
         return this.notifList;
     }
 
-    public void setNotifList(ArrayList<Short> notifList) {
-        this.notifList = notifList;
+    public void setNotifList(ArrayList<Pair<Short, Integer>> notifs) {
+        for(Pair<Short, Integer> p : notifs)
+            this.notifList.add(p);
     }
 
-    public HashSet<ArrayList<LightMessage>> getHst() {
+    public HashMap<Short, LightMessagesList> getHst() {
         return hst;
+    }
+
+    public void addHst(short anc, ArrayList<LightMessage> hstParam) {
+        LightMessagesList list = getHst().get(anc);
+        if(list == null){
+            list = new LightMessagesList();
+            getHst().put(anc, list);
+        }
+        for(LightMessage lm : hstParam){
+            list.add(lm);
+        }
     }
 
     public Channel getChannelIn() {
@@ -113,7 +136,7 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     public String toString(){
-        return toString(getId(), getType(), Arrays.toString(getDst()), getHst(), getType()==Type.ACK ? ("notifier:"+getIdNotifier()+" nl:"+getNotifList()) : "");
+        return toString(getId(), getType(), Arrays.toString(getDst()), getHst(), "notifier:", getIdNotifier(), " nl:", getNotifList());
     }
 
     public boolean isAddressedTo(short d){
@@ -155,8 +178,9 @@ public class Message extends BaseObj implements Externalizable {
         }
         else {
             out.writeShort(getNotifList().size());
-            for(short n : getNotifList()){
-                out.writeShort(n);
+            for(Pair<Short, Integer> p : getNotifList()){
+                out.writeShort(p.getValue0());
+                out.writeInt(p.getValue1());
             }
         }
     }
@@ -176,14 +200,17 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     private void writeExtHst(ObjectOutput out) throws IOException {
-        // how many arrays in the set:
-        out.writeInt(getHst().size());
-        for(ArrayList<LightMessage> hst : getHst()){
-            // how many msgs in the array
-            out.writeInt(hst.size());
-            for(LightMessage lm : hst){
-                out.writeInt(lm.getId());
-                writeExtDsts(out, lm);
+        // how many lists in the set:
+        out.writeShort(getHst().size());
+        for(short anc : getHst().keySet()){
+            out.writeShort(anc);
+            // write how many msgs in the list
+            out.writeInt(getHst().get(anc).size());
+            Item item = getHst().get(anc).getFirst();
+            while(item != null){
+                out.writeInt(item.get().getId());
+                writeExtDsts(out, item.get());
+                item = item.getNext();
             }
         }
     }
@@ -194,6 +221,7 @@ public class Message extends BaseObj implements Externalizable {
         out.writeInt(getId());
         out.writeShort(getSender());
         out.writeShort(getIdNotifier());
+        out.writeInt(getIdNotif());
         writeExtDsts(out);
         writeExtHst(out);
         writeExtNotifList(out);
@@ -204,6 +232,7 @@ public class Message extends BaseObj implements Externalizable {
         out.writeByte(3);
         out.writeInt(getId());
         out.writeShort(getSender());
+        out.writeInt(getIdNotif());
         writeExtDsts(out);
         writeExtHst(out);
         writeExtNotifList(out);
@@ -259,7 +288,9 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtNotifList(ObjectInput in) throws IOException {
         short size = in.readShort();
         for(short i = 0; i < size; i++){
-            getNotifList().add(in.readShort());
+            short d = in.readShort();
+            int idNt = in.readInt();
+            getNotifList().add(new Pair<Short,Integer>(d, idNt));
         }
     }
 
@@ -281,18 +312,20 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     private void readExtHst(ObjectInput in) throws IOException {
-        // read how many arrays
-        int qty = in.readInt();
+        // read how many lists
+        short qty = in.readShort();
         for(int i  = 0; i < qty; i++){
-            // read the size of the array
+            // read the respective ancestor
+            short anc = in.readShort();
+            // read the size of the list
             int size = in.readInt();
-            ArrayList<LightMessage> array = new ArrayList<>();
+            LightMessagesList list = new LightMessagesList();
             for(int j = 0; j < size; j++){
                 LightMessage lm = new LightMessage(in.readInt());
                 readExtDsts(in, lm);
-                array.add(lm);
+                list.add(lm);
             }
-            if(array.size() > 0) getHst().add(array);
+            getHst().put(anc, list);
         }
     }
 
@@ -301,6 +334,7 @@ public class Message extends BaseObj implements Externalizable {
         setId(in.readInt());
         setSender(in.readShort());
         setIdNotifier(in.readShort());
+        setIdNotif(in.readInt());
         readExtDsts(in);
         readExtHst(in);
         readExtNotifList(in);
@@ -310,6 +344,7 @@ public class Message extends BaseObj implements Externalizable {
         setType(Type.NOTIF);
         setId(in.readInt());
         setSender(in.readShort());
+        setIdNotif(in.readInt());
         readExtDsts(in);
         readExtHst(in);
         readExtNotifList(in);

@@ -32,13 +32,13 @@ public class ClientProxy extends Node{
     }
 
     public void setChannelToDest(Channel c, short dst){
-        print("Channel to node", dst, ":", c);
+        printF("Channel to node", dst, ":", c);
         try {
             outChannels.put(dst, c);
         }
         catch(Exception e){
             e.printStackTrace();
-            print(e);
+            printF(e);
             exit();
         }
     }
@@ -84,31 +84,31 @@ public class ClientProxy extends Node{
     }
     
     public void receiveReplyReadyMsg(Message reply){
-        print("Ready OK - Server", reply.getSender());
+        printF("Ready OK - Server", reply.getSender());
         sema.release();
     }
 
     public void receiveReplyEndMsg(Message reply){
-        print("End OK - Server", reply.getSender());
+        printF("End OK - Server", reply.getSender());
         sema.release();
     }
 
     public void receiveReplyInitMsg(Message reply){
-        print("Init OK - Server", reply.getSender());
+        printF("Init OK - Server", reply.getSender());
         sema.release();
     }
 
     public void send(Message m, short dst){
         try {
             while(outChannels.get(dst) == null){
-                print("Channel to dst ", dst, "is null");
+                printF("Channel to dst ", dst, "is null");
                 sleep(500);
             }
             outChannels.get(dst).writeAndFlush(m);
         }
         catch(Exception e){
             e.printStackTrace();
-            print(e);
+            printF(e);
             exit();
         }
     }
@@ -122,7 +122,7 @@ public class ClientProxy extends Node{
     }
 
     public Message multicast(Message m){
-        // print("Send", m);
+        print("Send", m);
         replies.clear();
         expectedReplies = (short) m.getDst().length;
         send(m, m.getLca());

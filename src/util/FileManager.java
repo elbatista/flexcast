@@ -86,7 +86,7 @@ public class FileManager extends BaseObj {
             objectOut.close();
             fileOut.close();
 
-            print("Messages persisted");
+            printF("Messages persisted");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -146,7 +146,7 @@ public class FileManager extends BaseObj {
             e.printStackTrace();
         }
 
-        print("Created zones file");
+        printF("Created zones file");
         
         // cria arquivo de latencias entre zonas
         try {
@@ -173,7 +173,7 @@ public class FileManager extends BaseObj {
             e.printStackTrace();
         }
 
-        print("Created random latencies file");
+        printF("Created random latencies file");
     }
 
     public static void main(String ... args){
@@ -198,7 +198,7 @@ public class FileManager extends BaseObj {
             printerOut.println(true);
             printerOut.flush();
             printerOut.close();
-            print("Node", id, "is finished");
+            printF("Node", id, "is finished");
         } catch (Exception ex) {
             ex.printStackTrace();
         }

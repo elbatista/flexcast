@@ -1,5 +1,5 @@
 import byzcast.ByzCastNode;
-import flexcast.FlexCastNode;
+import flexcast.server.FlexCastNode;
 import skeen.SkeenNode;
 import util.ArgsParser;
 

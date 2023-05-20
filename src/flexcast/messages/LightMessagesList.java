@@ -29,6 +29,21 @@ public class LightMessagesList {
         size++;
     }
 
+    public String toString(){
+        String s="{";
+
+        Item i = getFirst();
+
+        while(i != null){
+            s += i.get().getId();
+            if(i.getNext() !=null)
+                s+="-";
+            i = i.getNext();
+        }
+
+        return s+"}";
+    }
+
     public ItemHst addHst(LightMessage m) {
         ItemHst newItem = new ItemHst(m);
         if(first == null){

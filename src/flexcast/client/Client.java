@@ -1,4 +1,4 @@
-package flexcast;
+package flexcast.client;
 
 import java.io.IOException;
 import java.nio.file.Files;

@@ -1,21 +1,25 @@
-package flexcast;
+package flexcast.client;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.stream.Collectors;
+
 import base.Node;
-import flexcast.messages.Message;
 import flexcast.messages.Message.Type;
 import proxies.ClientProxy;
 import util.ArgsParser;
 import util.FileManager;
 import util.Stats;
+import flexcast.messages.Message;
 
 public class ClientAWS extends ClientProxy {
     protected ArgsParser args;
@@ -38,6 +42,7 @@ public class ClientAWS extends ClientProxy {
         this.files = new FileManager();
         this.localityPercentage = args.getLocality();
         this.warehouse = (short) args.getHomeWarehouse();
+        if(!args.getLog()) setPrint(false);
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
@@ -59,11 +64,11 @@ public class ClientAWS extends ClientProxy {
     }
 
     private void start() {
-        print("Start FlexCast ClientAWS!");
+        printF("Start FlexCast ClientAWS!");
         // wait all netty threads connect to all servers
-        try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
+        try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){printF("Broken barrier!!!!");}
 
-        print("Connected to all servers!");
+        printF("Connected to all servers!");
 
         // send initialization message to all servers
         sendInitMessage();
@@ -71,16 +76,18 @@ public class ClientAWS extends ClientProxy {
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
-        print("All other clients ready!");
-        print("Started AWS FlexCast experiment");
+        printF("All other clients ready!");
+        printF("Started AWS FlexCast experiment");
         if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
-        print("Locality:", localityPercentage, "%");
-        print("My home warehouse:", warehouse);
+        printF("Locality:", localityPercentage, "%");
+        printF("My home warehouse:", warehouse);
+        if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
         stats = new Stats(totalTime);
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
-        
+        int totalMsgs=0;
+
         while ((elapsed / 1e9) < totalTime) {
             Message m = newMessage();
             multicast(m);
@@ -93,36 +100,37 @@ public class ClientAWS extends ClientProxy {
             computeDistribution(m);
             
             usLat = now;
-            
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs >= args.getNumMessages()) break;
         }
 
         if (stats.getCount() > 0) {
             try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
             stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client.txt", 15);
-            print("LOCAL STATS:", stats);
+            printF("LOCAL STATS:", stats);
         }
 
         sendEndMessage();
 
-        for(int i = 0; i < destsSizes.length; i++) print("# of msgs to", i+1, "dests:", destsSizes[i]);
+        for(int i = 0; i < destsSizes.length; i++) printF("# of msgs to", i+1, "dests:", destsSizes[i]);
 
         printWloadDistribution();
 
-        print("Finished AWS FlexCast experiment. Elapsed: ", elapsed / 1e9, "seconds");
+        printF("Finished AWS FlexCast experiment. Elapsed: ", elapsed / 1e9, "seconds");
         exit();
     }
 
     protected void printWloadDistribution() {
-        print("Wload for destination size 2:");
+        printF("Wload for destination size 2:");
         for(int i = 0; i < numNodes; i++)
             for(int j = 0; j < numNodes; j++)
-                if(wloadDist2dests[i][j] > 0) print("# of msgs to [",i, j, "]:", wloadDist2dests[i][j]);
+                if(wloadDist2dests[i][j] > 0) printF("# of msgs to [",i, j, "]:", wloadDist2dests[i][j]);
 
-        print("Wload for destination size 3:");
+        printF("Wload for destination size 3:");
         for(int i = 0; i < numNodes; i++)
             for(int j = 0; j < numNodes; j++)
                 for(int k = 0; k < numNodes; k++)
-                    if(wloadDist3dests[i][j][k] > 0) print("# of msgs to [",i, j, k, "]:", wloadDist3dests[i][j][k]);
+                    if(wloadDist3dests[i][j][k] > 0) printF("# of msgs to [",i, j, k, "]:", wloadDist3dests[i][j][k]);
         
     }
 
@@ -149,9 +157,27 @@ public class ClientAWS extends ClientProxy {
     }
 
     private short[] generateDests(){
+        if(localityPercentage == 0){
+            return generateRandDests();
+        }
         if(randomNumber(1, 100, gen) <= localityPercentage) 
             return generate2Dests();
         return generate3Dests();
+    }
+
+    private short[] generateRandDests() {
+        Set<Short> uniqueNumbers = new HashSet<>();
+        int size = randomNumber(2, numNodes, gen);
+        //if(size == 1) size++; // only global
+        while (uniqueNumbers.size() < size)
+            uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
+        short [] tempdst = new short[size];
+        short i = 0;
+        for(short u : uniqueNumbers.stream().sorted().collect(Collectors.toList())){
+            tempdst[i] = u;
+            i++;
+        }
+        return tempdst;
     }
 
     private short[] generate2Dests(){
@@ -195,6 +221,7 @@ public class ClientAWS extends ClientProxy {
     }
 
     private short getNearestWH(short warehouseparam) {
+        // 12 nodes
         switch(warehouseparam){
             case 0: return 1;
             case 1: return 2;

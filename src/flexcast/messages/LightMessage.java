@@ -44,8 +44,17 @@ public class LightMessage extends BaseObj implements Serializable {
     }
 
     @Override
-    public boolean equals(Object m){
-        return ((LightMessage)m).getId() == getId();
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        LightMessage other = (LightMessage) obj;
+        if (id != other.id)
+            return false;
+        return true;
     }
 
     @Override

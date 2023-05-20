@@ -1,7 +1,7 @@
 import byzcast.ByzCastClient;
 import byzcast.TpccByzCastClient;
-import flexcast.ClientAWS;
-import flexcast.TpccClient;
+import flexcast.client.ClientAWS;
+import flexcast.client.TpccClient;
 import skeen.SkeenClient;
 import skeen.TpccSkeenClient;
 import util.ArgsParser;

@@ -1,4 +1,4 @@
-package flexcast;
+package flexcast.client;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
-
 import flexcast.messages.Message;
 import util.ArgsParser;
 import util.Stats;

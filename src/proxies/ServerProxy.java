@@ -28,17 +28,17 @@ public abstract class ServerProxy extends ClientProxy {
                     //     continue;
                     // }
                     if(m != null) {
-                        if(m.getType() == Type.MSG && m.getSender() == -1 && hasPendMsg()){
-                            // print("recv", m, "but hasPendMsg", hasPendMsg());
-                            bufferQueue.offer(m);
-                            if(bufferQueue.size() == 1) {
-                                sleep(1);
-                                Thread.yield();
-                            }
-                        }
-                        else {
+                        // if(m.getType() == Type.MSG && m.getSender() == -1 && hasPendMsg(m)){
+                        //     // printF("recv", m, "but hasPendMsg", hasPendMsg());
+                        //     bufferQueue.offer(m);
+                        //     if(bufferQueue.size() == 1) {
+                        //         //sleep(1);
+                        //         Thread.yield();
+                        //     }
+                        // }
+                        // else {
                             receive(m);
-                        }
+                        // }
                     }
                 }
             }
@@ -63,7 +63,7 @@ public abstract class ServerProxy extends ClientProxy {
                 cliChannels.put(m.getCliId(), m.getChannelIn());
                 m.setSender(getId());
                 m.getChannelIn().writeAndFlush(m);
-                print("Channel to client", m.getCliId(), ":", m.getChannelIn());
+                printF("Channel to client", m.getCliId(), ":", m.getChannelIn());
                 break;
             }
             // message used only to ensure all clients are ready (connected) before all clients start multicasting
@@ -77,7 +77,7 @@ public abstract class ServerProxy extends ClientProxy {
     protected void receiveReady(Message m) {
         numCliReadyRecv++;
         if(numCliReadyRecv == numClients){
-            print("All", numClients, " clients are ready. They will start multicasting...");
+            printF("All", numClients, " clients are ready. They will start multicasting...");
             for(int i = 0; i < numClients; i++){
                 // reply to all clients
                 m.setSender(getId());
@@ -91,7 +91,7 @@ public abstract class ServerProxy extends ClientProxy {
         m.setSender(getId());
         m.getChannelIn().writeAndFlush(m);
         if(numCliEndsRecv == numClients){
-            print("All", numClients, " clients done!");
+            printF("All", numClients, " clients done!");
             finish();
         }
     }
@@ -102,14 +102,14 @@ public abstract class ServerProxy extends ClientProxy {
         reply.setType(Type.REPLY);
 
         while(cliChannels.get(m.getCliId()) == null){
-            print("Channel to cli ", m.getCliId(), "is null");
+            printF("Channel to cli ", m.getCliId(), "is null");
             sleep(500);
         }
 
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 
-    protected abstract boolean hasPendMsg();
+    // protected abstract boolean hasPendMsg(Message m);
     protected abstract void finish();
     protected abstract void receiveMsg(Message m);
     protected abstract void receiveAck(Message m);

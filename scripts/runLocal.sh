@@ -2,7 +2,7 @@ if [ "$#" -lt 7 ]; then echo "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-by
 i=0; tpcc=""; locality=""; exe=0; ant clean; ant; rm -f -r logs/*  files/*;
 duration=$1; algo=$2; clis=$3; servers=$4; locality=$5; msgs=$6; pkill -f 'java.*Main*'; sleep 1;
 rm -f -r logs/*.txt  files/*; pkill -f 'java.*Main*' ; echo false > files/stop; 
-
+log="-log";
 for exe in $(seq 1 $7); do
 
 rm -f -r logs/*.txt files/* results/*; echo false > files/stop;
@@ -14,7 +14,7 @@ echo "--------------------------------------------------------------------------
 # Start servers
 ((START = $servers-1))
 for ((i = START; i >= 0; i-=1)) ; do
-    java -cp "bin/*:lib/*" MainServer -i $i -a $algo -d $duration  -c $clis >> logs/node$i.txt & sleep .05
+    java -cp "bin/*:lib/*" MainServer -i $i -a $algo -d $duration  -c $clis $log >> logs/node$i.txt & sleep .05
 done
 echo started $servers servers >> logs/executions.log
 
@@ -23,7 +23,7 @@ echo started $servers servers >> logs/executions.log
 warehouse=0
 for j in $(seq 0 $END); do
     if [ $warehouse -eq $servers ]; then warehouse=0; fi
-    java -cp "bin/*:lib/*" MainClient -c $clis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs -t >> logs/cli$j.txt &
+    java -cp "bin/*:lib/*" MainClient -c $clis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> logs/cli$j.txt &
     ((warehouse=$warehouse+1))
 done
 echo started $clis clients >> logs/executions.log

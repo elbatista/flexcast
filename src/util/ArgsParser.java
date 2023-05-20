@@ -9,7 +9,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class ArgsParser {
-    private Option id, numMsgs, clientCount, duration, tpcc, numPartitions, locality, homewarehouse, region, algorithm, tree;
+    private Option log, id, numMsgs, clientCount, duration, tpcc, numPartitions, locality, homewarehouse, region, algorithm, tree;
     private Options options;
     private CommandLineParser parser;
     private CommandLine line;
@@ -22,6 +22,7 @@ public class ArgsParser {
         numMsgs = Option.builder("m").desc("number of messages each client send (defaults to -1)").argName("messages").hasArg().numberOfArgs(1).type(Integer.class).build();
         duration = Option.builder("d").desc("time to execute in seconds (defaults to 120)").argName("seconds").hasArg().numberOfArgs(1).type(Short.class).build();
         tpcc = Option.builder("t").desc("tpcc workload").argName("tpcc").type(Boolean.class).build();
+        log = Option.builder("log").desc("log").argName("log").type(Boolean.class).build();
         numPartitions = Option.builder("np").desc("max number of partitions per request (defaults to 10)").argName("#partitions").hasArg().numberOfArgs(1).type(Short.class).build();
         locality = Option.builder("l").desc("with locality").argName("locality").hasArg().numberOfArgs(1).type(Integer.class).build();
         homewarehouse = Option.builder("w").desc("home warehouse").argName("homewarehouse").hasArg().numberOfArgs(1).type(Integer.class).build();
@@ -49,6 +50,7 @@ public class ArgsParser {
         parser.options.addOption(parser.homewarehouse);
         parser.options.addOption(parser.region);
         parser.options.addOption(parser.tree);
+        parser.options.addOption(parser.log);
         parser.parse(args);
         return parser;
     }
@@ -63,6 +65,7 @@ public class ArgsParser {
         parser.options.addOption(parser.algorithm);
         parser.options.addOption(parser.clientCount);
         parser.options.addOption(parser.duration);
+        parser.options.addOption(parser.log);
         parser.parse(args);
         return parser;
     }
@@ -90,8 +93,12 @@ public class ArgsParser {
         return v == null ? 120 : Short.valueOf(v);
     }
 
-     public boolean isTpcc() {
+    public boolean isTpcc() {
         return line.hasOption("t");
+    }
+
+    public boolean getLog() {
+        return line.hasOption("log");
     }
 
     public short getNumPartitions() {
