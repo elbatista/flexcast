@@ -17,6 +17,7 @@ public class ClientProxy extends Node{
     private ReentrantLock lock = new ReentrantLock();
     private ArrayList<Message> replies = new ArrayList<>();
     private short expectedReplies = 0;
+    protected short numNodes = 0;
 
     public ClientProxy(short id){
         super(id);
@@ -83,6 +84,21 @@ public class ClientProxy extends Node{
         }
     }
     
+    public void sendGCMessage(int id){
+        Message m = new Message();
+        m.setType(Type.GC);
+        m.setId(id);
+        m.setCliId(getId());
+        for(short i = (short)(numNodes-1); i >=0; i--){
+            try {
+                outChannels.get(i).writeAndFlush(m);
+                sema.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
     public void receiveReplyReadyMsg(Message reply){
         printF("Ready OK - Server", reply.getSender());
         sema.release();
@@ -95,6 +111,11 @@ public class ClientProxy extends Node{
 
     public void receiveReplyInitMsg(Message reply){
         printF("Init OK - Server", reply.getSender());
+        sema.release();
+    }
+
+    public void receiveReplyGCMsg(Message reply){
+        print("GC OK - Server", reply.getSender());
         sema.release();
     }
 

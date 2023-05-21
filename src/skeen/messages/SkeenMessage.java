@@ -81,6 +81,11 @@ public class SkeenMessage extends BaseObj implements Externalizable, Comparable<
         this.dst = dst;
     }
 
+    @Override
+    public int hashCode() {
+        return getId();
+    }
+
     public boolean equals(Object m){
         return ((SkeenMessage)m).getId() == getId();
     }

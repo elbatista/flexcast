@@ -25,8 +25,7 @@ public abstract class ServerProxy extends ClientProxy {
                 while(true) {
                     Message m = bufferQueue.poll();
                     if(m != null) {
-
-                        // se for mensagem de cliente
+                        // se for request normal de cliente
                         if(m.getType() == Type.MSG && m.getLca() == getId()){
                             // joga no arraylist tmpCliMsgs
                             tmpCliMsgs.add(m);
@@ -36,20 +35,16 @@ public abstract class ServerProxy extends ClientProxy {
                             receive(m);
                         }
                     }
-                    
                     // se nao tem nada pendente
-                    if(!hasPendMsg()){
-                        // pega uma msg de tmpCliMsgs e entrega
-                        if(tmpCliMsgs.size() > 0){
-                            Message mc = tmpCliMsgs.get(0);
-                            tmpCliMsgs.remove(0);
-                            receive(mc);
-                        }
+                    if(!hasPendMsg() && tmpCliMsgs.size() > 0){
+                        Message t = tmpCliMsgs.remove(0);
+                        if(t != null) receive(t);
                     }
                 }
             }
         }).start();
     }
+    
     public void buffer(Message m){
         // client local msgs are immediately delivered 
         if(m.getType() == Type.MSG && m.getDst().length == 1){
@@ -59,6 +54,7 @@ public abstract class ServerProxy extends ClientProxy {
         }
         bufferQueue.offer(m);
     }
+
     private void receive(Message m) {
         switch(m.getType()){
             case MSG: receiveMsg(m); break;
@@ -76,6 +72,7 @@ public abstract class ServerProxy extends ClientProxy {
             case READY: receiveReady(m); break;
             // message used only to end a connection to a client
             case END: receiveEnd(m); break;
+            case GC: receiveGC(m); break;
             default: break;
         }
     }
@@ -102,6 +99,12 @@ public abstract class ServerProxy extends ClientProxy {
         }
     }
 
+    protected void receiveGC(Message m) {
+        gc(m.getId());
+        m.setSender(getId());
+        m.getChannelIn().writeAndFlush(m);
+    }
+
     protected void sendReply(Message m){
         Message reply = new Message(m.getId());
         reply.setSender(getId());
@@ -117,6 +120,7 @@ public abstract class ServerProxy extends ClientProxy {
 
     protected abstract boolean hasPendMsg();
     protected abstract void finish();
+    protected abstract void gc(int mid);
     protected abstract void receiveMsg(Message m);
     protected abstract void receiveAck(Message m);
     protected abstract void receiveNotif(Message m);

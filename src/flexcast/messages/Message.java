@@ -13,7 +13,7 @@ import io.netty.channel.Channel;
 import util.BaseObj;
 
 public class Message extends BaseObj implements Externalizable {
-    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY}
+    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY, GC}
     private short sender = -1, idNotifier = -1;
     private int id = -1, cliId = -1;
     private Type type;
@@ -131,6 +131,11 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     @Override
+    public int hashCode() {
+        return getId();
+    }
+    
+    @Override
     public boolean equals(Object m){
         return ((Message)m).getId() == getId();
     }
@@ -157,6 +162,7 @@ public class Message extends BaseObj implements Externalizable {
             case END: writeExtEnd(out); break;
             case READY: writeExtReady(out); break;
             case REPLY: writeExtReply(out); break;
+            case GC: writeExtGC(out); break;
         }
     }
 
@@ -261,6 +267,13 @@ public class Message extends BaseObj implements Externalizable {
         out.writeByte(getSender());
     }
     
+    private void writeExtGC(ObjectOutput out) throws IOException {
+        out.writeByte(6);
+        out.writeInt(getId());
+        out.writeInt(getCliId());
+        out.writeByte(getSender());
+    }
+    
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         short type = in.readByte();
@@ -270,6 +283,7 @@ public class Message extends BaseObj implements Externalizable {
             case 3: readExtNotif(in); break;
             case 4: readExtConn(in); break;
             case 5: readExtReply(in); break;
+            case 6: readExtGC(in); break;
             case 9: readExtReady(in); break;
             case 10: readExtEnd(in); break;
         }
@@ -370,6 +384,13 @@ public class Message extends BaseObj implements Externalizable {
 
     private void readExtReply(ObjectInput in) throws IOException {
         setType(Type.REPLY);
+        setSender(in.readByte());
+    }
+
+    private void readExtGC(ObjectInput in) throws IOException {
+        setType(Type.GC);
+        setId(in.readInt());
+        setCliId(in.readInt());
         setSender(in.readByte());
     }
 

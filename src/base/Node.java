@@ -19,6 +19,10 @@ public class Node extends BaseObj {
         return "Node"+getId()+" ["+getHost().getName()+":"+getHost().getPort()+"]";
     }
     @Override
+    public int hashCode() {
+        return getId();
+    }
+    @Override
     public boolean equals(Object n){
         return ((Node)n).getId() == getId();
     }

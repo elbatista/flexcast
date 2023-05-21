@@ -11,10 +11,12 @@ echo "execution $exe at" $(date) >> logs/executions.log
 echo $0 duration $duration algo $algo clis $clis servers $servers locality $locality msgs $msgs >> logs/executions.log
 echo "------------------------------------------------------------------------------------------------" >> logs/executions.log
 
+((totalClis = $clis+1))
+
 # Start servers
 ((START = $servers-1))
 for ((i = START; i >= 0; i-=1)) ; do
-    java -cp "bin/*:lib/*" MainServer -i $i -a $algo -d $duration  -c $clis $log >> logs/node$i.txt & sleep .05
+    java -cp "bin/*:lib/*" MainServer -i $i -a $algo -d $duration  -c $totalClis $log >> logs/node$i.txt & sleep .05
 done
 echo started $servers servers >> logs/executions.log
 
@@ -23,10 +25,14 @@ echo started $servers servers >> logs/executions.log
 warehouse=0
 for j in $(seq 0 $END); do
     if [ $warehouse -eq $servers ]; then warehouse=0; fi
-    java -cp "bin/*:lib/*" MainClient -c $clis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> logs/cli$j.txt &
+    java -cp "bin/*:lib/*" MainClient -c $totalClis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> logs/cli$j.txt &
     ((warehouse=$warehouse+1))
 done
 echo started $clis clients >> logs/executions.log
+
+java -cp "bin/*:lib/*" MainClient -c $totalClis -i $clis -d $duration -a $algo $log -gc >> logs/cli$clis.txt &
+echo started gc client >> logs/executions.log
+
 echo "waiting..."  >> logs/executions.log;
 while :
 do

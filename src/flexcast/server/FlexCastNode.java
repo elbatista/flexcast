@@ -14,6 +14,7 @@ import org.jgrapht.alg.shortestpath.BellmanFordShortestPath;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.builder.GraphTypeBuilder;
 import org.jgrapht.nio.dot.DOTExporter;
+import com.google.common.math.Stats;
 import base.Node;
 import flexcast.messages.LightMessage;
 import flexcast.messages.LightMessagesList;
@@ -43,8 +44,11 @@ public class FlexCastNode extends ServerProxy {
     private int idNotif = 0;
 
     private Graph<Integer, DefaultEdge> globalHstGraph;
-    private HashSet<LightMessage> allKnownMsgsToMe = new HashSet<>();
+    private HashSet<LightMessage> allKnownMsgsToMeNotDeliveredYet = new HashSet<>();
     private BellmanFordShortestPath<Integer, DefaultEdge> bellmanFordShortestPath=null;
+    private ArrayList<Integer> gsizes = new ArrayList<>();
+    private int msgs = 0, acks = 0, notifs = 0, gcs=0;
+    // private boolean[][][] notifFlags;
 
     public FlexCastNode(short id, ArgsParser p){
         super(id, p.getClientCount());
@@ -80,12 +84,14 @@ public class FlexCastNode extends ServerProxy {
             }
             numNodes++;
         }
+        // notifFlags = new boolean[numNodes][numNodes][numNodes];
         printF(this, "FlexCast - Start listening...");
     }
 
     @Override
     protected void receiveMsg(Message m){
         print("Received msg", m, "queues", queues);
+        msgs++;
 
         // lca entrega e faz fwd
         if(m.getLca() == getId()){
@@ -138,7 +144,7 @@ public class FlexCastNode extends ServerProxy {
                     ancHstDeliveredMsgs.get(anc).put(item.get().getId(), true);
                 }
 
-                if(item.get().isAddressedTo(getId())) allKnownMsgsToMe.add(item.get());
+                if(item.get().isAddressedTo(getId()) && (deliveredMsgs.get(item.get().getId()) == null)) allKnownMsgsToMeNotDeliveredYet.add(item.get());
 
                 //if(!globalHstGraph.containsVertex(item.get().getId())) {
                     globalHstGraph.addVertex(item.get().getId());
@@ -174,7 +180,7 @@ public class FlexCastNode extends ServerProxy {
     @Override
     protected void receiveAck(Message ack){
         print("Received ack", ack, "from", ack.getSender(), "queues", queues);
-        
+        acks++;
         // agrega o cjt de hst recebido em um conjunto de hsts por descendente
         // for(HashSet<ArrayList<LightMessage>> set : hstSetsPerDesc.values()){
         //     set.addAll(ack.getHst());
@@ -228,7 +234,7 @@ public class FlexCastNode extends ServerProxy {
     @Override
     protected void receiveNotif(Message notif){
         print("Received notif", notif, "from", notif.getSender(), "queues", queues);
-        
+        notifs++;
         // agrega o cjt de hst recebido em um conjunto de hsts por descendente
         // for(HashSet<ArrayList<LightMessage>> set : hstSetsPerDesc.values()){
         //     set.addAll(notif.getHst());
@@ -245,7 +251,6 @@ public class FlexCastNode extends ServerProxy {
         // sendAcks(notif);
         
         // vai precisar ficar pendente mesmo ?
-        // talvez deve ir para a fila do sender, como os acks?
         queues.get(notif.getSender()).add(notif);
 
         // reprocessa filas
@@ -337,35 +342,36 @@ public class FlexCastNode extends ServerProxy {
 
             // exception:
             // para cada dep
-            for(int dep : pend.getMsgDeps()){
-                PendingMessage mDep = pendingMessages.get(dep);
-                if(mDep == null) continue;
-                ArrayList<Message> mDepAcks = new ArrayList<>();
-                // se a msg que eh dependencia de m, esta na cabeca fila do seu lca
-                if(mDep.getMsg() != null && queues.get(mDep.getMsg().getLca()).get(0).getId() == mDep.getMsg().getId()){
-                    // vejo se nao tem acks trancados atras de mim na minha fila
-                    for(Message ack : queues.get(m.getLca())){
-                        if(ack.getType() == Type.ACK && ack.getId() == mDep.getId()){
-                            mDepAcks.add(ack);
-                        }
-                    }
-                }
-                // passa os acks qe estavam trancados na fila para frente e reprocessa
-                if(mDepAcks.size() > 0){
-                    queues.get(m.getLca()).removeAll(mDepAcks);
-                    for(Message ack : mDepAcks){
-                        queues.get(m.getLca()).add(0, ack);
-                        // print("Passei o ack", ack, "( sender", ack.getSender() ,")", "pra frente na fila do anc", m.getLca());
-                    }
-                    retry[0]=true;
-                }
-            }
-            print("Cant deliver", m, "MsgDeps:", pend.getMsgDeps(), "queues", queues, "Graph", graphToString());
+            // for(int dep : pend.getMsgDeps()){
+            //     PendingMessage mDep = pendingMessages.get(dep);
+            //     if(mDep == null) continue;
+            //     ArrayList<Message> mDepAcks = new ArrayList<>();
+            //     // se a msg que eh dependencia de m, esta na cabeca fila do seu lca
+            //     if(mDep.getMsg() != null && queues.get(mDep.getMsg().getLca()).get(0).getId() == mDep.getMsg().getId()){
+            //         // vejo se nao tem acks trancados atras de mim na minha fila
+            //         for(Message ack : queues.get(m.getLca())){
+            //             if(ack.getType() == Type.ACK && ack.getId() == mDep.getId()){
+            //                 mDepAcks.add(ack);
+            //             }
+            //         }
+            //     }
+            //     // passa os acks qe estavam trancados na fila para frente e reprocessa
+            //     if(mDepAcks.size() > 0){
+            //         queues.get(m.getLca()).removeAll(mDepAcks);
+            //         for(Message ack : mDepAcks){
+            //             queues.get(m.getLca()).add(0, ack);
+            //             printF("Passei o ack", ack, "( sender", ack.getSender() ,")", "pra frente na fila do anc", m.getLca());
+            //         }
+            //         retry[0]=true;
+            //     }
+            // }
+            print("Cant deliver", m, "MsgDeps:", pend.getMsgDeps(), "queues", queues);//, "Graph", graphToString());
             return false;
         }
         return true;
     }
 
+    @SuppressWarnings("unused")
     private String graphToString() {
         DOTExporter<Integer, DefaultEdge> exporter = new DOTExporter<>();
         Writer writer = new StringWriter();
@@ -377,20 +383,8 @@ public class FlexCastNode extends ServerProxy {
 
         LightMessage m = new LightMessage(msg.getId(), msg.getDst());
 
-        ArrayList<LightMessage> array = new ArrayList<>();
-
-        for(LightMessage lm : allKnownMsgsToMe){
-            if(
-                !lm.equals(m) &&
-                deliveredMsgs.get(lm.getId()) == null && 
-                m.getLca() != lm.getLca()
-            ){
-                array.add(lm);
-            }
-        }
-
-        for(LightMessage lm : array){
-            if(msgLmPrecedesM(lm, m)){
+        for(LightMessage lm : allKnownMsgsToMeNotDeliveredYet){
+            if(!lm.equals(m)  &&  m.getLca() != lm.getLca() && msgLmPrecedesM(lm, m)){
                 pend.getMsgDeps().add(lm.getId());
                 // create a pointer in the msgsToPendMsgsMap set
                 HashSet<PendingMessage> set = msgsToPendMsgsMap.get(lm.getId());
@@ -428,22 +422,17 @@ public class FlexCastNode extends ServerProxy {
             // remove from queue and auxiliary structures
             queues.get(m.getLca()).remove(0);
             pendingMessages.remove(m.getId());
-            allKnownMsgsToMe.remove(lm);
+            allKnownMsgsToMeNotDeliveredYet.remove(lm);
 
             HashSet<PendingMessage> set = msgsToPendMsgsMap.get(m.getId());
             if(set != null){
-                // TODO: remove possible dependencies related to this message (either from other messages or for notifs)
                 for(PendingMessage pm : set){
                     pm.getMsgDeps().remove(m.getId());
                 }
                 msgsToPendMsgsMap.remove(m.getId());
             }
         }
-
         // updateNotifFlags(m);
-
-        gc(m);
-
         sendReply(m);
         print("Delivered", m);
     }
@@ -464,50 +453,46 @@ public class FlexCastNode extends ServerProxy {
     //     }
     // }
 
-    private void gc(Message m) {
-        // se essa msg entregue eh destinada para todo mundo
-        if(m.getDst().length == numNodes){
-            
-            // faco o corte no hst dos ancestrais
-            // private HashMap<Short, LightMessagesList> ancHistory = new HashMap<>();
-            for(LightMessagesList list : ancHistory.values()){
-                list.setAsFirst(m.getId());
-            }
-            // private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc
-            for(short anc : ancestors) {
-                ancHstPointersPerDesc.put(anc, new HashMap<>());
-            }
+    @Override
+    protected void gc(int mid) {
+        gcs++;
+        gsizes.add(globalHstGraph.vertexSet().size());
+        // boolean cycle = new CycleDetector<>(globalHstGraph).detectCycles();
+        // if(cycle){
+        //     printF("Cycle detected!!!!", graphToString());
+        //     new FileManager().stop();
+        //     finish();
+        //     exit();
+        // }
+        
+        // faco o corte no hst dos ancestrais
+        for(LightMessagesList list : ancHistory.values()){
+            list.setAsFirst(mid);
+        }
+        // reinicializo os ponteiros
+        for(short anc : ancestors) {
+            ancHstPointersPerDesc.put(anc, new HashMap<>());
             for(short des : descendants) {
-                for(short anc : ancHstPointersPerDesc.keySet()){
-                    ancHstPointersPerDesc.get(anc).put(des, null);
-                }
+                ancHstPointersPerDesc.get(anc).put(des, null);
             }
+        }
 
-            // corto o meu historico
-            // history = new LightMessagesList();
-            history.setAsFirst(m.getId());
-            hstPointersPerDesc = new HashMap<>();
+        // corto o meu historico
+        history.setAsFirst(mid);
+        // reinicializo os ponteiros
+        hstPointersPerDesc = new HashMap<>();
 
-            // reconstruo o grafo global com base nos hsts atualizados
-            bellmanFordShortestPath = null;
-            globalHstGraph = GraphTypeBuilder.<Integer, DefaultEdge> directed()
-            .allowingMultipleEdges(false)
-            .allowingSelfLoops(false)
-            .weighted(false)
-            .edgeClass(DefaultEdge.class)
-            .buildGraph();
+        // reconstruo o grafo global com base nos hsts atualizados
+        bellmanFordShortestPath = null;
+        globalHstGraph = GraphTypeBuilder.<Integer, DefaultEdge> directed()
+        .allowingMultipleEdges(false)
+        .allowingSelfLoops(false)
+        .weighted(false)
+        .edgeClass(DefaultEdge.class)
+        .buildGraph();
 
-            for(LightMessagesList list : ancHistory.values()){
-                Item item = list.getFirst();
-                while(item != null){
-                    globalHstGraph.addVertex(item.get().getId());
-                    if(item.getPrev() != null){
-                        globalHstGraph.addEdge(item.getPrev().get().getId(), item.get().getId());
-                    }
-                    item = item.getNext();
-                }
-            }
-            Item item = history.getFirst();
+        for(LightMessagesList list : ancHistory.values()){
+            Item item = list.getFirst();
             while(item != null){
                 globalHstGraph.addVertex(item.get().getId());
                 if(item.getPrev() != null){
@@ -516,12 +501,19 @@ public class FlexCastNode extends ServerProxy {
                 item = item.getNext();
             }
         }
+        Item item = history.getFirst();
+        while(item != null){
+            globalHstGraph.addVertex(item.get().getId());
+            if(item.getPrev() != null){
+                globalHstGraph.addEdge(item.getPrev().get().getId(), item.get().getId());
+            }
+            item = item.getNext();
+        }
     }
 
     private void forward(Message m){
         //send possible notifs
         ArrayList<Pair<Short, Integer>> notifs = sendNotifs(m);
-
         for(short dest : m.getDst()){
             if(dest > getId()){
                 Message toSend = new Message(m.getId());
@@ -529,7 +521,6 @@ public class FlexCastNode extends ServerProxy {
                 toSend.setDst(m.getDst());
                 toSend.setCliId(m.getCliId());
                 toSend.setSender(getId());
-
                 //add notif list
                 if(notifs != null && notifs.size() > 0) {
                     toSend.setNotifList(notifs);
@@ -578,7 +569,7 @@ public class FlexCastNode extends ServerProxy {
             notif.setDst(m.getDst());
             notif.setType(Type.NOTIF);
             notif.setIdNotif(idNotif);
-            //TODO: should it have a "notiflist"?
+            //should it have a "notiflist"?
             // for (NotifList nl : m.getNotifList())
             //     notif.addNotifList(nl.getNotifList(), nl.getNotifier());
             // notif.addNotifList(notifList, getId());
@@ -623,12 +614,6 @@ public class FlexCastNode extends ServerProxy {
         if(item == null) item = history.getFirst();
         else item = item.getNext();
 
-        // se nao tem nada para enviar, ja retorna?
-        //if(item == null) return;
-
-        // nao envia a propria msg ?
-        //if(item.get().getId() == toSend.getId()) return;
-
         ArrayList<LightMessage> myhst = new ArrayList<>();
         while(item != null){
             myhst.add(item.get());
@@ -645,9 +630,9 @@ public class FlexCastNode extends ServerProxy {
     private void sendAcks(Message m) {
         if(getId() == (numNodes-1)) return; // last one doesnt have someone to send acks
         
-        // Set<Short> notifList = null;
-        // if(getId() < (getNumNodes()-2)) notifList = sendNotif(m); // last 2 nodes never have someone to notify
-        ArrayList<Pair<Short, Integer>> notifs = sendNotifs(m);
+        ArrayList<Pair<Short, Integer>> notifs = null;
+        // last 2 nodes never have someone to notify
+        if(getId() < (numNodes-2)) notifs = sendNotifs(m);
 
         for(short dst : m.getDst()){
             if(dst > getId()){
@@ -660,20 +645,15 @@ public class FlexCastNode extends ServerProxy {
                     ack.setIdNotifier(m.getSender());
                     ack.setIdNotif(m.getIdNotif());
                 }
-                // ack.ackIsFromDst(m.getType() == Type.MSG && m.isAddressedTo(getId()));
-
                 addHst(ack, dst);
-
-                // if(notifList != null && notifList.size() > 0)
-                //     ack.addNotifList(notifList, getId());
                 if(notifs != null && notifs.size() > 0) ack.setNotifList(notifs);
-
                 send(ack, dst);
                 print("Sent ack", ack, "to", dst);
             }
         }
     }
 
+    @Override
     protected void finish(){
         for(short anc : queues.keySet()){
             if(queues.get(anc).size() > 0){
@@ -688,6 +668,21 @@ public class FlexCastNode extends ServerProxy {
         printF("-------------------------------------");
         printF("Total msgs in the history:", fullHistory.size());
         printF("Total local msgs received:", localMsgs);
+        printF("Total msgs received:", msgs);
+        printF("Total acks received:", acks);
+        printF("Total notifs received:", notifs);
+        printF("Total gcs:", gcs);
+        printF("Avg Graph size:", Stats.of(gsizes).mean());
+        printF("allKnownMsgsToMeNotDeliveredYet size:", allKnownMsgsToMeNotDeliveredYet.size());
+        printF("pendingMessages size:", pendingMessages.size());
+        printF("deliveredMsgs size:", deliveredMsgs.size());
+        printF("msgsToPendMsgsMap size:", msgsToPendMsgsMap.size());
+        printF("history size:", history.size());
+        for(short a : ancestors){
+            printF("ancestor", a, "history size:",ancHistory.get(a).size());
+            printF("ancestor", a, "ancHstDeliveredMsgs size:",ancHstDeliveredMsgs.get(a).size());
+        }
+        
         printF("-------------------------------------");
         files.nodeFinished(getId());
         exit();
@@ -695,8 +690,8 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected boolean hasPendMsg() {
-        if(pendingMessages == null) return false;
-        return !pendingMessages.isEmpty();
+        if(allKnownMsgsToMeNotDeliveredYet == null) return false;
+        return !allKnownMsgsToMeNotDeliveredYet.isEmpty();
     }
     
 }

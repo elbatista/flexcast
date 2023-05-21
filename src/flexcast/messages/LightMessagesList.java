@@ -97,6 +97,10 @@ public class LightMessagesList {
             this.next = next;
         }
         @Override
+        public int hashCode() {
+            return m.getId();
+        }
+        @Override
         public boolean equals(Object o){
             return get().equals(((Item) o).get());
         }

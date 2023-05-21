@@ -1,7 +1,6 @@
 package comms;
 
 import java.util.concurrent.CyclicBarrier;
-
 import flexcast.messages.Message;
 import flexcast.messages.Message.Type;
 import io.netty.channel.ChannelHandlerContext;
@@ -38,6 +37,10 @@ public class NettyClientChannelHandler extends ChannelInboundHandlerAdapter {
         }
         if(m.getType() == Type.END){
             proxy.receiveReplyEndMsg(m);
+            return;
+        }
+        if(m.getType() == Type.GC){
+            proxy.receiveReplyGCMsg(m);
             return;
         }
         proxy.receiveReply(m);

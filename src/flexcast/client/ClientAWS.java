@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
-
 import base.Node;
 import flexcast.messages.Message.Type;
 import proxies.ClientProxy;
@@ -24,7 +23,6 @@ import flexcast.messages.Message;
 public class ClientAWS extends ClientProxy {
     protected ArgsParser args;
     protected int seqNumber, totalTime;
-    protected short numNodes = 0;
     protected CyclicBarrier syncAllConnections;
     protected FileManager files;
     private int localityPercentage = 0;
@@ -34,6 +32,7 @@ public class ClientAWS extends ClientProxy {
     protected Stats stats;
     protected final Random gen;
     private short warehouse;
+    private boolean gcClient=false;
     
     public ClientAWS(short id, ArgsParser args, boolean start){
         super(id);
@@ -42,6 +41,7 @@ public class ClientAWS extends ClientProxy {
         this.files = new FileManager();
         this.localityPercentage = args.getLocality();
         this.warehouse = (short) args.getHomeWarehouse();
+        this.gcClient = args.isGC();
         if(!args.getLog()) setPrint(false);
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
@@ -64,7 +64,11 @@ public class ClientAWS extends ClientProxy {
     }
 
     private void start() {
-        printF("Start FlexCast ClientAWS!");
+        if(gcClient)
+            printF("Started AWS FlexCast GC Client");
+        else
+            printF("Start FlexCast ClientAWS");
+
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){printF("Broken barrier!!!!");}
 
@@ -77,47 +81,72 @@ public class ClientAWS extends ClientProxy {
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         printF("All other clients ready!");
-        printF("Started AWS FlexCast experiment");
-        if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
-        printF("Locality:", localityPercentage, "%");
-        printF("My home warehouse:", warehouse);
-        if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
-        stats = new Stats(totalTime);
 
-        long startTime = System.nanoTime(), now;
-        long elapsed = 0, usLat = startTime;
-        int totalMsgs=0;
-
-        while ((elapsed / 1e9) < totalTime) {
-            Message m = newMessage();
-            multicast(m);
-            now = System.nanoTime();
-            stats.store((now - usLat) / 1000, (m.getDst().length > 1));
-            elapsed = (now - startTime);
-            
-            destsSizes[m.getDst().length-1]++;
-
-            computeDistribution(m);
-            
-            usLat = now;
-            totalMsgs++;
-            if(args.getNumMessages() > 0 && totalMsgs >= args.getNumMessages()) break;
+        if(gcClient){
+            runGCClient();
         }
+        else {
+            printF("Started AWS FlexCast experiment");
+            if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
+            printF("Locality:", localityPercentage, "%");
+            printF("My home warehouse:", warehouse);
+            if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
+            stats = new Stats(totalTime);
 
-        if (stats.getCount() > 0) {
-            try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
-            stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client.txt", 15);
-            printF("LOCAL STATS:", stats);
+            long startTime = System.nanoTime(), now;
+            long elapsed = 0, usLat = startTime;
+            int totalMsgs=0;
+
+            while ((elapsed / 1e9) < totalTime) {
+                Message m = newMessage();
+                multicast(m);
+                now = System.nanoTime();
+                stats.store((now - usLat) / 1000, (m.getDst().length > 1));
+                elapsed = (now - startTime);
+                
+                destsSizes[m.getDst().length-1]++;
+
+                computeDistribution(m);
+                
+                usLat = now;
+                totalMsgs++;
+                if(args.getNumMessages() > 0 && totalMsgs >= args.getNumMessages()) break;
+            }
+
+            if (stats.getCount() > 0) {
+                try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
+                stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client.txt", 15);
+                printF("LOCAL STATS:", stats);
+            }
+            
+            sendEndMessage();            
+            for(int i = 0; i < destsSizes.length; i++) printF("# of msgs to", i+1, "dests:", destsSizes[i]);
+            printWloadDistribution();
+            printF("Finished AWS FlexCast experiment. Elapsed: ", elapsed / 1e9, "seconds");
         }
-
-        sendEndMessage();
-
-        for(int i = 0; i < destsSizes.length; i++) printF("# of msgs to", i+1, "dests:", destsSizes[i]);
-
-        printWloadDistribution();
-
-        printF("Finished AWS FlexCast experiment. Elapsed: ", elapsed / 1e9, "seconds");
         exit();
+    }
+
+    private void runGCClient() {
+        long startTime = System.nanoTime(), now;
+        long elapsed = 0;
+
+        while ((elapsed / 1e9) < (totalTime+3)) {
+            // envia msg de "flush"
+            Message m = newMessageTo(allDests());
+            multicast(m);
+            printF("Sent and received all replies for flush message", m);
+            // apos receber resposta de todos nodes (todos entregaram a msg de flush)
+            // envia msg de GC referente a msg do flush
+            sendGCMessage(m.getId());
+            printF("Sent and received all replies GC for msg", m.getId());
+            sleep(2000);
+            now = System.nanoTime();
+            elapsed = (now - startTime);
+        }
+
+        sendEndMessage();            
+        printF("Finished AWS FlexCast GC Client. Elapsed: ", elapsed / 1e9, "seconds");
     }
 
     protected void printWloadDistribution() {
@@ -143,7 +172,9 @@ public class ClientAWS extends ClientProxy {
     }
 
     protected Message newMessageTo(short... dst){
-        Message m = newMessage();
+        Message m = new Message(nextSeqNumber());
+        m.setType(Type.MSG);
+        m.setCliId(getId());
         m.setDst(dst);
         return m;
     }
@@ -163,6 +194,13 @@ public class ClientAWS extends ClientProxy {
         if(randomNumber(1, 100, gen) <= localityPercentage) 
             return generate2Dests();
         return generate3Dests();
+    }
+
+    private short[] allDests() {
+        short [] tempdst = new short[numNodes];
+        for(short s = 0; s < numNodes; s++)
+            tempdst[s] = s;
+        return tempdst;
     }
 
     private short[] generateRandDests() {

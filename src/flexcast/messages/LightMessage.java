@@ -44,6 +44,11 @@ public class LightMessage extends BaseObj implements Serializable {
     }
 
     @Override
+    public int hashCode() {
+        return getId();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;

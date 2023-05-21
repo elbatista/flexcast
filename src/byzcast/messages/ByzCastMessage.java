@@ -68,6 +68,11 @@ public class ByzCastMessage extends BaseObj implements Externalizable {
         this.dst = dst;
     }
 
+    @Override
+    public int hashCode() {
+        return getId();
+    }
+
     public boolean equals(Object m){
         return ((ByzCastMessage)m).getId() == getId();
     }

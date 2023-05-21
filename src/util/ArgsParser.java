@@ -9,7 +9,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class ArgsParser {
-    private Option log, id, numMsgs, clientCount, duration, tpcc, numPartitions, locality, homewarehouse, region, algorithm, tree;
+    private Option log, id, numMsgs, clientCount, duration, tpcc, numPartitions, locality, homewarehouse, region, algorithm, tree, gc;
     private Options options;
     private CommandLineParser parser;
     private CommandLine line;
@@ -28,6 +28,7 @@ public class ArgsParser {
         homewarehouse = Option.builder("w").desc("home warehouse").argName("homewarehouse").hasArg().numberOfArgs(1).type(Integer.class).build();
         region = Option.builder("r").desc("region").argName("region").hasArg().numberOfArgs(1).type(String.class).build();
         tree = Option.builder("tree").desc("tree").argName("tree").hasArg().numberOfArgs(1).type(Short.class).build();
+        gc = Option.builder("gc").desc("gc client").argName("gc").type(Boolean.class).build();
         options = new Options();
         parser = new DefaultParser();
         line = null;
@@ -51,6 +52,7 @@ public class ArgsParser {
         parser.options.addOption(parser.region);
         parser.options.addOption(parser.tree);
         parser.options.addOption(parser.log);
+        parser.options.addOption(parser.gc);
         parser.parse(args);
         return parser;
     }
@@ -95,6 +97,10 @@ public class ArgsParser {
 
     public boolean isTpcc() {
         return line.hasOption("t");
+    }
+
+    public boolean isGC() {
+        return line.hasOption("gc");
     }
 
     public boolean getLog() {
