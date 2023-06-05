@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import org.javatuples.Pair;
+
+import flexcast.messages.LightMessage;
 import flexcast.messages.Message;
 
 public class PendingMessage {
     private int id;
     private Message m;
+    private LightMessage lm;
     private int acksFromDstsNeeded;
     private Set<Integer> msgDeps;
     private boolean msgsDepsFlag = false;
@@ -36,8 +39,13 @@ public class PendingMessage {
         return m;
     }
 
+    public LightMessage getLM() {
+        return lm;
+    }
+
     public void setMsg(Message m) {
         this.m = m;
+        this.lm = new LightMessage(m.getId(), m.getDst());
     }
 
     public boolean gotAllAcksFromDsts() {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import org.javatuples.Pair;
 import util.ArgsParser;
 import util.FileManager;
@@ -21,7 +20,9 @@ public class ByzCastNode extends ByzCastServerProxy {
     private LightMessagesList history = new LightMessagesList();
     private List<Node> children = new ArrayList<>();
     private ArrayList<String[]> mappings = new ArrayList<>();
-    
+
+    private int msgsTotal=0, msgsToMe=0;
+
     public ByzCastNode(short id, ArgsParser args){
         super(id, args.getClientCount());
         this.files = new FileManager();
@@ -49,11 +50,15 @@ public class ByzCastNode extends ByzCastServerProxy {
                 }
             }
         }
+        
     }
 
     @Override
     protected void receiveMsg(ByzCastMessage m){
         // print("Received message", m);
+
+        msgsTotal++;
+        if(m.isAddressedTo(getId())) msgsToMe++;
 
         Set<Short> sent = new HashSet<>();
 
@@ -98,8 +103,15 @@ public class ByzCastNode extends ByzCastServerProxy {
         print("-------------------------------------");
         print("Total msgs in the history:", history.size());
         print("Total local msgs received:", localMsgs);
+        print("Total msgs received:", msgsTotal);
+        print("Total msgs to me received:", msgsToMe);
+        print("% of overhead:", 100-((msgsToMe*100)/msgsTotal));
         print("-------------------------------------");
         files.nodeFinished(getId());
         exit();
     }
 }
+// msgsTotal  100
+// msgsToMe   x
+// x = (tome*100)/total (msgs to me account for x%)
+// overhead = 100-x

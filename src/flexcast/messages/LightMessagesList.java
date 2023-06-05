@@ -1,6 +1,8 @@
 package flexcast.messages;
 
-public class LightMessagesList {
+import java.util.Iterator;
+
+public class LightMessagesList implements Iterable<LightMessage> {
     private Item first = null, last = null;
     private int size = 0;
     
@@ -123,4 +125,33 @@ public class LightMessagesList {
         }
     }
 
+    @Override
+    public Iterator<LightMessage> iterator() {
+        return new LMIterator(this);
+    }
+
+    public class LMIterator implements Iterator<LightMessage>{
+        private LightMessage current;
+        private Item item;
+        public LMIterator(LightMessagesList l){
+            if(l != null && l.getFirst() != null){
+                current = l.getFirst().get();
+                item = l.getFirst();
+            }
+        }
+        @Override
+        public boolean hasNext() {
+            return (current != null);
+        }
+        @Override
+        public LightMessage next() {
+            LightMessage lm = current;
+            current = null;
+            if(item.getNext() != null) {
+                current = item.getNext().get();
+                item = item.getNext();
+            }
+            return lm;
+        }
+    }
 }

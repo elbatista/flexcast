@@ -31,7 +31,7 @@ public class ClientAWS extends ClientProxy {
     protected int [][][] wloadDist3dests;
     protected final Random gen;
     private short warehouse;
-    private int gc=0;
+    private int gc=0, dagTop = 1;
     
     public ClientAWS(short id, ArgsParser args, boolean start){
         super(id);
@@ -41,6 +41,7 @@ public class ClientAWS extends ClientProxy {
         this.localityPercentage = args.getLocality();
         this.warehouse = (short) args.getHomeWarehouse();
         this.gc = args.getGC();
+        dagTop = args.getDAGTop();
         if(!args.getLog()) setPrint(false);
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
@@ -63,7 +64,7 @@ public class ClientAWS extends ClientProxy {
     }
 
     private void start() {
-        if(gc>0)
+        if(gc > -1)
             printF("Started AWS FlexCast GC Client");
         else
             printF("Start FlexCast ClientAWS");
@@ -72,16 +73,17 @@ public class ClientAWS extends ClientProxy {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){printF("Broken barrier!!!!");}
 
         printF("Connected to all servers!");
+        printF("DAG TOPOLY:", dagTop);
+        //sleep(1000);
 
         // send initialization message to all servers
         sendInitMessage();
-        sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         printF("All other clients ready!");
 
-        if(gc>0){
+        if(gc > -1){
             runGCClient();
         }
         else {
@@ -97,7 +99,9 @@ public class ClientAWS extends ClientProxy {
             int totalMsgs=0;
 
             while ((elapsed / 1e9) < totalTime) {
+                
                 Message m = newMessage();
+
                 multicast(m);
                 now = System.nanoTime();
                 stats.store((now - usLat) / 1000, (m.getDst().length > 1));
@@ -109,7 +113,7 @@ public class ClientAWS extends ClientProxy {
                 
                 usLat = now;
                 totalMsgs++;
-                if(args.getNumMessages() > 0 && totalMsgs >= args.getNumMessages()) break;
+                if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
             }
 
             if (stats.getCount() > 0) {
@@ -133,7 +137,7 @@ public class ClientAWS extends ClientProxy {
 
         printF("GC Interval:", gc, "(ms)");
 
-        while ((elapsed / 1e9) < (totalTime+3)) {
+        while ((elapsed / 1e9) < (totalTime+2)) {
             // envia msg de "flush"
             Message m = newMessageTo(allDests());
             multicast(m);
@@ -142,7 +146,7 @@ public class ClientAWS extends ClientProxy {
             // envia msg de GC referente a msg do flush
             sendGCMessage(m.getId());
             printF("Sent and received all replies GC for msg", m.getId());
-            sleep(gc);
+            if(gc > 0 )sleep(gc);
             now = System.nanoTime();
             elapsed = (now - startTime);
         }
@@ -236,14 +240,13 @@ public class ClientAWS extends ClientProxy {
     private short[] generate3Dests(){
         short [] tempdst = new short[3];
         tempdst[0] = warehouse;
-        
-        tempdst[1] = getNearestWH(warehouse);
-        
-        if(randomNumber(1, 100, gen) <= localityPercentage)
+        if(randomNumber(1, 100, gen) <= localityPercentage){
+            tempdst[1] = getNearestWH(warehouse);
             tempdst[2] = getSecondNearestWH(warehouse);
-        else 
+        }else {
+            tempdst[1] = getSecondNearestWH(warehouse);
             tempdst[2] = getThirdNearestWH(warehouse);
-        
+        }
         LinkedHashSet<Short> set = new LinkedHashSet<Short>();
  
         // remove duplicates
@@ -260,58 +263,306 @@ public class ClientAWS extends ClientProxy {
     }
 
     private short getNearestWH(short warehouseparam) {
-        // 12 nodes
-        switch(warehouseparam){
-            case 0: return 1;
-            case 1: return 2;
-            case 2: return 1;
-            case 3: return 2;
-            case 4: return 5;
-            case 5: return 6;
-            case 6: return 7;
-            case 7: return 6;
-            case 8: return 9;
-            case 9: return 8;
-            case 10: return 11;
-            case 11: return 10;
-            default: return warehouseparam;
+        if(numNodes == 9){
+            if(dagTop == 1){
+                switch(warehouseparam){
+                    case 0: return 1;
+                    case 1: return 2;
+                    case 2: return 1;
+                    case 3: return 4;
+                    case 4: return 5;
+                    case 5: return 4;
+                    case 6: return 7;
+                    case 7: return 8;
+                    case 8: return 7;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 3){
+                switch(warehouseparam){
+                    case 0: return 1;
+                    case 1: return 2;
+                    case 2: return 1;
+                    case 3: return 4;
+                    case 4: return 5;
+                    case 5: return 4;
+                    case 6: return 7;
+                    case 7: return 8;
+                    case 8: return 7;
+                    default: return warehouseparam;
+                }
+            }
+        }else if(numNodes == 12){
+            if(dagTop == 1){
+                switch(warehouseparam){
+                    case 0: return 1;
+                    case 1: return 2;
+                    case 2: return 1;
+                    case 3: return 2;
+                    case 4: return 5;
+                    case 5: return 6;
+                    case 6: return 7;
+                    case 7: return 6;
+                    case 8: return 9;
+                    case 9: return 10;
+                    case 10: return 9;
+                    case 11: return 10;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 2){
+                switch(warehouseparam){
+                    case 0: return 1;
+                    case 1: return 2;
+                    case 2: return 3;
+                    case 3: return 2;
+                    case 4: return 5;
+                    case 5: return 6;
+                    case 6: return 7;
+                    case 7: return 6;
+                    case 8: return 9;
+                    case 9: return 10;
+                    case 10: return 9;
+                    case 11: return 10;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 3){
+                switch(warehouseparam){
+                    case 0: return 1;
+                    case 1: return 2;
+                    case 2: return 3;
+                    case 3: return 2;
+                    case 4: return 5;
+                    case 5: return 6;
+                    case 6: return 5;
+                    case 7: return 6;
+                    case 8: return 9;
+                    case 9: return 10;
+                    case 10: return 9;
+                    case 11: return 10;
+                    default: return warehouseparam;
+                }
+            }
+        } 
+        else if(numNodes == 13){
+            switch(warehouseparam){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 3;
+                case 3: return 4;
+                case 4: return 5;
+                case 5: return 6;
+                case 6: return 7;
+                case 7: return 8;
+                case 8: return 9;
+                case 9: return 10;
+                case 10: return 11;
+                case 11: return 12;
+                case 12: return 11;
+                default: return warehouseparam;
+            }
         }
+        return warehouseparam;
     }
 
     private short getSecondNearestWH(short warehouseparam) {
-        switch(warehouseparam){
-            case 0: return 2;
-            case 1: return 3;
-            case 2: return 0;
-            case 3: return 1;
-            case 4: return 6;
-            case 5: return 7;
-            case 6: return 4;
-            case 7: return 5;
-            case 8: return 10;
-            case 9: return 6;
-            case 10: return 8;
-            case 11: return 9;
-            default: return warehouseparam;
+        if(numNodes == 9){
+            if(dagTop == 1){
+                switch(warehouseparam){
+                    case 0: return 2;
+                    case 1: return 3;
+                    case 2: return 0;
+                    case 3: return 5;
+                    case 4: return 2;
+                    case 5: return 3;
+                    case 6: return 8;
+                    case 7: return 5;
+                    case 8: return 6;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 3){
+                switch(warehouseparam){
+                    case 0: return 2;
+                    case 1: return 3;
+                    case 2: return 0;
+                    case 3: return 5;
+                    case 4: return 2;
+                    case 5: return 3;
+                    case 6: return 8;
+                    case 7: return 6;
+                    case 8: return 6;
+                    default: return warehouseparam;
+                }
+            }
+        }if(numNodes == 12){
+            if(dagTop == 1){
+                switch(warehouseparam){
+                    case 0: return 2;
+                    case 1: return 3;
+                    case 2: return 0;
+                    case 3: return 1;
+                    case 4: return 6;
+                    case 5: return 7;
+                    case 6: return 4;
+                    case 7: return 5;
+                    case 8: return 10;
+                    case 9: return 11;
+                    case 10: return 8;
+                    case 11: return 9;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 2){
+                switch(warehouseparam){
+                    case 0: return 2;
+                    case 1: return 3;
+                    case 2: return 0;
+                    case 3: return 1;
+                    case 4: return 6;
+                    case 5: return 7;
+                    case 6: return 4;
+                    case 7: return 5;
+                    case 8: return 10;
+                    case 9: return 11;
+                    case 10: return 8;
+                    case 11: return 9;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 3){
+                switch(warehouseparam){
+                    case 0: return 2;
+                    case 1: return 3;
+                    case 2: return 0;
+                    case 3: return 1;
+                    case 4: return 6;
+                    case 5: return 7;
+                    case 6: return 4;
+                    case 7: return 5;
+                    case 8: return 10;
+                    case 9: return 11;
+                    case 10: return 8;
+                    case 11: return 9;
+                    default: return warehouseparam;
+                }
+            }
         }
+        else if(numNodes == 13){
+            switch(warehouseparam){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 1;
+                case 4: return 2;
+                case 5: return 7;
+                case 6: return 8;
+                case 7: return 5;
+                case 8: return 6;
+                case 9: return 11;
+                case 10: return 12;
+                case 11: return 9;
+                case 12: return 10;
+                default: return warehouseparam;
+            }
+        }
+        return warehouseparam;
     }
 
     private short getThirdNearestWH(short warehouseparam) {
-        switch(warehouseparam){
-            case 0: return 3;
-            case 1: return 4;
-            case 2: return 5;
-            case 3: return 0;
-            case 4: return 7;
-            case 5: return 2;
-            case 6: return 3;
-            case 7: return 4;
-            case 8: return 5;
-            case 9: return 6;
-            case 10: return 7;
-            case 11: return 8;
-            default: return warehouseparam;
+        if(numNodes == 9){
+            if(dagTop == 1){
+                switch(warehouseparam){
+                    case 0: return 3;
+                    case 1: return 4;
+                    case 2: return 5;
+                    case 3: return 6;
+                    case 4: return 1;
+                    case 5: return 2;
+                    case 6: return 3;
+                    case 7: return 4;
+                    case 8: return 5;
+                    default: return warehouseparam;
+                }
+            }else if(dagTop == 3){
+                switch(warehouseparam){
+                    case 0: return 3;
+                    case 1: return 4;
+                    case 2: return 5;
+                    case 3: return 0;
+                    case 4: return 1;
+                    case 5: return 2;
+                    case 6: return 8;
+                    case 7: return 5;
+                    case 8: return 6;
+                    default: return warehouseparam;
+                }
+            }
+        }if(numNodes == 12){
+            if(dagTop == 1){
+                switch(warehouseparam){
+                    case 0: return 3;
+                    case 1: return 4;
+                    case 2: return 5;
+                    case 3: return 0;
+                    case 4: return 7;
+                    case 5: return 2;
+                    case 6: return 3;
+                    case 7: return 4;
+                    case 8: return 5;
+                    case 9: return 6;
+                    case 10: return 7;
+                    case 11: return 8;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 2){
+                switch(warehouseparam){
+                    case 0: return 3;
+                    case 1: return 4;
+                    case 2: return 5;
+                    case 3: return 6;
+                    case 4: return 7;
+                    case 5: return 8;
+                    case 6: return 3;
+                    case 7: return 4;
+                    case 8: return 5;
+                    case 9: return 6;
+                    case 10: return 7;
+                    case 11: return 8;
+                    default: return warehouseparam;
+                }
+            } else if(dagTop == 3){
+                switch(warehouseparam){
+                    case 0: return 3;
+                    case 1: return 4;
+                    case 2: return 5;
+                    case 3: return 0;
+                    case 4: return 1;
+                    case 5: return 2;
+                    case 6: return 3;
+                    case 7: return 4;
+                    case 8: return 11;
+                    case 9: return 11;
+                    case 10: return 7;
+                    case 11: return 8;
+                    default: return warehouseparam;
+                }
+            }
         }
+        else if(numNodes == 13){
+            switch(warehouseparam){
+                case 0: return 3;
+                case 1: return 4;
+                case 2: return 5;
+                case 3: return 0;
+                case 4: return 2;
+                case 5: return 8;
+                case 6: return 9;
+                case 7: return 10;
+                case 8: return 5;
+                case 9: return 12;
+                case 10: return 7;
+                case 11: return 8;
+                case 12: return 9;
+                default: return warehouseparam;
+            }
+        }
+        return warehouseparam;
     }
 
     public static int randomNumber(int min, int max, Random r) {

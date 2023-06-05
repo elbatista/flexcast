@@ -1,6 +1,7 @@
 package util;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -8,10 +9,10 @@ import java.util.HashMap;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
-
 import com.google.common.math.Quantiles;
 import com.google.common.math.Stats;
 
+@SuppressWarnings("unused")
 public class Results {
     static int totalFiles = 0;
     static int lines = 0;
@@ -35,7 +36,7 @@ public class Results {
                     StringTokenizer str = new StringTokenizer(line, "\t");
                     if(str.countTokens() > 2){
                         str.nextToken(); // skip the first column (ORDER)
-                        auxvalues.add(Double.valueOf(str.nextToken())); // add the second column (LATENCY)
+                        auxvalues.add(Double.valueOf(TimeUnit.MICROSECONDS.toMillis(Long.valueOf(str.nextToken())))); // add the second column (LATENCY)
                     }
 
                 }
@@ -77,7 +78,6 @@ public class Results {
         // System.out.println(strpath + " - " + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(valuesperclient));
         return Stats.of(valuesperclient).sum();
     }
-
 
     static ArrayList<ArrayList<Double>> readFilesPerNode(String strpath, short numNodes){
         ArrayList<ArrayList<Double>> values = new ArrayList<>();
@@ -129,12 +129,11 @@ public class Results {
         return values;
     }
 
-
     public static void main(String ... args){
         ArrayList<Double> latencies = new ArrayList<>();
         
-        String algo     = "byz/tree3";
-        String locality = "100";
+        String algo     = "byz/newtrees/tree3";
+        String locality = "90";
         short nodes     = 12;
         int dur         = 60;
         int cli         = 192;
@@ -143,6 +142,12 @@ public class Results {
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));
 
+        // System.out.println(algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%" + "\nRead "+totalFiles+" latency files...");
+        // if(latencies.size()>0) 
+        //     System.out.println("AVG Lat: " + Stats.of(latencies).mean() + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(latencies));
+        
+        //////////// LAT PER NODE
+        totalFiles = 0;
         HashMap<Short, ArrayList<Double>> values = new HashMap<>();
         for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
 
@@ -151,24 +156,25 @@ public class Results {
                 values.get(i).add(nodesLat.get(i));
             }
         }
-        
         for(ArrayList<Double> nodesLat : readFilesPerNode("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe", nodes)){
             for(short i = 0; i < nodesLat.size(); i++){
                 values.get(i).add(nodesLat.get(i));
             }
         }
-        
         for(ArrayList<Double> nodesLat : readFilesPerNode("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia", nodes)){
             for(short i = 0; i < nodesLat.size(); i++){
                 values.get(i).add(nodesLat.get(i));
             }
         }
-        
-        System.out.println(algo + " - Read "+totalFiles+" latency files...");
+
+        System.out.println(algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%" + "\nRead "+totalFiles+" latency files...");
         for(short n = 0; n < nodes; n++) 
             if(values.get(n).size()>0) 
-                System.out.println("Node " + n + ": " + Stats.of(values.get(n)).mean() + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(values.get(n)));
+                System.out.println("Node " + n + ": " + Stats.of(values.get(n)).mean()  + "(" + Stats.of(values.get(n)).sampleStandardDeviation() + ")" + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(values.get(n)));
         
+        // CFDs
+        //writeCDFFiles(values, algo, locality);
+
         //////////// TP
         // double avgtp = 0;
         // totalFiles = 0;
@@ -177,7 +183,37 @@ public class Results {
         // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
         // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
 
-        // System.out.println("Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
         // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+    }
+
+    private static void writeCDFFiles(HashMap<Short, ArrayList<Double>> values, String algo, String locality) {
+        try {
+            for(ArrayList<Double> a : values.values()) a.sort(Double::compare);
+            ArrayList<Double> [] array = new ArrayList[values.size()];
+            int i = 0;
+            for(ArrayList<Double> a : values.values()){
+                array[i] = a;
+                i++;
+            }
+         
+            PrintWriter printerOut = new PrintWriter("CDF_"+algo+"_"+locality+"%loc_node1.txt");
+            for(double v: array[0]) printerOut.println(v);
+            printerOut.flush();
+            printerOut.close();
+
+            printerOut = new PrintWriter("CDF_"+algo+"_"+locality+"%loc_node2.txt");
+            for(double v: array[1]) printerOut.println(v);
+            printerOut.flush();
+            printerOut.close();
+
+            printerOut = new PrintWriter("CDF_"+algo+"_"+locality+"%loc_node3.txt");
+            for(double v: array[2]) printerOut.println(v);
+            printerOut.flush();
+            printerOut.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }

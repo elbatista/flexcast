@@ -219,6 +219,7 @@ public class FileManager extends BaseObj {
                         short id1 = Short.valueOf(str.nextToken());
                         short id2 = Short.valueOf(str.nextToken());
                         pairs.add(new Pair<Short,Short>(id1, id2));
+                        print("loadByzCastTree, read pair", id1, id2);
                     }
                 }
             }
@@ -226,7 +227,10 @@ public class FileManager extends BaseObj {
             while((line = rd.readLine()) != null){
                 if(line.startsWith("#") || line.isEmpty()) continue; // ignore comments #
                 String [] map = line.split(",");
-                if(map != null && map.length > 0 && Short.valueOf(map[0]) == id) mappings.add(map);
+                if(map != null && map.length > 0 && Short.valueOf(map[0]) == id){
+                    mappings.add(map);
+                    print("loadByzCastTree, read map", line);
+                }
             }
 
             fr.close();
@@ -252,6 +256,7 @@ public class FileManager extends BaseObj {
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while((line = rd.readLine()) != null){
+                if(line.startsWith("-")) break; // skip the mappings
                 if(!line.startsWith("#")){ // ignore comments #
                     StringTokenizer str = new StringTokenizer(line, "->");
                     if(str.countTokens() > 1){
@@ -260,6 +265,7 @@ public class FileManager extends BaseObj {
                         graph.addVertex(id1);
                         graph.addVertex(id2);
                         graph.addEdge(id1, id2);
+                        print("loadByzCastTreeAsGraph, read pair", id1, id2);
                     }
                 }
             }

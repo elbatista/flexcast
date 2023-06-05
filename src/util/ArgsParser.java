@@ -68,6 +68,7 @@ public class ArgsParser {
         parser.options.addOption(parser.clientCount);
         parser.options.addOption(parser.duration);
         parser.options.addOption(parser.log);
+        parser.options.addOption(parser.tree);
         parser.parse(args);
         return parser;
     }
@@ -101,7 +102,7 @@ public class ArgsParser {
 
     public int getGC() {
         String v = line.getOptionValue("gc");
-        return v == null ? 0 : Integer.valueOf(v);
+        return v == null ? -1 : Integer.valueOf(v);
     }
 
     public boolean getLog() {
@@ -129,6 +130,11 @@ public class ArgsParser {
     }
 
     public int getTree() {
+        String v = line.getOptionValue("tree");
+        return v == null ? 1 : Integer.valueOf(v);
+    }
+
+    public int getDAGTop() {
         String v = line.getOptionValue("tree");
         return v == null ? 1 : Integer.valueOf(v);
     }

@@ -10,6 +10,7 @@ import io.netty.channel.Channel;
 import skeen.comms.SkeenNettyClientChannel;
 import skeen.messages.SkeenMessage;
 import skeen.messages.SkeenMessage.Type;
+import util.Stats;
 
 public class SkeenClientProxy extends Node {
     private HashMap<Short, Channel> outChannels;
@@ -17,6 +18,12 @@ public class SkeenClientProxy extends Node {
     private ReentrantLock lock = new ReentrantLock();
     private ArrayList<SkeenMessage> replies = new ArrayList<>();
     private short expectedReplies = 0;
+    protected Stats stats;
+    protected short warehouse;
+    private long startTime;
+    private HashMap<Short, Long> latsPerNode = new HashMap<>();
+    short lca;
+    short[] dsts;
 
     public SkeenClientProxy(short id){
         super(id);
@@ -111,9 +118,16 @@ public class SkeenClientProxy extends Node {
 
     public void receiveReply(SkeenMessage reply){
         lock.lock();
+
+        // armazena latencia por nodo em microsegundo
+        latsPerNode.put(reply.getSender(), ((System.nanoTime() - startTime) / 1000));
+
+
         replies.add(reply);
-        if(replies.size() == expectedReplies)
+        if(replies.size() == expectedReplies){
+            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts);
             sema.release();
+        }
         lock.unlock();
     }
 
@@ -132,7 +146,13 @@ public class SkeenClientProxy extends Node {
     public SkeenMessage multicast(SkeenMessage m){
         replies.clear();
         expectedReplies = (short) m.getDst().length;
-        send(m, m.getMinDest());
+
+        latsPerNode.clear();
+        startTime = System.nanoTime();
+        dsts = m.getDst();
+
+        send(m, warehouse);
+
         try {
             sema.acquire();
         } catch (InterruptedException e) {

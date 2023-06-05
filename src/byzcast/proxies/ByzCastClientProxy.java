@@ -13,7 +13,6 @@ import org.jgrapht.alg.lca.TarjanLCAFinder;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.nio.dot.DOTExporter;
-
 import base.Node;
 import byzcast.comms.ByzCastNettyClientChannel;
 import byzcast.messages.ByzCastMessage;
@@ -29,7 +28,7 @@ public class ByzCastClientProxy extends Node {
     private ArrayList<ByzCastMessage> replies = new ArrayList<>();
     private short expectedReplies = 0;
     protected Graph<Short,DefaultEdge> tree;
-    private TarjanLCAFinder<Short,DefaultEdge> lcafinder;
+    protected TarjanLCAFinder<Short,DefaultEdge> lcafinder;
     
     protected Stats stats;
     private long startTime;
@@ -37,17 +36,21 @@ public class ByzCastClientProxy extends Node {
     short lca;
     short[] dsts;
 
-    public ByzCastClientProxy(){
-        super((short)0);
-        tree = new FileManager().loadByzCastTreeAsGraph();
-        lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, (short)0);
-    }
-
     public ByzCastClientProxy(short id, int numTree){
         super(id);
         outChannels = new HashMap<>();
         tree = new FileManager().loadByzCastTreeAsGraph();
-        lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, (short)(numTree == 3 ? 9 : 0));
+
+        
+        
+        print("ByzCast Tree:", getTreeString());
+    }
+
+    protected String getTreeString() {
+        DOTExporter<Short, DefaultEdge> exporter = new DOTExporter<>(v->String.valueOf(v));
+        Writer writer = new StringWriter();
+        exporter.exportGraph(tree, writer);
+        return writer.toString();
     }
 
     public void connectTo(Node dest){
@@ -177,13 +180,22 @@ public class ByzCastClientProxy extends Node {
             }
         }
         List<Short> sorted = lcafinder.getBatchLCA(list);
-        sorted.sort(Short::compare);
+
+        while(true){
+            if(sorted.size() > 1){
+                list = new ArrayList<>();
+                for(int i = 0; i < sorted.size(); i++){
+                    if((i+1) < sorted.size()){
+                        list.add(new Pair<Short,Short>(sorted.get(i), sorted.get(i+1)));
+                    }
+                }
+                sorted = lcafinder.getBatchLCA(list);
+                continue;
+            }
+            break;
+        }
+
         return sorted.get(0);
     }
 
-    public static void main(String args[]){
-        ByzCastMessage m = new ByzCastMessage(0);
-        m.setDst( (short)4, (short)5);
-        System.out.println(new ByzCastClientProxy().getLca(m));
-    }
 }

@@ -12,7 +12,8 @@ import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
-
+import org.jgrapht.alg.lca.TarjanLCAFinder;
+import org.jgrapht.graph.DefaultEdge;
 import base.Node;
 import byzcast.messages.ByzCastMessage;
 import byzcast.messages.ByzCastMessage.Type;
@@ -47,6 +48,14 @@ public class ByzCastClient extends ByzCastClientProxy {
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         for(Node server : nodes) connectTo(server, syncAllConnections);
         numNodes = (short) nodes.size();
+
+        short root = 0;
+        switch(numNodes){
+            case 9: {root = 4; break;}
+            case 12: {root = 5; break;}
+        }
+        lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, root);
+
         destsSizes = new int [numNodes];
         wloadDist2dests = new int [numNodes][numNodes];
         wloadDist3dests = new int [numNodes][numNodes][numNodes];
@@ -67,7 +76,7 @@ public class ByzCastClient extends ByzCastClientProxy {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(3000);
+        //sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
@@ -136,7 +145,9 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     protected ByzCastMessage newMessageTo(short... dst){
-        ByzCastMessage m = newMessage();
+        ByzCastMessage m = new ByzCastMessage(nextSeqNumber());
+        m.setType(Type.MSG);
+        m.setCliId(getId());
         m.setDst(dst);
         return m;
     }
@@ -189,14 +200,13 @@ public class ByzCastClient extends ByzCastClientProxy {
     private short[] generate3Dests(){
         short [] tempdst = new short[3];
         tempdst[0] = warehouse;
-        
-        tempdst[1] = getNearestWH(warehouse);
-        
-        if(randomNumber(1, 100, gen) <= localityPercentage)
+        if(randomNumber(1, 100, gen) <= localityPercentage){
+            tempdst[1] = getNearestWH(warehouse);
             tempdst[2] = getSecondNearestWH(warehouse);
-        else 
+        }else {
+            tempdst[1] = getSecondNearestWH(warehouse);
             tempdst[2] = getThirdNearestWH(warehouse);
-        
+        }
         LinkedHashSet<Short> set = new LinkedHashSet<Short>();
  
         // remove duplicates
@@ -213,60 +223,156 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short getNearestWH(short warehouseparam) {
-        // tree 1 and 2
-        switch(warehouseparam){
-            case 0: return 1;
-            case 1: return 0;
-            case 2: return 3;
-            case 3: return 2;
-            case 4: return 5;
-            case 5: return 4;
-            case 6: return 8;
-            case 7: return 8;
-            case 8: return 7;
-            case 9: return 5;
-            case 10: return 5;
-            case 11: return 8;
-            default: return warehouseparam;
+        if(numNodes == 9){
+            switch(warehouseparam){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 3;
+                case 3: return 4;
+                case 4: return 5;
+                case 5: return 4;
+                case 6: return 7;
+                case 7: return 8;
+                case 8: return 7;
+                default: return warehouseparam;
+            }
+        } else if(numNodes == 12){
+            switch(warehouseparam){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 1;
+                case 3: return 2;
+                case 4: return 5;
+                case 5: return 4;
+                case 6: return 7;
+                case 7: return 6;
+                case 8: return 9;
+                case 9: return 8;
+                case 10: return 9;
+                case 11: return 10;
+                default: return warehouseparam;
+            }
+        } else if(numNodes == 13){
+            switch(warehouseparam){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 3;
+                case 3: return 4;
+                case 4: return 5;
+                case 5: return 6;
+                case 6: return 7;
+                case 7: return 8;
+                case 8: return 9;
+                case 9: return 10;
+                case 10: return 11;
+                case 11: return 12;
+                case 12: return 11;
+                default: return warehouseparam;
+            }
         }
+        return warehouseparam;
     }
 
     private short getSecondNearestWH(short warehouseparam) {
-        // tree 1 and 2
-        switch(warehouseparam){
-            case 0: return 3;
-            case 1: return 2;
-            case 2: return 1;
-            case 3: return 0;
-            case 4: return 9;
-            case 5: return 9;
-            case 6: return 7;
-            case 7: return 8;
-            case 8: return 7;
-            case 9: return 5;
-            case 10: return 4;
-            case 11: return 7;
-            default: return warehouseparam;
+        if(numNodes == 9){
+            switch(warehouseparam){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 5;
+                case 4: return 2;
+                case 5: return 3;
+                case 6: return 8;
+                case 7: return 5;
+                case 8: return 6;
+                default: return warehouseparam;
+            }
+        } else if(numNodes == 12){
+            switch(warehouseparam){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 1;
+                case 4: return 6;
+                case 5: return 7;
+                case 6: return 4;
+                case 7: return 5;
+                case 8: return 10;
+                case 9: return 11;
+                case 10: return 8;
+                case 11: return 9;
+                default: return warehouseparam;
+            }
+        } else if(numNodes == 13){
+            switch(warehouseparam){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 1;
+                case 4: return 2;
+                case 5: return 7;
+                case 6: return 8;
+                case 7: return 5;
+                case 8: return 6;
+                case 9: return 11;
+                case 10: return 12;
+                case 11: return 9;
+                case 12: return 10;
+                default: return warehouseparam;
+            }
         }
+        return warehouseparam;
     }
 
     private short getThirdNearestWH(short warehouseparam) {
-        // tree 1 and 2
-        switch(warehouseparam){
-            case 0: return 6;
-            case 1: return 3;
-            case 2: return 10;
-            case 3: return 1;
-            case 4: return 1;
-            case 5: return 0;
-            case 6: return 11;
-            case 7: return 2;
-            case 8: return 2;
-            case 9: return 10;
-            case 10: return 9;
-            case 11: return 6;
-            default: return warehouseparam;
+        if(numNodes == 9){
+            switch(warehouseparam){
+                case 0: return 3;
+                case 1: return 4;
+                case 2: return 5;
+                case 3: return 0;
+                case 4: return 1;
+                case 5: return 2;
+                case 6: return 3;
+                case 7: return 4;
+                case 8: return 5;
+                default: return warehouseparam;
+            }
+        } else if(numNodes == 12){
+            switch(warehouseparam){
+                case 0: return 3;
+                case 1: return 4;
+                case 2: return 5;
+                case 3: return 0;
+                case 4: return 7;
+                case 5: return 1;
+                case 6: return 3;
+                case 7: return 4;
+                case 8: return 11;
+                case 9: return 6;
+                case 10: return 7;
+                case 11: return 8;
+                default: return warehouseparam;
+            }
+        } else if(numNodes == 13){
+            switch(warehouseparam){
+                case 0: return 3;
+                case 1: return 4;
+                case 2: return 5;
+                case 3: return 0;
+                case 4: return 2;
+                case 5: return 8;
+                case 6: return 9;
+                case 7: return 10;
+                case 8: return 5;
+                case 9: return 12;
+                case 10: return 7;
+                case 11: return 8;
+                case 12: return 9;
+                default: return warehouseparam;
+            }
         }
+        return warehouseparam;
     }
 
     public static int randomNumber(int min, int max, Random r) {

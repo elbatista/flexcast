@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-
 import org.javatuples.Pair;
-import flexcast.messages.LightMessagesList.Item;
 import io.netty.channel.Channel;
 import util.BaseObj;
 
@@ -220,11 +218,10 @@ public class Message extends BaseObj implements Externalizable {
             out.writeShort(anc);
             // write how many msgs in the list
             out.writeInt(getHst().get(anc).size());
-            Item item = getHst().get(anc).getFirst();
-            while(item != null){
-                out.writeInt(item.get().getId());
-                writeExtDsts(out, item.get());
-                item = item.getNext();
+
+            for(LightMessage lm :  getHst().get(anc)){
+                out.writeInt(lm.getId());
+                writeExtDsts(out, lm);
             }
         }
     }

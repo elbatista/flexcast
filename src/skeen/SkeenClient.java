@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
@@ -29,10 +30,10 @@ public class SkeenClient extends SkeenClientProxy {
     private int [] destsSizes;
     protected int [][] wloadDist2dests;
     protected int [][][] wloadDist3dests;
-    protected int [][][][] wloadDist4dests;
-    protected int [][][][][] wloadDist5dests;
-    protected Stats stats;
+    // protected Stats stats;
+    protected final Random gen;
     
+
     public SkeenClient(short id, ArgsParser args, boolean start){
         super(id);
         this.args = args;
@@ -43,12 +44,11 @@ public class SkeenClient extends SkeenClientProxy {
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         for(Node server : nodes) connectTo(server, syncAllConnections);
         numNodes = (short) nodes.size();
+        warehouse = (short) args.getHomeWarehouse();
         destsSizes = new int [numNodes];
         wloadDist2dests = new int [numNodes][numNodes];
         wloadDist3dests = new int [numNodes][numNodes][numNodes];
-        wloadDist4dests = new int [numNodes][numNodes][numNodes][numNodes];
-        wloadDist5dests = new int [numNodes][numNodes][numNodes][numNodes][numNodes];
-        
+        gen = new Random(System.nanoTime());
         if(start) start();
     }
     
@@ -63,18 +63,21 @@ public class SkeenClient extends SkeenClientProxy {
     private void start() {
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
+        printF("Connected to all servers!");
         // send initialization message to all servers
         sendInitMessage();
-        sleep(1000);
+        //sleep(1000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         print("All other clients ready!");
         
         print("Started skeen experiment");
-        if(args.getNumPartitions() == 2) print ("2 partitions");
-        if(localityPercentage > 0) print("workload with locality", localityPercentage, "%");
-
+        if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
+        printF("Locality:", localityPercentage, "%");
+        printF("My home warehouse:", warehouse);
+        if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
+        stats = new Stats(totalTime, numNodes);
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
 
@@ -95,6 +98,7 @@ public class SkeenClient extends SkeenClientProxy {
         if (stats.getCount() > 0) {
             try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
             stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-skeen.txt", 15);
+            stats.persistPerNodes("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-skeen-per-node.txt", 15);
             print("LOCAL STATS:", stats);
         }
 
@@ -119,21 +123,6 @@ public class SkeenClient extends SkeenClientProxy {
             for(int j = 0; j < numNodes; j++)
                 for(int k = 0; k < numNodes; k++)
                     if(wloadDist3dests[i][j][k] > 0) print("# of msgs to [",i, j, k, "]:", wloadDist3dests[i][j][k]);
-        
-        print("Wload for destination size 4:");
-        for(int i = 0; i < numNodes; i++)
-            for(int j = 0; j < numNodes; j++)
-                for(int k = 0; k < numNodes; k++)
-                    for(int l = 0; l < numNodes; l++)
-                        if(wloadDist4dests[i][j][k][l] > 0) print("# of msgs to [",i, j, k, l, "]:", wloadDist4dests[i][j][k][l]);
-        
-        print("Wload for destination size 5:");
-        for(int i = 0; i < numNodes; i++)
-            for(int j = 0; j < numNodes; j++)
-                for(int k = 0; k < numNodes; k++)
-                    for(int l = 0; l < numNodes; l++)
-                        for(int m = 0; m < numNodes; m++)
-                            if(wloadDist5dests[i][j][k][l][m] > 0) print("# of msgs to [",i, j, k, l, m, "]:", wloadDist5dests[i][j][k][l][m]);
     }
 
     protected void computeDistribution(SkeenMessage m) {
@@ -141,15 +130,13 @@ public class SkeenClient extends SkeenClientProxy {
             wloadDist2dests[m.getDst()[0]][m.getDst()[1]]++;
         } else if (m.getDst().length == 3){
             wloadDist3dests[m.getDst()[0]][m.getDst()[1]][m.getDst()[2]]++;
-        } else if (m.getDst().length == 4) {
-            wloadDist4dests[m.getDst()[0]][m.getDst()[1]][m.getDst()[2]][m.getDst()[3]]++;
-        } else if (m.getDst().length == 5) {
-            wloadDist5dests[m.getDst()[0]][m.getDst()[1]][m.getDst()[2]][m.getDst()[3]][m.getDst()[4]]++;
-        }
+        } 
     }
 
     protected SkeenMessage newMessageTo(short... dst){
-        SkeenMessage m = newMessage();
+        SkeenMessage m = new SkeenMessage(nextSeqNumber());
+        m.setType(Type.MSG);
+        m.setCliId(getId());
         m.setDst(dst);
         return m;
     }
@@ -157,68 +144,167 @@ public class SkeenClient extends SkeenClientProxy {
     private SkeenMessage newMessage(){
         SkeenMessage m = new SkeenMessage(nextSeqNumber());
         m.setType(Type.MSG);
-        m.setDst(randomDests());
+        m.setDst(generateDests());
         m.setCliId(getId());
         return m;
     }
 
-    private short[] randomDests(){
-        Random r = new Random();
-        if(args.getNumPartitions() > 1){
-            if(localityPercentage > 0){
-                if(args.getNumPartitions() == 2)
-                    return run2ShardsWithLocality(r, numNodes);
-            }
-
-            short [] tempdst = new short[args.getNumPartitions()];
-            // 1
-            tempdst[0] = (short)r.nextInt(numNodes);
-
-            // 2
-            do {tempdst[1] = (short)r.nextInt(numNodes);}
-            while(tempdst[0] == tempdst[1]);
-
-            // 3
-            if(args.getNumPartitions() >= 3){
-                do {tempdst[2] = (short)r.nextInt(numNodes);}
-                while(tempdst[0] == tempdst[2] || tempdst[1] == tempdst[2]);
-            }
-
-            // 4
-            if(args.getNumPartitions() >= 4){
-                do {tempdst[3] = (short)r.nextInt(numNodes);}
-                while(tempdst[0] == tempdst[3] || tempdst[1] == tempdst[3] || tempdst[2] == tempdst[3]);
-            }
-
-            // 5
-            if(args.getNumPartitions() >= 5){
-                do {tempdst[4] = (short)r.nextInt(numNodes);}
-                while(tempdst[0] == tempdst[4] || tempdst[1] == tempdst[4] || tempdst[2] == tempdst[4] || tempdst[3] == tempdst[4]);
-            }
-
-            // 6
-            if(args.getNumPartitions() == 6){
-                if(numNodes != 6) {
-                    print("Bad config shards vs nodes");
-                    exit();
-                }
-                tempdst[0] = (short) 0;
-                tempdst[1] = (short) 1;
-                tempdst[2] = (short) 2;
-                tempdst[3] = (short) 3;
-                tempdst[4] = (short) 4;
-                tempdst[5] = (short) 5;
-                return tempdst;
-            }
-            
-            Arrays.sort(tempdst);
-            return tempdst;
+    private short[] generateDests(){
+        if(localityPercentage == 0){
+            return generateRandDests();
         }
+        if(randomNumber(1, 100, gen) <= localityPercentage) 
+            return generate2Dests();
+        return generate3Dests();
+    }
 
+    private short[] generate2Dests(){
+        short [] tempdst = new short[2];
+        tempdst[0] = warehouse;
+
+        if(randomNumber(1, 100, gen) <= localityPercentage)
+            tempdst[1] = getNearestWH(warehouse);
+        else 
+            tempdst[1] = getSecondNearestWH(warehouse);
+
+        Arrays.sort(tempdst);
+
+        return tempdst;
+    }
+
+    private short[] generate3Dests(){
+        short [] tempdst = new short[3];
+        tempdst[0] = warehouse;
+        if(randomNumber(1, 100, gen) <= localityPercentage){
+            tempdst[1] = getNearestWH(warehouse);
+            tempdst[2] = getSecondNearestWH(warehouse);
+        }else {
+            tempdst[1] = getSecondNearestWH(warehouse);
+            tempdst[2] = getThirdNearestWH(warehouse);
+        }
+        LinkedHashSet<Short> set = new LinkedHashSet<Short>();
+ 
+        // remove duplicates
+        for (short s : tempdst) set.add(s);
+        short [] finaldst = new short[set.size()];
+        int i = 0;
+        for(short s : set){
+            finaldst[i] = s;
+            i++;
+        }
+        Arrays.sort(finaldst);
+
+        return finaldst;
+    }
+
+    private short getNearestWH(short warehouseparam) {
+        if(numNodes == 9){
+            switch(warehouseparam){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 1;
+                case 3: return 4;
+                case 4: return 5;
+                case 5: return 4;
+                case 6: return 7;
+                case 7: return 8;
+                case 8: return 7;
+                default: return warehouseparam;
+            }
+        }
+        else if(numNodes == 12){
+            switch(warehouseparam){
+                case 0: return 1;
+                case 1: return 2;
+                case 2: return 1;
+                case 3: return 2;
+                case 4: return 5;
+                case 5: return 6;
+                case 6: return 7;
+                case 7: return 6;
+                case 8: return 9;
+                case 9: return 10;
+                case 10: return 9;
+                case 11: return 10;
+                default: return warehouseparam;
+            }
+        } 
+        return warehouseparam;
+    }
+    private short getSecondNearestWH(short warehouseparam) {
+        if(numNodes == 9){
+            switch(warehouseparam){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 2;
+                case 3: return 5;
+                case 4: return 2;
+                case 5: return 3;
+                case 6: return 8;
+                case 7: return 5;
+                case 8: return 6;
+                default: return warehouseparam;
+            }
+        }
+        else if(numNodes == 12){
+            switch(warehouseparam){
+                case 0: return 2;
+                case 1: return 3;
+                case 2: return 0;
+                case 3: return 1;
+                case 4: return 6;
+                case 5: return 7;
+                case 6: return 4;
+                case 7: return 5;
+                case 8: return 10;
+                case 9: return 11;
+                case 10: return 8;
+                case 11: return 9;
+                default: return warehouseparam;
+            }
+        } 
+        return warehouseparam;
+    }
+    private short getThirdNearestWH(short warehouseparam) {
+        if(numNodes == 9){
+            switch(warehouseparam){
+                case 0: return 3;
+                case 1: return 4;
+                case 2: return 5;
+                case 3: return 0;
+                case 4: return 7;
+                case 5: return 8;
+                case 6: return 3;
+                case 7: return 4;
+                case 8: return 5;
+                default: return warehouseparam;
+            }
+        }
+        else if(numNodes == 12){
+            switch(warehouseparam){
+                case 0: return 3;
+                case 1: return 4;
+                case 2: return 5;
+                case 3: return 0;
+                case 4: return 7;
+                case 5: return 8;
+                case 6: return 2;
+                case 7: return 4;
+                case 8: return 11;
+                case 9: return 6;
+                case 10: return 7;
+                case 11: return 8;
+                default: return warehouseparam;
+            }
+        } 
+        return warehouseparam;
+    }
+
+    private short[] generateRandDests() {
         Set<Short> uniqueNumbers = new HashSet<>();
-        int size = r.nextInt(numNodes)+1;
+        int size = randomNumber(2, numNodes, gen); // only global
         while (uniqueNumbers.size() < size)
-            uniqueNumbers.add((short)r.nextInt(numNodes));
+            uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
         short [] tempdst = new short[size];
         short i = 0;
         for(short u : uniqueNumbers.stream().sorted().collect(Collectors.toList())){
@@ -228,181 +314,7 @@ public class SkeenClient extends SkeenClientProxy {
         return tempdst;
     }
 
-    private short[] run2ShardsWithLocality(Random r, short numNodes) {
-        short [] tempdst = new short[2];
-        int rand = r.nextInt(100);
-        int halfLocality = localityPercentage/2;
-
-        if(numNodes == 3){
-            if(rand < localityPercentage){
-                if(halfLocality < rand){
-                    tempdst[0] = 0;
-                    tempdst[1] = 1;
-                }
-                else {
-                    tempdst[0] = 1;
-                    tempdst[1] = 2;
-                }
-            }
-            else {
-                tempdst[0] = 0;
-                tempdst[1] = 2;
-            }
-            return tempdst;
-        }
-
-        if(numNodes == 6){
-            if(rand < 20){
-                tempdst[0] = 0;
-                tempdst[1] = 1;
-            } else if (rand >= 20 && rand < 40){
-                tempdst[0] = 1;
-                tempdst[1] = 2;
-            } else if (rand >= 40 && rand < 60){
-                tempdst[0] = 2;
-                tempdst[1] = 3;
-            } else if (rand >= 60 && rand < 80){
-                tempdst[0] = 3;
-                tempdst[1] = 4;
-            } else if (rand >= 80 && rand <  96){
-                tempdst[0] = 4;
-                tempdst[1] = 5;
-            } else if (rand >= 96 && rand <  97){
-                tempdst[0] = 0;
-                tempdst[1] = 2;
-            } else if (rand >= 97 && rand <  98){
-                tempdst[0] = 1;
-                tempdst[1] = 3;
-            } else if (rand >= 98 && rand <  99){
-                tempdst[0] = 2;
-                tempdst[1] = 4;
-            } else if (rand >= 99){
-                tempdst[0] = 3;
-                tempdst[1] = 5;
-            }
-            return tempdst;
-        }
-
-        if(numNodes == 9){
-            if(rand < 12){
-                tempdst[0] = 0;
-                tempdst[1] = 1;
-            } else if (rand >= 12 && rand < 24){
-                tempdst[0] = 1;
-                tempdst[1] = 2;
-            } else if (rand >= 24 && rand < 36){
-                tempdst[0] = 2;
-                tempdst[1] = 3;
-            } else if (rand >= 36 && rand < 48){
-                tempdst[0] = 3;
-                tempdst[1] = 4;
-            } else if (rand >= 48 && rand <  60){
-                tempdst[0] = 4;
-                tempdst[1] = 5;
-            } else if (rand >= 60 && rand <  72){
-                tempdst[0] = 5;
-                tempdst[1] = 6;
-            } else if (rand >= 72 && rand <  84){
-                tempdst[0] = 6;
-                tempdst[1] = 7;
-            } else if (rand >= 76 && rand <  93){
-                tempdst[0] = 7;
-                tempdst[1] = 8;
-            } else if (rand >= 93 && rand <  94){
-                tempdst[0] = 0;
-                tempdst[1] = 2;
-            } else if (rand >= 94 && rand <  95){
-                tempdst[0] = 1;
-                tempdst[1] = 3;
-            }  else if (rand >= 95 && rand <  96){
-                tempdst[0] = 2;
-                tempdst[1] = 4;
-            } else if (rand >= 96 && rand <  97){
-                tempdst[0] = 3;
-                tempdst[1] = 5;
-            } else if (rand >= 97 && rand <  98){
-                tempdst[0] = 4;
-                tempdst[1] = 6;
-            } else if (rand >= 98 && rand <  99){
-                tempdst[0] = 5;
-                tempdst[1] = 7;
-            } else if (rand >= 99){
-                tempdst[0] = 6;
-                tempdst[1] = 8;
-            }
-            return tempdst;
-        }
-
-        if(numNodes == 12){
-            if(rand < 9){
-                tempdst[0] = 0;
-                tempdst[1] = 1;
-            } else if (rand >= 9 && rand < 16){
-                tempdst[0] = 1;
-                tempdst[1] = 2;
-            } else if (rand >= 16 && rand < 24){
-                tempdst[0] = 2;
-                tempdst[1] = 3;
-            } else if (rand >= 24 && rand < 32){
-                tempdst[0] = 3;
-                tempdst[1] = 4;
-            } else if (rand >= 32 && rand <  40){
-                tempdst[0] = 4;
-                tempdst[1] = 5;
-            } else if (rand >= 40 && rand <  48){
-                tempdst[0] = 5;
-                tempdst[1] = 6;
-            } else if (rand >= 48 && rand <  56){
-                tempdst[0] = 6;
-                tempdst[1] = 7;
-            } else if (rand >= 56 && rand <  63){
-                tempdst[0] = 7;
-                tempdst[1] = 8;
-            } else if (rand >= 63 && rand <  73){
-                tempdst[0] = 8;
-                tempdst[1] = 9;
-            } else if (rand >= 73 && rand <  82){
-                tempdst[0] = 9;
-                tempdst[1] = 10;
-            } else if (rand >= 82 && rand <  90){
-                tempdst[0] = 10;
-                tempdst[1] = 11;
-            } else if (rand >= 90 && rand <  91){
-                tempdst[0] = 0;
-                tempdst[1] = 2;
-            } else if (rand >= 91 && rand <  92){
-                tempdst[0] = 1;
-                tempdst[1] = 3;
-            }  else if (rand >= 92 && rand < 93){
-                tempdst[0] = 2;
-                tempdst[1] = 4;
-            } else if (rand >= 93 && rand <  94){
-                tempdst[0] = 3;
-                tempdst[1] = 5;
-            } else if (rand >= 94 && rand <  95){
-                tempdst[0] = 4;
-                tempdst[1] = 6;
-            } else if (rand >= 95 && rand <  96){
-                tempdst[0] = 5;
-                tempdst[1] = 7;
-            } else if (rand >= 96 && rand <  97){
-                tempdst[0] = 6;
-                tempdst[1] = 8;
-            } else if (rand >= 97 && rand <  98){
-                tempdst[0] = 7;
-                tempdst[1] = 9;
-            } else if (rand >= 98 && rand <  99){
-                tempdst[0] = 8;
-                tempdst[1] = 10;
-            } else if (rand >= 99){
-                tempdst[0] = 9;
-                tempdst[1] = 11;
-            }
-
-            return tempdst;
-        }
-
-        return tempdst;
+    public static int randomNumber(int min, int max, Random r) {
+        return (int) (r.nextDouble() * (max - min + 1) + min);
     }
-
 }

@@ -12,8 +12,8 @@ echo $0 duration $duration algo $algo clis $clis servers $servers locality $loca
 echo "------------------------------------------------------------------------------------------------" >> logs/executions.log
 
 # para gc, descomentar abaixo
-# ((totalClis = $clis+1))
-((totalClis = $clis))
+((totalClis = $clis+1))
+# ((totalClis = $clis))
 
 # Start servers
 ((START = $servers-1))
@@ -32,8 +32,8 @@ for j in $(seq 0 $END); do
 done
 echo started $clis clients >> logs/executions.log
 
-# java -cp "bin/*:lib/*" MainClient -c $totalClis -i $clis -d $duration -a $algo $log -gc $gc >> logs/cli$clis.txt &
-# echo started gc client >> logs/executions.log
+java -cp "bin/*:lib/*" MainClient -c $totalClis -i $clis -d $duration -a $algo $log -gc $gc >> logs/cli$clis.txt &
+echo started gc client >> logs/executions.log
 
 echo "waiting..."  >> logs/executions.log;
 while :
@@ -41,11 +41,9 @@ do
     sleep 1;
     nodeFiles=`find ./files -name 'NodeFinished*' | wc -l` #Count files and store in a variable
     if [ "$nodeFiles" -ge $servers ]; then sleep 1; break; fi
+    if grep -q "true" files/stop; then echo "found stop, exiting..." >> logs/executions.log; exit 0; fi
 done
 echo "all nodes done"  >> logs/executions.log; pkill -f 'java.*Main*'; echo "processes killed"  >> logs/executions.log
-
-# se teve fila nao vazia, para experimentos
-if grep -q "true" files/stop; then echo "found stop, exiting..." >> logs/executions.log; exit 0; fi
 
 # se teve ciclos, para experimentos
 echo "starting cycle validation ("$(date)")" >> logs/executions.log; java -cp "bin/*:lib/*" util.Validator > logs/validationresult.txt
