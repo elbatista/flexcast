@@ -1,6 +1,5 @@
 package proxies;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import comms.NettyServerChannel;
@@ -21,24 +20,10 @@ public abstract class ServerProxy extends ClientProxy {
         new NettyServerChannel(this, this);
         new Thread(new Runnable() {
             public void run(){
-                ArrayList<Message> tmpCliMsgs = new ArrayList<>();
                 while(true) {
                     Message m = bufferQueue.poll();
                     if(m != null) {
-                        // se for request normal de cliente
-                        if(m.getType() == Type.MSG && m.getLca() == getId()){
-                            // joga no arraylist tmpCliMsgs
-                            tmpCliMsgs.add(m);
-                        }
-                        else {
-                            // senao recebe:
-                            receive(m);
-                        }
-                    }
-                    // se nao tem nada pendente
-                    if(!hasPendMsg() && tmpCliMsgs.size() > 0){
-                        Message t = tmpCliMsgs.remove(0);
-                        if(t != null) receive(t);
+                        receive(m);
                     }
                 }
             }
@@ -109,16 +94,9 @@ public abstract class ServerProxy extends ClientProxy {
         Message reply = new Message(m.getId());
         reply.setSender(getId());
         reply.setType(Type.REPLY);
-
-        while(cliChannels.get(m.getCliId()) == null){
-            printF("Channel to cli ", m.getCliId(), "is null");
-            sleep(500);
-        }
-
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 
-    protected abstract boolean hasPendMsg();
     protected abstract void finish();
     protected abstract void gc(int mid);
     protected abstract void receiveMsg(Message m);

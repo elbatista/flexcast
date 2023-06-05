@@ -3,7 +3,9 @@ package util;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -17,18 +19,7 @@ public class Stats {
     private int accCount, limit;
     private int [] throughput;
     private int now = 0;
-
-    class Value {
-        short node;
-        long value;
-        boolean isGlobal;
-        public Value(short node, long value, boolean isGlobal) {
-            this.node = node;
-            this.value = value;
-            this.isGlobal = isGlobal;
-        }
-    }
-
+    private short numNodes=0;
     /**
      * Creates a new instance of Stats
      */
@@ -38,8 +29,9 @@ public class Stats {
         accCount = 0;
     }
 
-    public Stats(int duration) {
+    public Stats(int duration, short numNodes) {
         this();
+        this.numNodes = numNodes;
         throughput = new int[duration+1];
         System.out.println("Start tp measurements");
         new Timer().scheduleAtFixedRate(new TimerTask() {
@@ -162,6 +154,66 @@ public class Stats {
                 getPercentile(95, discardPercent) + ", " + getPercentile(99, discardPercent) + ")\n--------------\n\n");
         return sb.toString();
     }
+
+
+    ////////
+
+    class ValuesPerNode {
+        long [] values;
+        short[] dsts;
+        boolean isGlobal;
+        public ValuesPerNode(long [] values, boolean isGlobal, short[] dsts) {
+            this.values = values;
+            this.isGlobal = isGlobal;
+            this.dsts = dsts;
+        }
+    }
+
+    ArrayList<ValuesPerNode> valuesPerNode = new ArrayList<>();
+
+    public void store(HashMap<Short, Long> latsPerNode, boolean isGlobal, short[] dsts) {
+        long [] val = new long[numNodes];
+        for(short node : latsPerNode.keySet()){
+            val[node] = latsPerNode.get(node);
+        }
+        valuesPerNode.add(new ValuesPerNode(val, isGlobal, dsts));
+    }
+
+    public void persistPerNodes(String fileName, int discardPercent) {
+        File f = new File(fileName);
+        int order = 0;
+        try {
+            FileWriter fw = new FileWriter(f);
+
+            fw.write("ORDER\t");
+            for(int i = 0; i < numNodes; i++) fw.write("LAT_"+i+"\t");
+            fw.write("DSTS\t");
+            fw.write("TYPE\n");
+
+            for (int i = 0; i < valuesPerNode.size(); i++) {
+                ValuesPerNode value = valuesPerNode.get(i);
+                fw.write(++order + "\t");
+                for(int j = 0; j < numNodes; j++){
+                    fw.write(value.values[j] + "\t");
+                }
+                String dsts="[";
+
+                for(int x=0; x<value.dsts.length; x++){
+                    if(x>0) dsts += ",";
+                    dsts += value.dsts[x];
+                }
+
+                dsts+="]";
+                fw.write(dsts + "\t" + (value.isGlobal ? "global" : "local")+"\n");
+            }
+
+            fw.write("\n");
+            fw.write(toString(discardPercent));
+            fw.flush();
+            fw.close();
+        } catch (IOException ex) {
+            System.err.println("Unable to save stats to file");
+            ex.printStackTrace();
+        }
+    }
 }
-
-

@@ -1,5 +1,7 @@
 package byzcast.proxies;
 
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,12 +12,15 @@ import org.jgrapht.Graph;
 import org.jgrapht.alg.lca.TarjanLCAFinder;
 import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.nio.dot.DOTExporter;
+
 import base.Node;
 import byzcast.comms.ByzCastNettyClientChannel;
 import byzcast.messages.ByzCastMessage;
 import byzcast.messages.ByzCastMessage.Type;
 import io.netty.channel.Channel;
 import util.FileManager;
+import util.Stats;
 
 public class ByzCastClientProxy extends Node {
     private HashMap<Short, Channel> outChannels;
@@ -25,6 +30,12 @@ public class ByzCastClientProxy extends Node {
     private short expectedReplies = 0;
     protected Graph<Short,DefaultEdge> tree;
     private TarjanLCAFinder<Short,DefaultEdge> lcafinder;
+    
+    protected Stats stats;
+    private long startTime;
+    private HashMap<Short, Long> latsPerNode = new HashMap<>();
+    short lca;
+    short[] dsts;
 
     public ByzCastClientProxy(){
         super((short)0);
@@ -32,11 +43,11 @@ public class ByzCastClientProxy extends Node {
         lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, (short)0);
     }
 
-    public ByzCastClientProxy(short id){
+    public ByzCastClientProxy(short id, int numTree){
         super(id);
         outChannels = new HashMap<>();
         tree = new FileManager().loadByzCastTreeAsGraph();
-        lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, (short)0);
+        lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, (short)(numTree == 3 ? 9 : 0));
     }
 
     public void connectTo(Node dest){
@@ -127,31 +138,27 @@ public class ByzCastClientProxy extends Node {
 
     public void receiveReply(ByzCastMessage reply){
         lock.lock();
+
+        // armazena latencia por nodo em microsegundo
+        latsPerNode.put(reply.getSender(), ((System.nanoTime() - startTime) / 1000));
+
         replies.add(reply);
-        if(replies.size() == expectedReplies)
+
+        if(replies.size() == expectedReplies){
+            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts);
             sema.release();
+        }
         lock.unlock();
     }
-
-    // public ByzCastMessage multicast(ByzCastMessage m, short warehouse){
-    //     replies.clear();
-    //     expectedReplies = (short) m.getDst().length;
-    //     send(m, warehouse);
-    //     try {
-    //         sema.acquire();
-    //     } catch (InterruptedException e) {
-    //         e.printStackTrace();
-    //     }
-    //     return replies.get(0);
-    // }
 
     public ByzCastMessage multicast(ByzCastMessage m){
         replies.clear();
         expectedReplies = (short) m.getDst().length;
-        short lca = getLca(m);
-        // print("Will send", m, "to lca", lca);
+        latsPerNode.clear();
+        startTime = System.nanoTime();
+        dsts = m.getDst();
+        lca = getLca(m);
         send(m, lca);
-
         try {
             sema.acquire();
         } catch (InterruptedException e) {
@@ -170,7 +177,6 @@ public class ByzCastClientProxy extends Node {
             }
         }
         List<Short> sorted = lcafinder.getBatchLCA(list);
-        // print(sorted);
         sorted.sort(Short::compare);
         return sorted.get(0);
     }
@@ -179,6 +185,5 @@ public class ByzCastClientProxy extends Node {
         ByzCastMessage m = new ByzCastMessage(0);
         m.setDst( (short)4, (short)5);
         System.out.println(new ByzCastClientProxy().getLca(m));
-
     }
 }

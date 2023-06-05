@@ -75,7 +75,7 @@ public class Client extends ClientProxy {
         if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
         print("Locality", localityPercentage, "%");
 
-        stats = new Stats(totalTime);
+        stats = new Stats(totalTime, numNodes);
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;

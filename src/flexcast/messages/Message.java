@@ -7,6 +7,8 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+
 import org.javatuples.Pair;
 import flexcast.messages.LightMessagesList.Item;
 import io.netty.channel.Channel;
@@ -24,6 +26,7 @@ public class Message extends BaseObj implements Externalizable {
     
     // "transient" fields
     private Channel channelIn;
+    private HashSet<Integer> pendNotifOrigins;
 
     // constructors
     public Message(){
@@ -46,6 +49,11 @@ public class Message extends BaseObj implements Externalizable {
         this.id = id;
     }
 
+    public HashSet<Integer> getPendNotifOrigins() {
+        if(pendNotifOrigins == null) pendNotifOrigins = new HashSet<>();
+        return pendNotifOrigins;
+    }
+    
     public int getIdNotif() {
         return idNotif;
     }

@@ -1,6 +1,6 @@
-if [ "$#" -lt 8 ]; then echo "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <locality> <#msgs> <#exp> <#gc>"; exit 0; fi
+if [ "$#" -lt 7 ]; then echo "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <locality> <#msgs> <#exp>"; exit 0; fi
 i=0; tpcc=""; locality=""; exe=0; ant clean; ant; rm -f -r logs/*  files/*;
-duration=$1; algo=$2; clis=$3; servers=$4; locality=$5; msgs=$6; gc=$8; pkill -f 'java.*Main*'; sleep 1;
+duration=$1; algo=$2; clis=$3; servers=$4; locality=$5; msgs=$6; pkill -f 'java.*Main*'; sleep 1;
 rm -f -r logs/*.txt  files/*; pkill -f 'java.*Main*' ; echo false > files/stop; 
 log="";
 for exe in $(seq 1 $7); do
@@ -11,14 +11,10 @@ echo "execution $exe at" $(date) >> logs/executions.log
 echo $0 duration $duration algo $algo clis $clis servers $servers locality $locality msgs $msgs >> logs/executions.log
 echo "------------------------------------------------------------------------------------------------" >> logs/executions.log
 
-# para gc, descomentar abaixo
-# ((totalClis = $clis+1))
-((totalClis = $clis))
-
 # Start servers
 ((START = $servers-1))
 for ((i = START; i >= 0; i-=1)) ; do
-    java -cp "bin/*:lib/*" MainServer -i $i -a $algo -d $duration -c $totalClis $log >> logs/node$i.txt & sleep .05
+    java -cp "bin/*:lib/*" MainServer -i $i -a $algo -d $duration -c $clis $log >> logs/node$i.txt & sleep .05
 done
 echo started $servers servers >> logs/executions.log
 
@@ -27,13 +23,11 @@ echo started $servers servers >> logs/executions.log
 warehouse=0
 for j in $(seq 0 $END); do
     if [ $warehouse -eq $servers ]; then warehouse=0; fi
-    java -cp "bin/*:lib/*" MainClient -c $totalClis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> logs/cli$j.txt &
+    java -cp "bin/*:lib/*" MainClient -c $clis -i $j -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> logs/cli$j.txt &
     ((warehouse=$warehouse+1))
 done
 echo started $clis clients >> logs/executions.log
 
-# java -cp "bin/*:lib/*" MainClient -c $totalClis -i $clis -d $duration -a $algo $log -gc $gc >> logs/cli$clis.txt &
-# echo started gc client >> logs/executions.log
 
 echo "waiting..."  >> logs/executions.log;
 while :
@@ -48,8 +42,8 @@ echo "all nodes done"  >> logs/executions.log; pkill -f 'java.*Main*'; echo "pro
 if grep -q "true" files/stop; then echo "found stop, exiting..." >> logs/executions.log; exit 0; fi
 
 # se teve ciclos, para experimentos
-echo "starting cycle validation ("$(date)")" >> logs/executions.log; java -cp "bin/*:lib/*" util.Validator > logs/validationresult.txt
-if grep -q "true" logs/validationresult.txt; then echo "cycle detected!" >> logs/executions.log; cat logs/validationresult.txt; exit 0; fi
-echo "no cycles detected ("$(date)")" >> logs/executions.log; 
-cat logs/validationresult.txt >> logs/executions.log; 
+# echo "starting cycle validation ("$(date)")" >> logs/executions.log; java -cp "bin/*:lib/*" util.Validator > logs/validationresult.txt
+# if grep -q "true" logs/validationresult.txt; then echo "cycle detected!" >> logs/executions.log; cat logs/validationresult.txt; exit 0; fi
+# echo "no cycles detected ("$(date)")" >> logs/executions.log; 
+# cat logs/validationresult.txt >> logs/executions.log; 
 done

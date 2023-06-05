@@ -5,10 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.stream.Collectors;
+
 import base.Node;
 import byzcast.messages.ByzCastMessage;
 import byzcast.messages.ByzCastMessage.Type;
@@ -27,12 +31,12 @@ public class ByzCastClient extends ByzCastClientProxy {
     private int [] destsSizes;
     protected int [][] wloadDist2dests;
     protected int [][][] wloadDist3dests;
-    protected Stats stats;
+    // protected Stats stats;
     protected final Random gen;
     private short warehouse;
     
     public ByzCastClient(short id, ArgsParser args, boolean start){
-        super(id);
+        super(id, args.getTree());
         this.args = args;
         totalTime = args.getDuration();
         this.files = new FileManager();
@@ -73,7 +77,7 @@ public class ByzCastClient extends ByzCastClientProxy {
         print("Locality:", localityPercentage, "%");
         print("ByzCast Tree:", args.getTree());
         print("My home warehouse:", warehouse);
-        stats = new Stats(totalTime);
+        stats = new Stats(totalTime, numNodes);
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
@@ -95,6 +99,8 @@ public class ByzCastClient extends ByzCastClientProxy {
         if (stats.getCount() > 0) {
             try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
             stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-byzcast.txt", 15);
+            stats.persistPerNodes("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-byzcast-per-node.txt", 15);
+
             print("LOCAL STATS:", stats);
         }
 
@@ -144,9 +150,26 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short[] generateDests(){
+        if(localityPercentage == 0){
+            return generateRandDests();
+        }
         if(randomNumber(1, 100, gen) <= localityPercentage) 
             return generate2Dests();
         return generate3Dests();
+    }
+
+    private short[] generateRandDests() {
+        Set<Short> uniqueNumbers = new HashSet<>();
+        int size = randomNumber(2, numNodes, gen); // only global
+        while (uniqueNumbers.size() < size)
+            uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
+        short [] tempdst = new short[size];
+        short i = 0;
+        for(short u : uniqueNumbers.stream().sorted().collect(Collectors.toList())){
+            tempdst[i] = u;
+            i++;
+        }
+        return tempdst;
     }
 
     private short[] generate2Dests(){
@@ -190,7 +213,7 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short getNearestWH(short warehouseparam) {
-        // tree 1
+        // tree 1 and 2
         switch(warehouseparam){
             case 0: return 1;
             case 1: return 0;
@@ -209,7 +232,7 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short getSecondNearestWH(short warehouseparam) {
-        // tree 1
+        // tree 1 and 2
         switch(warehouseparam){
             case 0: return 3;
             case 1: return 2;
@@ -228,7 +251,7 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short getThirdNearestWH(short warehouseparam) {
-        // tree 1
+        // tree 1 and 2
         switch(warehouseparam){
             case 0: return 6;
             case 1: return 3;

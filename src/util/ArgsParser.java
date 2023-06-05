@@ -28,7 +28,7 @@ public class ArgsParser {
         homewarehouse = Option.builder("w").desc("home warehouse").argName("homewarehouse").hasArg().numberOfArgs(1).type(Integer.class).build();
         region = Option.builder("r").desc("region").argName("region").hasArg().numberOfArgs(1).type(String.class).build();
         tree = Option.builder("tree").desc("tree").argName("tree").hasArg().numberOfArgs(1).type(Short.class).build();
-        gc = Option.builder("gc").desc("gc client").argName("gc").type(Boolean.class).build();
+        gc = Option.builder("gc").desc("gc client").argName("gc").hasArg().numberOfArgs(1).type(Integer.class).build();
         options = new Options();
         parser = new DefaultParser();
         line = null;
@@ -99,8 +99,9 @@ public class ArgsParser {
         return line.hasOption("t");
     }
 
-    public boolean isGC() {
-        return line.hasOption("gc");
+    public int getGC() {
+        String v = line.getOptionValue("gc");
+        return v == null ? 0 : Integer.valueOf(v);
     }
 
     public boolean getLog() {

@@ -10,6 +10,7 @@ import comms.NettyClientChannel;
 import flexcast.messages.Message;
 import flexcast.messages.Message.Type;
 import io.netty.channel.Channel;
+import util.Stats;
 
 public class ClientProxy extends Node{
     private HashMap<Short, Channel> outChannels;
@@ -18,6 +19,11 @@ public class ClientProxy extends Node{
     private ArrayList<Message> replies = new ArrayList<>();
     private short expectedReplies = 0;
     protected short numNodes = 0;
+    protected Stats stats;
+    private long startTime;
+    private HashMap<Short, Long> latsPerNode = new HashMap<>();
+    short lca;
+    short[] dsts;
 
     public ClientProxy(short id){
         super(id);
@@ -121,10 +127,6 @@ public class ClientProxy extends Node{
 
     public void send(Message m, short dst){
         try {
-            while(outChannels.get(dst) == null){
-                printF("Channel to dst ", dst, "is null");
-                sleep(500);
-            }
             outChannels.get(dst).writeAndFlush(m);
         }
         catch(Exception e){
@@ -136,9 +138,17 @@ public class ClientProxy extends Node{
 
     public void receiveReply(Message reply){
         lock.lock();
+
+        // armazena latencia por nodo em microsegundo
+        latsPerNode.put(reply.getSender(), ((System.nanoTime() - startTime) / 1000));
+
         replies.add(reply);
-        if(replies.size() == expectedReplies)
+        
+        if(replies.size() == expectedReplies){
+            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts);
             sema.release();
+        }
+        
         lock.unlock();
     }
 
@@ -146,7 +156,11 @@ public class ClientProxy extends Node{
         print("Send", m);
         replies.clear();
         expectedReplies = (short) m.getDst().length;
-        send(m, m.getLca());
+        latsPerNode.clear();
+        startTime = System.nanoTime();
+        lca = m.getLca();
+        dsts = m.getDst();
+        send(m, lca);
         try {
             sema.acquire();
         } catch (InterruptedException e) {

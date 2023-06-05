@@ -29,10 +29,9 @@ public class ClientAWS extends ClientProxy {
     private int [] destsSizes;
     protected int [][] wloadDist2dests;
     protected int [][][] wloadDist3dests;
-    protected Stats stats;
     protected final Random gen;
     private short warehouse;
-    private boolean gcClient=false;
+    private int gc=0;
     
     public ClientAWS(short id, ArgsParser args, boolean start){
         super(id);
@@ -41,7 +40,7 @@ public class ClientAWS extends ClientProxy {
         this.files = new FileManager();
         this.localityPercentage = args.getLocality();
         this.warehouse = (short) args.getHomeWarehouse();
-        this.gcClient = args.isGC();
+        this.gc = args.getGC();
         if(!args.getLog()) setPrint(false);
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
@@ -64,7 +63,7 @@ public class ClientAWS extends ClientProxy {
     }
 
     private void start() {
-        if(gcClient)
+        if(gc>0)
             printF("Started AWS FlexCast GC Client");
         else
             printF("Start FlexCast ClientAWS");
@@ -82,7 +81,7 @@ public class ClientAWS extends ClientProxy {
         sendReadyMessage();
         printF("All other clients ready!");
 
-        if(gcClient){
+        if(gc>0){
             runGCClient();
         }
         else {
@@ -91,7 +90,7 @@ public class ClientAWS extends ClientProxy {
             printF("Locality:", localityPercentage, "%");
             printF("My home warehouse:", warehouse);
             if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
-            stats = new Stats(totalTime);
+            stats = new Stats(totalTime, numNodes);
 
             long startTime = System.nanoTime(), now;
             long elapsed = 0, usLat = startTime;
@@ -116,6 +115,7 @@ public class ClientAWS extends ClientProxy {
             if (stats.getCount() > 0) {
                 try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
                 stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client.txt", 15);
+                stats.persistPerNodes("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-per-node.txt", 15);
                 printF("LOCAL STATS:", stats);
             }
             
@@ -131,6 +131,8 @@ public class ClientAWS extends ClientProxy {
         long startTime = System.nanoTime(), now;
         long elapsed = 0;
 
+        printF("GC Interval:", gc, "(ms)");
+
         while ((elapsed / 1e9) < (totalTime+3)) {
             // envia msg de "flush"
             Message m = newMessageTo(allDests());
@@ -140,7 +142,7 @@ public class ClientAWS extends ClientProxy {
             // envia msg de GC referente a msg do flush
             sendGCMessage(m.getId());
             printF("Sent and received all replies GC for msg", m.getId());
-            sleep(2000);
+            sleep(gc);
             now = System.nanoTime();
             elapsed = (now - startTime);
         }
@@ -205,8 +207,7 @@ public class ClientAWS extends ClientProxy {
 
     private short[] generateRandDests() {
         Set<Short> uniqueNumbers = new HashSet<>();
-        int size = randomNumber(2, numNodes, gen);
-        //if(size == 1) size++; // only global
+        int size = randomNumber(2, numNodes, gen); // only global
         while (uniqueNumbers.size() < size)
             uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
         short [] tempdst = new short[size];

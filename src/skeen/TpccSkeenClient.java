@@ -76,7 +76,7 @@ public class TpccSkeenClient extends SkeenClient {
         print("My home warehouse:", warehouseID);
 
         if(args.getLocality() == 0) print("No locality");
-        stats = new Stats(totalTime);
+        stats = new Stats(totalTime, numNodes);
         executeTransactions();
 
         if (stats.getCount() > 0) {

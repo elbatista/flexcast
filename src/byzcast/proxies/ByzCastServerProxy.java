@@ -13,7 +13,7 @@ public abstract class ByzCastServerProxy extends ByzCastClientProxy {
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs = 0;
     public ByzCastServerProxy(short id, int numClients){
-        super(id);
+        super(id, 0);
         this.numClients = numClients;
         bufferQueue = new ConcurrentLinkedQueue<>();
         cliChannels = new HashMap<>();

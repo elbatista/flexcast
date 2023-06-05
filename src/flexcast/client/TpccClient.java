@@ -76,7 +76,7 @@ public class TpccClient extends Client {
 
         print("Locality", args.getLocality(), "%");
         
-        stats = new Stats(totalTime);
+        stats = new Stats(totalTime, numNodes);
 
         executeTransactions();
 
