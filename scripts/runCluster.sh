@@ -1,26 +1,85 @@
-if [ "$#" -lt 8 ]; then echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; exit 0; fi
-i=0; dbg=""; sk="-sk $3"; tpcc=""; np=""; p=""; cpu=""; msgs=""; timeout=""; batch=""; locality="", clipernode=""; ID=0; warehouse=0;
-if [ "$2" == "true" ]; then dbg="-dbg"; fi
-if [ "$4" == "true" ]; then tpcc="-t"; fi
-if [ "$#" -gt 8 ]; then np="-np $9"; fi
-if [ "$#" -gt 9 ]; then if [ "${10}" == "true" ]; then p="-p"; fi fi
-if [ "$#" -gt 10 ]; then if [ "${11}" == "true" ]; then cpu="-cpu"; fi fi
-if [ "$#" -gt 11 ]; then msgs="-m ${12}"; fi
-if [ "$#" -gt 12 ]; then if [ "${13}" == "true" ]; then batch="-bs 2"; fi fi
-if [ "$#" -gt 13 ]; then timeout="-bt ${14}"; fi
-if [ "$#" -gt 14 ]; then locality="-l ${15}"; fi
-if [ "$#" -gt 15 ]; then clipernode="${16}"; fi
-rm -f -r ~/genbyzproto/logs/*  ~/genbyzproto/files/*; ./scripts/kill.sh;
+if [ "$#" -lt 8 ]; then 
+    #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
+    echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)>"
+    exit 0; 
+fi
 
-for exe in $(seq 1 $8); do
-    rm -f -r ~/genbyzproto/logs/*.txt  ~/genbyzproto/files/* ~/genbyzproto/results/*; echo false > ~/genbyzproto/files/stop;
-    echo "------------------------------------------------------------------------------------------------" >> ~/genbyzproto/logs/executions.log
-    echo "execution " $exe " at " $(date) >> ~/genbyzproto/logs/executions.log
-    echo $0 $1 $2 $3 $4 $5 $6 $7 $8 $9 ${10} $cpu $msgs $batch $timeout $locality >> ~/genbyzproto/logs/executions.log
-    echo "------------------------------------------------------------------------------------------------" >> ~/genbyzproto/logs/executions.log
+i=0; 
+ID=0;
+log="";  
+warehouse=0;
+iniport=3000;
+basedir=/usr/local/projects/flexcast;
+duration=$1;
+algo=$2;
+clients=$3;
+servers=$4;
+nodes=$5;
+locality=$6;
+msgs=$7;
+gc=$8;
+algodesc=("flexcast" "skeen" "byzcast")
+rm -f -r $basedir/logs $basedir/files $basedir/results;
+mkdir $basedir/logs  $basedir/files $basedir/results;
 
-    # Start servers
-    mkdir ~/genbyzproto/logs/nodes
+echo false > $basedir/files/stop;
+echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
+echo "experiment at " $(date) >> $basedir/logs/execution.log;
+echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8" >> $basedir/logs/execution.log;
+echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
+
+./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
+
+# compile, create config file, and update all other nodes
+echo "#nodes local" > $basedir/config/hosts.config;
+for i in $(seq 2 $(($servers+1)))
+do
+    echo $(($i-2)) "10.10.1.$i $iniport" >> $basedir/config/hosts.config;
+    iniport=$(($iniport+10));
+done
+cd $basedir;
+# ant clean; ant;
+for i in $(seq 1 $nodes)
+do
+    ssh  -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*"
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
+done
+
+# Start servers
+for i in $(seq 1 $servers)
+do
+    ID=$(($i-1));
+    ssh -o StrictHostKeyChecking=accept-new node$i \
+    "rm -f -r $basedir/logs $basedir/files $basedir/results; \
+    mkdir    $basedir/logs $basedir/files $basedir/results; \
+    cd $basedir; \
+    java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$i.txt" & sleep .5
+    # echo "java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log"
+done
+
+
+
+sleep 5
+
+# copia os logs para o node0
+for i in $(seq 1 $nodes)
+do
+    scp -q -r -o StrictHostKeyChecking=accept-new node$i:$basedir/logs/* $basedir/logs/
+done
+
+exit 0;
+
+
+
+
+
+
+mkdir $basedir/logs/nodes
+
+
+
     # 3 nodes
     if [ "$6" -eq 3 ]; then
         #us-east-1 (virginia)
@@ -227,4 +286,3 @@ for exe in $(seq 1 $8); do
     if grep -q "true" ~/genbyzproto/logs/validationresult.txt; then echo "cycle detected!" >> ~/genbyzproto/logs/executions.log; break; fi
     echo "no cycles detected ("$(date)")" >> ~/genbyzproto/logs/executions.log;
 
-done
