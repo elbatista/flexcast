@@ -1,4 +1,4 @@
-if [ "$#" -lt 8 ]; then echo "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <locality> <#msgs> <#exp> <#gc>"; exit 0; fi
+if [ "$#" -lt 8 ]; then echo "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <locality> <#msgs> <#exp> <#gc(ms)>"; exit 0; fi
 i=0; tpcc=""; locality=""; exe=0; ant clean; ant; rm -f -r logs/*  files/*;
 duration=$1; algo=$2; clis=$3; servers=$4; locality=$5; msgs=$6; gc=$8; pkill -f 'java.*Main*'; sleep 1;
 rm -f -r logs/*.txt  files/*; pkill -f 'java.*Main*' ; echo false > files/stop; 
