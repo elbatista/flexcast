@@ -1,3 +1,4 @@
+#!/bin/bash
 if [ "$#" -lt 8 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
     echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)>"
@@ -20,7 +21,7 @@ msgs=$7;
 gc=$8;
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
-mkdir $basedir/logs  $basedir/files $basedir/results;
+mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
 
 echo false > $basedir/files/stop;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
@@ -31,43 +32,85 @@ echo "--------------------------------------------------------------------------
 ./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
 
 # compile, create config file, and update all other nodes
-echo "#nodes local" > $basedir/config/hosts.config;
+echo creating hosts.config for $servers servers >> $basedir/logs/execution.log;
+echo "#id ip port" > $basedir/config/hosts.config;
 for i in $(seq 2 $(($servers+1)))
 do
     echo $(($i-2)) "10.10.1.$i $iniport" >> $basedir/config/hosts.config;
     iniport=$(($iniport+10));
 done
 cd $basedir;
-# ant clean; ant;
+echo compiling source code >> $basedir/logs/execution.log;
+ant clean; ant;
+echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
 for i in $(seq 1 $nodes)
 do
-    ssh  -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*"
+    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results"
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
 done
 
 # Start servers
+curnode=0;
 for i in $(seq 1 $servers)
 do
     ID=$(($i-1));
-    ssh -o StrictHostKeyChecking=accept-new node$i \
-    "rm -f -r $basedir/logs $basedir/files $basedir/results; \
-    mkdir    $basedir/logs $basedir/files $basedir/results; \
-    cd $basedir; \
-    java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$i.txt" & sleep .5
+    curnode=$i;
+    echo "starting server $ID on node$curnode" >> $basedir/logs/execution.log;
+    ssh -o StrictHostKeyChecking=accept-new node$curnode \
+    "cd $basedir; \
+    java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$ID.txt" & sleep .5;
     # echo "java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log"
 done
+echo "started $servers servers"  >> $basedir/logs/execution.log;
 
+curnode=$(($curnode+1));
+ID=0;
+for i in $(seq 1 $clients)
+do
+    echo "starting client $ID on node$curnode" >> $basedir/logs/execution.log;
 
+    ssh -o StrictHostKeyChecking=accept-new node$curnode \
+    "cd $basedir; \
+    java -cp \"bin/*:lib/*\" MainClient -c $clients -i $ID -d $duration -a $algo -l $locality -w $ID -m $msgs $log >> $basedir/logs/client$ID.txt" & sleep .05;
+    ID=$(($ID+1));
+done
+echo "started $clients clients" >> $basedir/logs/execution.log;
 
-sleep 5
+# ID=$(($ID+1));
+# ssh -o StrictHostKeyChecking=accept-new node$curnode \
+# "rm -f -r $basedir/logs $basedir/files $basedir/results; \
+# mkdir    $basedir/logs $basedir/files $basedir/results; \
+# cd $basedir; \
+# java -cp \"bin/*:lib/*\" MainClient -c $totalClis -i $ID -d $duration -a $algo $log -gc $gc" >> logs/cli$clis.txt &
+# echo started gc client on node$curnode >> logs/executions.log
 
+echo "waiting for nodes to finish" >> $basedir/logs/execution.log;
+sleep $duration;
+while :
+do
+    #bring files from servers
+    for i in $(seq 1 $servers)
+    do
+        scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/files/* $basedir/files/
+    done
+    nodeFiles=`find $basedir/files -name 'NodeFinished*' | wc -l` #Count files and store in a variable
+    if [ "$nodeFiles" -ge $servers ]; then break; fi
+    sleep 2;
+done
+
+echo "all nodes done" >> $basedir/logs/execution.log;
+./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
+echo "experiment finished at " $(date)  >> $basedir/logs/execution.log;
+
+echo copying log files to node0  >> $basedir/logs/execution.log;
 # copia os logs para o node0
 for i in $(seq 1 $nodes)
 do
-    scp -q -r -o StrictHostKeyChecking=accept-new node$i:$basedir/logs/* $basedir/logs/
+    scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/logs/* $basedir/logs/
 done
+echo done. exiting  >> $basedir/logs/execution.log;
 
 exit 0;
 

@@ -27,6 +27,5 @@ config/msgs*
 files/
 logs/
 results/
-wan/
 temp/
 .DS_Store
