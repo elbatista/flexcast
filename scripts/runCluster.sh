@@ -1,7 +1,7 @@
 #!/bin/bash
-if [ "$#" -lt 8 ]; then 
+if [ "$#" -lt 9 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
-    echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)>"
+    echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)> <#clispernode>"
     exit 0; 
 fi
 
@@ -19,6 +19,7 @@ nodes=$5;
 locality=$6;
 msgs=$7;
 gc=$8;
+clispernode=$9;
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
 mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
@@ -26,7 +27,7 @@ mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
 echo false > $basedir/files/stop;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 echo "experiment at " $(date) >> $basedir/logs/execution.log;
-echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8" >> $basedir/logs/execution.log;
+echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8 clispernode=$9" >> $basedir/logs/execution.log;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 
 ./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
@@ -40,16 +41,16 @@ do
     iniport=$(($iniport+10));
 done
 cd $basedir;
-echo compiling source code >> $basedir/logs/execution.log;
-ant clean; ant;
-echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
-for i in $(seq 1 $nodes)
-do
-    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results"
-    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
-    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
-    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
-done
+# echo compiling source code >> $basedir/logs/execution.log;
+# ant clean; ant;
+# echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
+# for i in $(seq 1 $nodes)
+# do
+#     ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results"
+#     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
+#     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
+#     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
+# done
 
 # Start servers
 curnode=0;
@@ -58,15 +59,35 @@ do
     ID=$(($i-1));
     curnode=$i;
     echo "starting server $ID on node$curnode" >> $basedir/logs/execution.log;
-    ssh -o StrictHostKeyChecking=accept-new node$curnode \
-    "cd $basedir; \
-    java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$ID.txt" & sleep .5;
-    # echo "java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log"
+#     ssh -o StrictHostKeyChecking=accept-new node$curnode \
+#     "cd $basedir; \
+#     java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$ID.txt" & sleep .5;
+#     # echo "java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log"
 done
 echo "started $servers servers"  >> $basedir/logs/execution.log;
 
 curnode=$(($curnode+1));
 ID=0;
+
+clifile=$basedir/config/clients.conf
+while IFS=, read -r node region nodewarehouse
+do
+    warehouse=$(echo "$nodewarehouse" | tr -dc '0-9');
+    warehouse=$(($warehouse-1));
+    echo "$clispernode clients on $node region $region will connect to warehouse $warehouse" >> $basedir/logs/execution.log;
+    for i in $(seq 1 $clispernode)
+    do
+        echo "starting client $ID on $node" >> $basedir/logs/execution.log;
+
+        ssh -o StrictHostKeyChecking=accept-new $node \
+        "cd $basedir; \
+        java -cp \"bin/*:lib/*\" MainClient -c $clients -i $ID -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> $basedir/logs/client$ID.txt" & sleep .05;
+        ID=$(($ID+1));
+    done
+done < <( grep -v '^#' "$clifile")
+
+exit 0
+
 for i in $(seq 1 $clients)
 do
     echo "starting client $ID on node$curnode" >> $basedir/logs/execution.log;
