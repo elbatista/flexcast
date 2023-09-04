@@ -41,34 +41,34 @@ do
     iniport=$(($iniport+10));
 done
 cd $basedir;
-# echo compiling source code >> $basedir/logs/execution.log;
-# ant clean; ant;
-# echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
-# for i in $(seq 1 $nodes)
-# do
-#     ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results"
-#     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
-#     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
-#     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
-# done
+echo compiling source code >> $basedir/logs/execution.log;
+ant clean; ant;
+echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
+for i in $(seq 1 $nodes)
+do
+    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results"
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
+done
+
+if [ "$gc" -gt 0 ]; then
+    clients=$(($clients+1));
+fi
 
 # Start servers
-curnode=0;
 for i in $(seq 1 $servers)
 do
     ID=$(($i-1));
-    curnode=$i;
-    echo "starting server $ID on node$curnode" >> $basedir/logs/execution.log;
-#     ssh -o StrictHostKeyChecking=accept-new node$curnode \
-#     "cd $basedir; \
-#     java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$ID.txt" & sleep .5;
-#     # echo "java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log"
+    echo "starting server $ID on node$i" >> $basedir/logs/execution.log;
+    ssh -o StrictHostKeyChecking=accept-new node$i \
+    "cd $basedir; \
+    java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$ID.txt" & sleep .5;
 done
 echo "started $servers servers"  >> $basedir/logs/execution.log;
 
-curnode=$(($curnode+1));
+lastnode="";
 ID=0;
-
 clifile=$basedir/config/clients.conf
 while IFS=, read -r node region nodewarehouse
 do
@@ -77,35 +77,22 @@ do
     echo "$clispernode clients on $node region $region will connect to warehouse $warehouse" >> $basedir/logs/execution.log;
     for i in $(seq 1 $clispernode)
     do
-        echo "starting client $ID on $node" >> $basedir/logs/execution.log;
-
-        ssh -o StrictHostKeyChecking=accept-new $node \
-        "cd $basedir; \
-        java -cp \"bin/*:lib/*\" MainClient -c $clients -i $ID -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log >> $basedir/logs/client$ID.txt" & sleep .05;
+        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log
+        sleep .5;
         ID=$(($ID+1));
     done
-done < <( grep -v '^#' "$clifile")
+    lastnode=$node;
+done < <( grep -v '^#' "$clifile");
 
-exit 0
-
-for i in $(seq 1 $clients)
-do
-    echo "starting client $ID on node$curnode" >> $basedir/logs/execution.log;
-
-    ssh -o StrictHostKeyChecking=accept-new node$curnode \
-    "cd $basedir; \
-    java -cp \"bin/*:lib/*\" MainClient -c $clients -i $ID -d $duration -a $algo -l $locality -w $ID -m $msgs $log >> $basedir/logs/client$ID.txt" & sleep .05;
+if [ "$gc" -gt 0 ]; then
+    echo "started $(($clients-1)) clients" >> $basedir/logs/execution.log;
     ID=$(($ID+1));
-done
-echo "started $clients clients" >> $basedir/logs/execution.log;
-
-# ID=$(($ID+1));
-# ssh -o StrictHostKeyChecking=accept-new node$curnode \
-# "rm -f -r $basedir/logs $basedir/files $basedir/results; \
-# mkdir    $basedir/logs $basedir/files $basedir/results; \
-# cd $basedir; \
-# java -cp \"bin/*:lib/*\" MainClient -c $totalClis -i $ID -d $duration -a $algo $log -gc $gc" >> logs/cli$clis.txt &
-# echo started gc client on node$curnode >> logs/executions.log
+    ssh -o StrictHostKeyChecking=accept-new $lastnode \
+    "cd $basedir; java -cp \"bin/*:lib/*\" MainClient -c $clients -i $ID -d $duration -a $algo $log -gc $gc >> $basedir/logs/gc.txt" &
+    echo started gc client on $lastnode >> $basedir/logs/execution.log;
+else
+    echo "started $clients clients" >> $basedir/logs/execution.log;
+fi
 
 echo "waiting for nodes to finish" >> $basedir/logs/execution.log;
 sleep $duration;
@@ -133,7 +120,20 @@ do
 done
 echo done. exiting  >> $basedir/logs/execution.log;
 
+
+
+
+
 exit 0;
+
+
+
+
+
+
+
+
+
 
 
 
