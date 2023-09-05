@@ -35,7 +35,7 @@ public class NettyServerChannel extends Thread {
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new MessageDecoder(), new MessageEncoder(),
+                    ch.pipeline().addLast(new MessageDecoder(server.getSizes()), new MessageEncoder(),
                     new NettyServerChannelHandler(server));
                 }
             })

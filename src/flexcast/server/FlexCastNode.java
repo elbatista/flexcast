@@ -422,6 +422,7 @@ public class FlexCastNode extends ServerProxy {
         printF("notifs:", notifs);
         printF("gcs:", gcs);
         if(gsizes != null && gsizes.size() > 0) printF("Avg Graph size:", Stats.of(gsizes).mean());
+        printF("Avg msg size", Stats.of(getSizes()).mean());
         printF("-------------------------------------");
         files.nodeFinished(getId());
         exit();

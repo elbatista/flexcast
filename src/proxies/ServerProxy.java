@@ -1,5 +1,6 @@
 package proxies;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import comms.NettyServerChannel;
@@ -11,6 +12,11 @@ public abstract class ServerProxy extends ClientProxy {
     protected ConcurrentLinkedQueue<Message> bufferQueue;
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs;
+    ArrayList<Double> sizes = new ArrayList<>();
+
+    public ArrayList<Double> getSizes() {
+        return sizes;
+    }
 
     public ServerProxy(short id, int numClients){
         super(id);
