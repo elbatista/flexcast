@@ -6,7 +6,7 @@ if [ "$#" -lt 9 ]; then
 fi
 
 i=0; 
-ID=0;
+ID=-1;
 log="";  
 warehouse=0;
 iniport=3000;
@@ -35,11 +35,17 @@ echo "--------------------------------------------------------------------------
 # compile, create config file, and update all other nodes
 echo creating hosts.config for $servers servers >> $basedir/logs/execution.log;
 echo "#id ip port" > $basedir/config/hosts.config;
-for i in $(seq 2 $(($servers+1)))
+
+confserverid=0;
+serverfile=$basedir/config/servers.conf
+while IFS=, read -r node region ip
 do
-    echo $(($i-2)) "10.10.1.$i $iniport" >> $basedir/config/hosts.config;
+    # echo "will deploy server id $confserverid on $node ($ip) representing region $region" >> $basedir/logs/execution.log;
+    echo "$confserverid $ip $iniport" >> $basedir/config/hosts.config;
+    confserverid=$(($confserverid+1));
     iniport=$(($iniport+10));
-done
+done < <( awk '!/^ *#/ && NF' "$serverfile");
+
 cd $basedir;
 echo compiling source code >> $basedir/logs/execution.log;
 ant clean; ant;
@@ -57,14 +63,15 @@ if [ "$gc" -gt 0 ]; then
 fi
 
 # Start servers
-for i in $(seq 1 $servers)
+declare -A warehouses
+while IFS=, read -r node region ip
 do
-    ID=$(($i-1));
-    echo "starting server $ID on node$i" >> $basedir/logs/execution.log;
-    ssh -o StrictHostKeyChecking=accept-new node$i \
-    "cd $basedir; \
-    java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i $ID -a $algo -d $duration -c $clients $log >> $basedir/logs/node$ID.txt" & sleep .5;
-done
+    ID=$(($ID+1));
+    echo "starting server $ID on $node region $region" >> $basedir/logs/execution.log;
+    warehouses[$node]=$ID;
+    ./scripts/sshserver.sh $node $basedir $ID $algo $duration $clients $log
+    sleep .5;
+done < <( awk '!/^ *#/ && NF' "$serverfile");
 echo "started $servers servers"  >> $basedir/logs/execution.log;
 
 lastnode="";
@@ -72,9 +79,8 @@ ID=0;
 clifile=$basedir/config/clients.conf
 while IFS=, read -r node region nodewarehouse
 do
-    warehouse=$(echo "$nodewarehouse" | tr -dc '0-9');
-    warehouse=$(($warehouse-1));
-    echo "$clispernode clients on $node region $region will connect to warehouse $warehouse" >> $basedir/logs/execution.log;
+    warehouse="${warehouses[$nodewarehouse]}"
+    echo "$clispernode clients on $node region $region assume as primary warehouse: $warehouse ($nodewarehouse)" >> $basedir/logs/execution.log;
     for i in $(seq 1 $clispernode)
     do
         ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log
@@ -82,11 +88,11 @@ do
         ID=$(($ID+1));
     done
     lastnode=$node;
-done < <( grep -v '^#' "$clifile");
+done < <( awk '!/^ *#/ && NF'  "$clifile");
 
 if [ "$gc" -gt 0 ]; then
     echo "started $(($clients-1)) clients" >> $basedir/logs/execution.log;
-    ID=$(($ID+1));
+    # ID=$(($ID+1));
     ssh -o StrictHostKeyChecking=accept-new $lastnode \
     "cd $basedir; java -cp \"bin/*:lib/*\" MainClient -c $clients -i $ID -d $duration -a $algo $log -gc $gc >> $basedir/logs/gc.txt" &
     echo started gc client on $lastnode >> $basedir/logs/execution.log;
@@ -112,12 +118,21 @@ echo "all nodes done" >> $basedir/logs/execution.log;
 ./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
 echo "experiment finished at " $(date)  >> $basedir/logs/execution.log;
 
-echo copying log files to node0  >> $basedir/logs/execution.log;
-# copia os logs para o node0
+echo copying results/logs files to node0  >> $basedir/logs/execution.log;
+# copy logs to node0
 for i in $(seq 1 $nodes)
 do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/logs/* $basedir/logs/
 done
+# for i in $(seq 1 $servers)
+# do
+#     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/files/* $basedir/files/
+# done
+for i in $(seq $(($servers+1)) $nodes)
+do
+    scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/
+done
+
 echo done. exiting  >> $basedir/logs/execution.log;
 
 
