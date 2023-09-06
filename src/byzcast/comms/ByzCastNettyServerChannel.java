@@ -35,7 +35,7 @@ public class ByzCastNettyServerChannel extends Thread {
             .childHandler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new ByzCastMessageDecoder(), new ByzCastMessageEncoder(),
+                    ch.pipeline().addLast(new ByzCastMessageDecoder(server.getSizes()), new ByzCastMessageEncoder(),
                     new ByzCastNettyServerChannelHandler(server));
                 }
             })

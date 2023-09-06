@@ -7,11 +7,18 @@ import skeen.comms.SkeenNettyServerChannel;
 import skeen.messages.SkeenMessage;
 import skeen.messages.SkeenMessage.Type;
 import util.FileManager;
+import java.util.ArrayList;
 
 public abstract class SkeenServerProxy extends SkeenClientProxy {
     protected ConcurrentLinkedQueue<SkeenMessage> bufferQueue;
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs = 0;
+    ArrayList<Double> sizes = new ArrayList<>();
+
+    public ArrayList<Double> getSizes() {
+        return sizes;
+    }
+
     public SkeenServerProxy(short id, int numClients){
         super(id);
         this.numClients = numClients;

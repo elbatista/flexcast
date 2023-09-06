@@ -53,7 +53,7 @@ do
 		echo "$NODE,$IP,$IFACE" >> $IFACES_FILE
 	fi
 
-	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir /usr/local/projects/flexcast/wan;"
+	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p /usr/local/projects/flexcast/wan;"
 	scp -q -o StrictHostKeyChecking=accept-new /usr/local/projects/flexcast/wan/* $NODE:/usr/local/projects/flexcast/wan/
 
 	COMMAND="ssh $NODE sudo python /usr/local/projects/flexcast/wan/latsetter.py unset $IFACE"

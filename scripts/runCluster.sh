@@ -1,13 +1,16 @@
 #!/bin/bash
 if [ "$#" -lt 9 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
-    echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)> <#clispernode>"
+    echo  "Usage: $0 <duration:sec> \
+    <algo:0-flex;1-skeen;2-byz> \
+    <#clis> <#servers> <#nodes> \
+    <locality> <#msgs> <#gc(ms)> <#clispernode>"
     exit 0; 
 fi
 
-i=0; 
+i=0;
 ID=-1;
-log="";  
+log="";
 warehouse=0;
 iniport=3000;
 basedir=/usr/local/projects/flexcast;
@@ -26,7 +29,7 @@ mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
 
 echo false > $basedir/files/stop;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
-echo "experiment at " $(date) >> $basedir/logs/execution.log;
+echo "started experiment on" $(date) >> $basedir/logs/execution.log;
 echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8 clispernode=$9" >> $basedir/logs/execution.log;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 
@@ -133,11 +136,15 @@ do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/
 done
 
+expdir="$basedir/experiments/${algodesc[$2]}/${servers}nodes/${3}cli/${locality}%/gc${gc}"
+mkdir -p $expdir
+echo "moving data to" $expdir >> $basedir/logs/execution.log;
+cp -r $basedir/logs $expdir/
+cp -r $basedir/files $expdir/
+cp -r $basedir/results $expdir/
+cp -r $basedir/config $expdir/
+
 echo done. exiting  >> $basedir/logs/execution.log;
-
-
-
-
 
 exit 0;
 

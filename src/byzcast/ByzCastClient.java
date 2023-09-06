@@ -50,10 +50,10 @@ public class ByzCastClient extends ByzCastClientProxy {
         numNodes = (short) nodes.size();
 
         short root = 0;
-        switch(numNodes){
-            case 9: {root = 4; break;}
-            case 12: {root = 5; break;}
-        }
+        // switch(numNodes){
+        //     case 9: {root = 4; break;}
+        //     case 12: {root = 5; break;}
+        // }
         lcafinder = new TarjanLCAFinder<Short,DefaultEdge>(tree, root);
 
         destsSizes = new int [numNodes];

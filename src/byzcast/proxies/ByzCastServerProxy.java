@@ -1,5 +1,6 @@
 package byzcast.proxies;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import byzcast.comms.ByzCastNettyServerChannel;
@@ -12,6 +13,12 @@ public abstract class ByzCastServerProxy extends ByzCastClientProxy {
     protected ConcurrentLinkedQueue<ByzCastMessage> bufferQueue;
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs = 0;
+    ArrayList<Double> sizes = new ArrayList<>();
+
+    public ArrayList<Double> getSizes() {
+        return sizes;
+    }
+
     public ByzCastServerProxy(short id, int numClients){
         super(id, 0);
         this.numClients = numClients;
