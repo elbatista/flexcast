@@ -87,7 +87,7 @@ do
     for i in $(seq 1 $clispernode)
     do
         ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log
-        sleep .5;
+        sleep .1;
         ID=$(($ID+1));
     done
     lastnode=$node;
