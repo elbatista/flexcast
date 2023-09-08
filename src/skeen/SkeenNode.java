@@ -15,7 +15,6 @@ import flexcast.messages.LightMessagesList;
 import skeen.messages.SkeenMessage;
 import skeen.messages.SkeenMessage.Type;
 import skeen.proxies.SkeenServerProxy;
-import com.google.common.math.Stats;
 
 public class SkeenNode extends SkeenServerProxy {
     protected int LC = 0, numNodes, step1, step2;
@@ -144,7 +143,8 @@ public class SkeenNode extends SkeenServerProxy {
         print("Total local msgs received:", localMsgs);
         print("Total step1 received:", step1);
         print("Total step2 received:", step2);
-        print("Avg msg size", Stats.of(getSizes()).mean());
+        //print("Avg msg size", Stats.of(getSizes()).mean());
+        files.persistMsgSizes(getSizes(), getId());
         print("-------------------------------------");
         files.nodeFinished(getId());
         exit();

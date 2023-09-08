@@ -13,7 +13,6 @@ import byzcast.messages.ByzCastMessage;
 import byzcast.proxies.ByzCastServerProxy;
 import flexcast.messages.LightMessage;
 import flexcast.messages.LightMessagesList;
-import com.google.common.math.Stats;
 
 public class ByzCastNode extends ByzCastServerProxy {
     protected int numNodes;
@@ -107,7 +106,8 @@ public class ByzCastNode extends ByzCastServerProxy {
         print("Total msgs received:", msgsTotal);
         print("Total msgs to me received:", msgsToMe);
         print("% of overhead:", 100-((msgsToMe*100)/msgsTotal));
-        printF("Avg msg size", Stats.of(getSizes()).mean());
+        //printF("Avg msg size", Stats.of(getSizes()).mean());
+        files.persistMsgSizes(getSizes(), getId());
         print("-------------------------------------");
         files.nodeFinished(getId());
         exit();

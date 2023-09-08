@@ -55,10 +55,10 @@ ant clean; ant;
 echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
 for i in $(seq 1 $nodes)
 do
-    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results"
+    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results; mkdir $basedir/config"
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
-    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/config node$i:$basedir/config
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
+    scp -q -o StrictHostKeyChecking=accept-new $basedir/config/*.conf* node$i:$basedir/config/
 done
 
 if [ "$gc" -gt 0 ]; then
@@ -137,12 +137,12 @@ do
 done
 
 expdir="$basedir/experiments/${algodesc[$2]}/${servers}nodes/${3}cli/${locality}%/gc${gc}"
-mkdir -p $expdir
+mkdir -p $expdir/config
 echo "moving data to" $expdir >> $basedir/logs/execution.log;
 cp -r $basedir/logs $expdir/
 cp -r $basedir/files $expdir/
 cp -r $basedir/results $expdir/
-cp -r $basedir/config $expdir/
+cp    $basedir/config/*.conf* $expdir/config/
 
 echo done. exiting  >> $basedir/logs/execution.log;
 
@@ -162,213 +162,213 @@ exit 0;
 
 
 
-mkdir $basedir/logs/nodes
+# mkdir $basedir/logs/nodes
 
 
 
-    # 3 nodes
-    if [ "$6" -eq 3 ]; then
-        #us-east-1 (virginia)
-        ssh elia@node3 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-east-1-node3.txt" &
-        #eu-central-1 (frankfurt)
-        ssh elia@node7 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-eu-central-1-node7.txt" &
-        #ap-northeast-1 (tokyo)
-        ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-ap-northeast-1-node11.txt" &
-    fi
-    if [ "$6" -eq 6 ]; then
-        #us-west-1 (California)
-        ssh elia@node1 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-west-1-node1.txt" &
-        #us-east-1 (Virginia)
-        ssh elia@node3 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-us-east-1-node3.txt" &
-        #eu-west-1 (Ireland)
-        ssh elia@node5 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-eu-west-1-node5.txt" &
-        #eu-central-1 (Frankfurt)
-        ssh elia@node7 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 3 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/3-eu-central-1-node7.txt" &
-        #ap-south-1 (Mumbai)
-        ssh elia@node9 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 4 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/4-ap-south-1-node9.txt" &
-        #ap-northeast-1 (Tokyo)
-        ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 5 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/5-ap-northeast-1-node11.txt" &
-    fi
-    if [ "$6" -eq 9 ]; then
-        #us-west-1 (California)
-        ssh elia@node1 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-west-1-node1.txt" &
-        #us-east-1 (Virginia)
-        ssh elia@node3 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-us-east-1-node3.txt" &
-        #sa-east-1 (Sao Paulo)
-        ssh elia@node4 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-sa-east-1-node4.txt" &
-        #eu-west-1 (Ireland)
-        ssh elia@node5 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 3 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/3-eu-west-1-node5.txt" &
-        #eu-central-1 (Frankfurt)
-        ssh elia@node7 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 4 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/4-eu-central-1-node7.txt" &
-        # eu-north-1 (Stockholm)
-        ssh elia@node8 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 5 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/5-eu-north-1-node8.txt" &
-        #ap-south-1 (Mumbai)
-        ssh elia@node9 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 6 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/6-ap-south-1-node9.txt" &
-        #ap-southeast-1  (Singapore)
-        ssh elia@node10 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 7 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/7-ap-southeast-1-node10.txt" &
-        #ap-northeast-1 (Tokyo)
-        ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 8 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/8-ap-northeast-1-node11.txt" &
-    fi
-    if [ "$6" -eq 12 ]; then
-        #us-west-1 (California)
-        ssh elia@node1 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-west-1-node1.txt" &
-        #ca-central-1 (Canada)
-        ssh elia@node2 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-ca-central-1-node2.txt" &
-        #us-east-1 (Virginia)
-        ssh elia@node3 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-us-east-1-node3.txt" &
-        #sa-east-1 (Sao Paulo)
-        ssh elia@node4 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 3 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/3-sa-east-1-node4.txt" &
-        #eu-west-1 (Ireland)
-        ssh elia@node5 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 4 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/4-eu-west-1-node5.txt" &
-        #eu-west-3 (Paris)
-        ssh elia@node6 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 5 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/5-eu-west-3-node6.txt" &
-        #eu-central-1 (Frankfurt)
-        ssh elia@node7 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 6 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/6-eu-central-1-node7.txt" &
-        # eu-north-1 (Stockholm)
-        ssh elia@node8 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 7 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/7-eu-north-1-node8.txt" &
-        #ap-south-1 (Mumbai)
-        ssh elia@node9 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 8 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/8-ap-south-1-node9.txt" &
-        #ap-southeast-1  (Singapore)
-        ssh elia@node10 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 9 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/9-ap-southeast-1-node10.txt" &
-        #ap-northeast-1 (Tokyo)
-        ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 10 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/10-ap-northeast-1-node11.txt" &
-        #ap-southeast-2 (Sydney)
-        ssh elia@node12 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 11 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/11-ap-southeast-2-node12.txt" &
-    fi
-    echo "started $6 servers"  >> ~/genbyzproto/logs/executions.log
+#     # 3 nodes
+#     if [ "$6" -eq 3 ]; then
+#         #us-east-1 (virginia)
+#         ssh elia@node3 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-east-1-node3.txt" &
+#         #eu-central-1 (frankfurt)
+#         ssh elia@node7 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-eu-central-1-node7.txt" &
+#         #ap-northeast-1 (tokyo)
+#         ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-ap-northeast-1-node11.txt" &
+#     fi
+#     if [ "$6" -eq 6 ]; then
+#         #us-west-1 (California)
+#         ssh elia@node1 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-west-1-node1.txt" &
+#         #us-east-1 (Virginia)
+#         ssh elia@node3 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-us-east-1-node3.txt" &
+#         #eu-west-1 (Ireland)
+#         ssh elia@node5 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-eu-west-1-node5.txt" &
+#         #eu-central-1 (Frankfurt)
+#         ssh elia@node7 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 3 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/3-eu-central-1-node7.txt" &
+#         #ap-south-1 (Mumbai)
+#         ssh elia@node9 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 4 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/4-ap-south-1-node9.txt" &
+#         #ap-northeast-1 (Tokyo)
+#         ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 5 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/5-ap-northeast-1-node11.txt" &
+#     fi
+#     if [ "$6" -eq 9 ]; then
+#         #us-west-1 (California)
+#         ssh elia@node1 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-west-1-node1.txt" &
+#         #us-east-1 (Virginia)
+#         ssh elia@node3 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-us-east-1-node3.txt" &
+#         #sa-east-1 (Sao Paulo)
+#         ssh elia@node4 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-sa-east-1-node4.txt" &
+#         #eu-west-1 (Ireland)
+#         ssh elia@node5 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 3 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/3-eu-west-1-node5.txt" &
+#         #eu-central-1 (Frankfurt)
+#         ssh elia@node7 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 4 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/4-eu-central-1-node7.txt" &
+#         # eu-north-1 (Stockholm)
+#         ssh elia@node8 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 5 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/5-eu-north-1-node8.txt" &
+#         #ap-south-1 (Mumbai)
+#         ssh elia@node9 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 6 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/6-ap-south-1-node9.txt" &
+#         #ap-southeast-1  (Singapore)
+#         ssh elia@node10 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 7 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/7-ap-southeast-1-node10.txt" &
+#         #ap-northeast-1 (Tokyo)
+#         ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 8 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/8-ap-northeast-1-node11.txt" &
+#     fi
+#     if [ "$6" -eq 12 ]; then
+#         #us-west-1 (California)
+#         ssh elia@node1 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 0 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/0-us-west-1-node1.txt" &
+#         #ca-central-1 (Canada)
+#         ssh elia@node2 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 1 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/1-ca-central-1-node2.txt" &
+#         #us-east-1 (Virginia)
+#         ssh elia@node3 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 2 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/2-us-east-1-node3.txt" &
+#         #sa-east-1 (Sao Paulo)
+#         ssh elia@node4 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 3 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/3-sa-east-1-node4.txt" &
+#         #eu-west-1 (Ireland)
+#         ssh elia@node5 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 4 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/4-eu-west-1-node5.txt" &
+#         #eu-west-3 (Paris)
+#         ssh elia@node6 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 5 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/5-eu-west-3-node6.txt" &
+#         #eu-central-1 (Frankfurt)
+#         ssh elia@node7 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 6 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/6-eu-central-1-node7.txt" &
+#         # eu-north-1 (Stockholm)
+#         ssh elia@node8 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 7 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/7-eu-north-1-node8.txt" &
+#         #ap-south-1 (Mumbai)
+#         ssh elia@node9 "cd genbyzproto;  java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 8 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/8-ap-south-1-node9.txt" &
+#         #ap-southeast-1  (Singapore)
+#         ssh elia@node10 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 9 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/9-ap-southeast-1-node10.txt" &
+#         #ap-northeast-1 (Tokyo)
+#         ssh elia@node11 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 10 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/10-ap-northeast-1-node11.txt" &
+#         #ap-southeast-2 (Sydney)
+#         ssh elia@node12 "cd genbyzproto; java -Xmx4024m -cp \"bin/*:lib/*\" MainServer -i 11 -d $1 $dbg $sk $p $cpu $batch $timeout -c $5 >> logs/nodes/11-ap-southeast-2-node12.txt" &
+#     fi
+#     echo "started $6 servers"  >> ~/genbyzproto/logs/executions.log
 
-    # Start clients
-    mkdir ~/genbyzproto/logs/clients
-    mkdir ~/genbyzproto/logs/clients/america
-    # cli-us-west-1 (California)
-    if [ "$6" -eq 3 ]; then warehouse=0; fi
-    if [ "$6" -eq 6 ]; then warehouse=0; fi
-    if [ "$6" -eq 9 ]; then warehouse=0; fi
-    if [ "$6" -eq 12 ]; then warehouse=0; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node15 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-us-west-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-ca-central-1 (Canada)
-    if [ "$6" -eq 3 ]; then warehouse=0; fi
-    if [ "$6" -eq 6 ]; then warehouse=1; fi
-    if [ "$6" -eq 9 ]; then warehouse=1; fi
-    if [ "$6" -eq 12 ]; then warehouse=1; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node16 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-ca-central-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-us-east-1 (Virginia)
-    if [ "$6" -eq 3 ]; then warehouse=0; fi
-    if [ "$6" -eq 6 ]; then warehouse=1; fi
-    if [ "$6" -eq 9 ]; then warehouse=1; fi
-    if [ "$6" -eq 12 ]; then warehouse=2; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node17 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-us-east-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-sa-east-1 (Sao Paulo)
-    if [ "$6" -eq 3 ]; then warehouse=0; fi
-    if [ "$6" -eq 6 ]; then warehouse=1; fi
-    if [ "$6" -eq 9 ]; then warehouse=2; fi
-    if [ "$6" -eq 12 ]; then warehouse=3; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node18 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-sa-east-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
+#     # Start clients
+#     mkdir ~/genbyzproto/logs/clients
+#     mkdir ~/genbyzproto/logs/clients/america
+#     # cli-us-west-1 (California)
+#     if [ "$6" -eq 3 ]; then warehouse=0; fi
+#     if [ "$6" -eq 6 ]; then warehouse=0; fi
+#     if [ "$6" -eq 9 ]; then warehouse=0; fi
+#     if [ "$6" -eq 12 ]; then warehouse=0; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node15 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-us-west-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-ca-central-1 (Canada)
+#     if [ "$6" -eq 3 ]; then warehouse=0; fi
+#     if [ "$6" -eq 6 ]; then warehouse=1; fi
+#     if [ "$6" -eq 9 ]; then warehouse=1; fi
+#     if [ "$6" -eq 12 ]; then warehouse=1; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node16 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-ca-central-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-us-east-1 (Virginia)
+#     if [ "$6" -eq 3 ]; then warehouse=0; fi
+#     if [ "$6" -eq 6 ]; then warehouse=1; fi
+#     if [ "$6" -eq 9 ]; then warehouse=1; fi
+#     if [ "$6" -eq 12 ]; then warehouse=2; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node17 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-us-east-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-sa-east-1 (Sao Paulo)
+#     if [ "$6" -eq 3 ]; then warehouse=0; fi
+#     if [ "$6" -eq 6 ]; then warehouse=1; fi
+#     if [ "$6" -eq 9 ]; then warehouse=2; fi
+#     if [ "$6" -eq 12 ]; then warehouse=3; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node18 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r america >> logs/clients/america/$ID-cli-sa-east-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
 
-    mkdir ~/genbyzproto/logs/clients/europe
-    # cli-eu-west-1 (Ireland)
-    if [ "$6" -eq 3 ]; then warehouse=1; fi
-    if [ "$6" -eq 6 ]; then warehouse=2; fi # Ireland
-    if [ "$6" -eq 9 ]; then warehouse=3; fi # Ireland
-    if [ "$6" -eq 12 ]; then warehouse=4; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node19 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-west-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-eu-west-3 (Paris)
-    if [ "$6" -eq 3 ]; then warehouse=1; fi
-    if [ "$6" -eq 6 ]; then warehouse=2; fi # Ireland
-    if [ "$6" -eq 9 ]; then warehouse=3; fi # Ireland
-    if [ "$6" -eq 12 ]; then warehouse=5; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node20 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-west-3.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-eu-central-1 (Frankfurt)
-    if [ "$6" -eq 3 ]; then warehouse=1; fi
-    if [ "$6" -eq 6 ]; then warehouse=3; fi # Frankfurt
-    if [ "$6" -eq 9 ]; then warehouse=4; fi # Frankfurt
-    if [ "$6" -eq 12 ]; then warehouse=6; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node21 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-central-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-eu-north-1 (Stockholm)
-    if [ "$6" -eq 3 ]; then warehouse=1; fi
-    if [ "$6" -eq 6 ]; then warehouse=3; fi # Frankfurt
-    if [ "$6" -eq 9 ]; then warehouse=5; fi # Stockholm
-    if [ "$6" -eq 12 ]; then warehouse=7; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node22 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-north-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
+#     mkdir ~/genbyzproto/logs/clients/europe
+#     # cli-eu-west-1 (Ireland)
+#     if [ "$6" -eq 3 ]; then warehouse=1; fi
+#     if [ "$6" -eq 6 ]; then warehouse=2; fi # Ireland
+#     if [ "$6" -eq 9 ]; then warehouse=3; fi # Ireland
+#     if [ "$6" -eq 12 ]; then warehouse=4; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node19 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-west-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-eu-west-3 (Paris)
+#     if [ "$6" -eq 3 ]; then warehouse=1; fi
+#     if [ "$6" -eq 6 ]; then warehouse=2; fi # Ireland
+#     if [ "$6" -eq 9 ]; then warehouse=3; fi # Ireland
+#     if [ "$6" -eq 12 ]; then warehouse=5; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node20 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-west-3.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-eu-central-1 (Frankfurt)
+#     if [ "$6" -eq 3 ]; then warehouse=1; fi
+#     if [ "$6" -eq 6 ]; then warehouse=3; fi # Frankfurt
+#     if [ "$6" -eq 9 ]; then warehouse=4; fi # Frankfurt
+#     if [ "$6" -eq 12 ]; then warehouse=6; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node21 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-central-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-eu-north-1 (Stockholm)
+#     if [ "$6" -eq 3 ]; then warehouse=1; fi
+#     if [ "$6" -eq 6 ]; then warehouse=3; fi # Frankfurt
+#     if [ "$6" -eq 9 ]; then warehouse=5; fi # Stockholm
+#     if [ "$6" -eq 12 ]; then warehouse=7; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node22 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r europe >> logs/clients/europe/$ID-cli-eu-north-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
 
-    mkdir ~/genbyzproto/logs/clients/asia
-    # ap-south-1 (Mumbai)
-    if [ "$6" -eq 3 ]; then warehouse=2; fi
-    if [ "$6" -eq 6 ]; then warehouse=4; fi
-    if [ "$6" -eq 9 ]; then warehouse=6; fi
-    if [ "$6" -eq 12 ]; then warehouse=8; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node23 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-south-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-ap-southeast-1 (Singapore)
-    if [ "$6" -eq 3 ]; then warehouse=2; fi
-    if [ "$6" -eq 6 ]; then warehouse=4; fi
-    if [ "$6" -eq 9 ]; then warehouse=7; fi
-    if [ "$6" -eq 12 ]; then warehouse=9; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node24 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-southeast-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-ap-northeast-1 (Tokyo)
-    if [ "$6" -eq 3 ]; then warehouse=2; fi
-    if [ "$6" -eq 6 ]; then warehouse=5; fi
-    if [ "$6" -eq 9 ]; then warehouse=8; fi
-    if [ "$6" -eq 12 ]; then warehouse=10; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node25 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-northeast-1.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    # cli-ap-southeast-2 (Sydney)
-    if [ "$6" -eq 3 ]; then warehouse=2; fi
-    if [ "$6" -eq 6 ]; then warehouse=5; fi
-    if [ "$6" -eq 9 ]; then warehouse=8; fi
-    if [ "$6" -eq 12 ]; then warehouse=11; fi
-    for i in $(seq 1 $clipernode); do
-        ssh elia@node26 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-southeast-2.txt" & sleep .05
-        ((ID = $ID + 1))
-    done
-    echo "started $5 clients" >> ~/genbyzproto/logs/executions.log
+#     mkdir ~/genbyzproto/logs/clients/asia
+#     # ap-south-1 (Mumbai)
+#     if [ "$6" -eq 3 ]; then warehouse=2; fi
+#     if [ "$6" -eq 6 ]; then warehouse=4; fi
+#     if [ "$6" -eq 9 ]; then warehouse=6; fi
+#     if [ "$6" -eq 12 ]; then warehouse=8; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node23 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-south-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-ap-southeast-1 (Singapore)
+#     if [ "$6" -eq 3 ]; then warehouse=2; fi
+#     if [ "$6" -eq 6 ]; then warehouse=4; fi
+#     if [ "$6" -eq 9 ]; then warehouse=7; fi
+#     if [ "$6" -eq 12 ]; then warehouse=9; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node24 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-southeast-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-ap-northeast-1 (Tokyo)
+#     if [ "$6" -eq 3 ]; then warehouse=2; fi
+#     if [ "$6" -eq 6 ]; then warehouse=5; fi
+#     if [ "$6" -eq 9 ]; then warehouse=8; fi
+#     if [ "$6" -eq 12 ]; then warehouse=10; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node25 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-northeast-1.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     # cli-ap-southeast-2 (Sydney)
+#     if [ "$6" -eq 3 ]; then warehouse=2; fi
+#     if [ "$6" -eq 6 ]; then warehouse=5; fi
+#     if [ "$6" -eq 9 ]; then warehouse=8; fi
+#     if [ "$6" -eq 12 ]; then warehouse=11; fi
+#     for i in $(seq 1 $clipernode); do
+#         ssh elia@node26 "cd genbyzproto; java -cp \"bin/*:lib/*\" MainClient -c $5 -i $ID -d $1 $dbg $sk $tpcc $np $msgs $locality -w $warehouse -r asia >> logs/clients/asia/$ID-cli-ap-southeast-2.txt" & sleep .05
+#         ((ID = $ID + 1))
+#     done
+#     echo "started $5 clients" >> ~/genbyzproto/logs/executions.log
 
-    echo "waiting..." >> ~/genbyzproto/logs/executions.log
-    while :
-    do
-        sleep 2;
-        nodeFiles=`find ./files -name 'NodeFinished*' | wc -l` #Count files and store in a variable
-        if [ "$nodeFiles" -ge $6 ]; then sleep 5; break; fi
-    done
+#     echo "waiting..." >> ~/genbyzproto/logs/executions.log
+#     while :
+#     do
+#         sleep 2;
+#         nodeFiles=`find ./files -name 'NodeFinished*' | wc -l` #Count files and store in a variable
+#         if [ "$nodeFiles" -ge $6 ]; then sleep 5; break; fi
+#     done
 
-    echo "all nodes done" >> ~/genbyzproto/logs/executions.log; ./scripts/kill.sh; echo "processes killed at " $(date)  >> ~/genbyzproto/logs/executions.log; sleep 1;
+#     echo "all nodes done" >> ~/genbyzproto/logs/executions.log; ./scripts/kill.sh; echo "processes killed at " $(date)  >> ~/genbyzproto/logs/executions.log; sleep 1;
 
-    if grep -q "true" ~/genbyzproto/files/stop; then echo "found stop, exiting..." >> ~/genbyzproto/logs/executions.log; break; fi
-    echo "all queues empty !"  >> ~/genbyzproto/logs/executions.log; sleep 1;
+#     if grep -q "true" ~/genbyzproto/files/stop; then echo "found stop, exiting..." >> ~/genbyzproto/logs/executions.log; break; fi
+#     echo "all queues empty !"  >> ~/genbyzproto/logs/executions.log; sleep 1;
 
-    echo "starting cycle validation ("$(date)")" >> ~/genbyzproto/logs/executions.log; java -Xmx4024m -cp "bin/*:lib/*" util.Validator > ~/genbyzproto/logs/validationresult.txt;
-    cat ~/genbyzproto/logs/validationresult.txt >> ~/genbyzproto/logs/executions.log;
-    if grep -q "true" ~/genbyzproto/logs/validationresult.txt; then echo "cycle detected!" >> ~/genbyzproto/logs/executions.log; break; fi
-    echo "no cycles detected ("$(date)")" >> ~/genbyzproto/logs/executions.log;
+#     echo "starting cycle validation ("$(date)")" >> ~/genbyzproto/logs/executions.log; java -Xmx4024m -cp "bin/*:lib/*" util.Validator > ~/genbyzproto/logs/validationresult.txt;
+#     cat ~/genbyzproto/logs/validationresult.txt >> ~/genbyzproto/logs/executions.log;
+#     if grep -q "true" ~/genbyzproto/logs/validationresult.txt; then echo "cycle detected!" >> ~/genbyzproto/logs/executions.log; break; fi
+#     echo "no cycles detected ("$(date)")" >> ~/genbyzproto/logs/executions.log;
 
