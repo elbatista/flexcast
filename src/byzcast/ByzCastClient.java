@@ -161,6 +161,11 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short[] generateDests(){
+        
+        if(randomNumber(1, 100, gen) < 99){
+            return new short[]{warehouse};
+        }
+
         if(localityPercentage == 0){
             return generateRandDests();
         }
