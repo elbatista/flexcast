@@ -5,7 +5,10 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
@@ -130,16 +133,57 @@ public class Results {
         return values;
     }
 
+    static class TPLine{
+        int clients, skeen, byz, flex;
+        public TPLine(int clients, int skeen, int byz, int flex) {
+            this.clients = clients;
+            this.skeen = skeen;
+            this.byz = byz;
+            this.flex = flex;
+        }
+    }
+
     public static void main(String ... args){
-        ArrayList<Double> latencies = new ArrayList<>();
+        // ArrayList<Double> latencies = new ArrayList<>();
         
-        String algo     = "byzcast";
-        String locality = "99";
-        short nodes     = 12;
-        int gc          = 0;
-        int cli         = 96;
+        String localities [] = {"99"};
+        short numnodes []    = {12};
+        String algos []      = {"flexcast","skeen","byzcast"};
+        int clients []       = {96, 192, 384};
+        int gc               = 0;
+
+        ArrayList<TPLine> tp = new ArrayList<>();
+        HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
         
-        String basedir ="flexcast/experiments/"+algo+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+        for(String locality : localities){
+            for(short nodes : numnodes){
+                tpValues = new HashMap<>();
+                for(String algo : algos){
+                    for(int cli : clients){
+                        
+                        String basedir ="flexcast/experiments/"+algo+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+                        //////////// TP
+                        double avgtp = 0;
+                        totalFiles = 0;
+
+                        avgtp += readTPFiles(basedir+"/logs");
+                        // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
+                        // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
+
+                        System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+                        System.out.println(basedir);
+                        System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        tpValues.get(cli).put(algo, avgtp);
+
+                    }
+                    
+                }
+                writeTPFile(tpValues, nodes, locality);
+            }
+        }
+
+        
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/america"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));
@@ -167,17 +211,28 @@ public class Results {
         // // CFDs
         // writeCDFFiles(values, algo, locality);
 
-        //////////// TP
-        double avgtp = 0;
-        totalFiles = 0;
+        
+    }
 
-        avgtp += readTPFiles(basedir+"/logs");
-        // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
-        // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
-
-        System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
-        System.out.println(basedir);
-        System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality) {
+        try {
+            
+            PrintWriter printerOut = new PrintWriter("flexcast/plots/tp/TP_"+nodes+"nodes_"+locality+"%.txt");
+            ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
+            Collections.sort(sortedKeys);
+            for(int cli : sortedKeys){
+                printerOut.println(
+                    cli + 
+                    "\t" + tpValues.get(cli).get("skeen")+ 
+                    "\t" + tpValues.get(cli).get("byzcast")+ 
+                    "\t" + tpValues.get(cli).get("flexcast")
+                );
+            }
+            printerOut.flush();
+            printerOut.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static void writeCDFFiles(HashMap<Short, ArrayList<Double>> values, String algo, String locality) {

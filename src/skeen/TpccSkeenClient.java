@@ -5,39 +5,39 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import skeen.messages.SkeenMessage;
 import util.ArgsParser;
+import util.FileManager;
 import util.Stats;
 
 public class TpccSkeenClient extends SkeenClient {
-
     private final Random gen;
     private int NUM_TX = 0;
     private int warehouseCount = 10;  // number of warehouses
     private int warehouseID = 0;  // client's main warehouse
-
+    private int localityPercentage = 99;
     // Tpcc workload
     private static final int newOrderWeight = 45;
     private static final int paymentWeight = 43;
     private static final int orderStatusWeight = 4;
     private static final int deliveryWeight = 4;
     private static final int stockLevelWeight = 4;
+    private HashMap<Short, String> nearestWHs = new HashMap<>();
 
     // enable for local-only workload
     boolean localOnly = false;
-
     double numNewOrderTx = 0;
     double numPaymentTx = 0;
     double numOrderStatusTx = 0;
     double numDeliveryTx = 0;
     double numStockLevelTx = 0;
-
     double multiPartitionTx = 0;
     double partitionsAccessedMultiPartitionTxs = 0;
     double partitionsAccessedAllTxs = 0;
-
     double numItemsAccessesNewOrder;
 
     int dest2NewOrder = 0;
@@ -55,7 +55,8 @@ public class TpccSkeenClient extends SkeenClient {
     public TpccSkeenClient(short id, ArgsParser args) {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
-        print("SKEEN TPCC Client");
+        print("Skeen TPC-C Client");
+        FileManager.loadLocalityFile(nearestWHs);
         run();
     }
     
@@ -66,17 +67,19 @@ public class TpccSkeenClient extends SkeenClient {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(5000);
+        sleep(2000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         print("All other clients ready!");
 
-        print("Started SKEEN tpcc experiment. Num nodes:", numNodes);
+        print("Started Skeen TPC-C experiment. Num nodes:", numNodes);
         print("My home warehouse:", warehouseID);
 
-        if(args.getLocality() == 0) print("No locality");
+        print("Locality", args.getLocality(), "%");
+        localityPercentage = args.getLocality();
         stats = new Stats(totalTime, numNodes);
+
         executeTransactions();
 
         if (stats.getCount() > 0) {
@@ -127,13 +130,12 @@ public class TpccSkeenClient extends SkeenClient {
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
-
-        // print("ONLY 2 DESTS MSGS");
+        int totalMsgs=0;
 
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;
-            
+
             if (transactionType <= newOrderWeight) {
                 //transactionTypeName = "New-Order";
                 numDests = doNewOrder();
@@ -152,6 +154,7 @@ public class TpccSkeenClient extends SkeenClient {
             }
 
             SkeenMessage m = newMessageTo(generateDests(numDests));
+
             multicast(m, (short) warehouseID);
             computeDistribution(m);
 
@@ -160,15 +163,19 @@ public class TpccSkeenClient extends SkeenClient {
             stats.store((now - usLat) / 1000, (numDests > 1));
             usLat = now;
             NUM_TX++;
+
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
-        print("Finished SKEEN tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
+        print("Finished Skeen TPC-C experiment. Elapsed: ", elapsed / 1e9, "seconds");
     }
 
     private short[] generateDests(int numDests) {
         if(numDests == 1) return new short[]{(short)warehouseID};
         short [] tempdst = new short[numDests];
-        if(numDests == 2) generate2Dests(tempdst, numDests);
-        if(numDests >= 3) generateRandDests(tempdst, numDests);
+        if(numDests == 2) tempdst = generate2Dests();
+        if(numDests == 3) tempdst = generate3Dests();
+        if(numDests > 3) generateRandDests(tempdst, numDests);
         Arrays.sort(tempdst);
         return tempdst;
     }
@@ -186,115 +193,55 @@ public class TpccSkeenClient extends SkeenClient {
         }
     }
 
-    private void generate2Dests(short[] tempdst, int numDests) {
-        
+    private short[] generate2Dests(){
+        short [] tempdst = new short[2];
         tempdst[0] = (short) warehouseID;
 
-        // rand
-        do {tempdst[1] = (short)randomNumber(0, (warehouseCount-1), gen);}
-        while (tempdst[1] == warehouseID);
+        if(randomNumber(1, 100, gen) <= localityPercentage)
+            tempdst[1] = getNearestWH(0);
+        else 
+            tempdst[1] = getNearestWH(1);
 
-        //locality 1
-        if(randomNumber(1, 100, gen) <= args.getLocality()){
-            tempdst[1] = getNearestWH();
-        }
-        else {
-            //locality 2
-            if(randomNumber(1, 100, gen) <= args.getLocality()){
-                tempdst[1] = getSecondNearestWH();
-            }
-        }
-    }
+        Arrays.sort(tempdst);
 
-    private short getNearestWH() {
-        if(numNodes == 6){
-            switch(warehouseID){
-                case 0: return 1;
-                case 1: return 0;
-                case 2: return 3;
-                case 3: return 2;
-                case 4: return 5;
-                case 5: return 4;
-            }
-        }
-        else if(numNodes == 9){
-            switch(warehouseID){
-                case 0: return 1;
-                case 1: return 0;
-                case 2: return 1;
-                case 3: return 4;
-                case 4: return 3;
-                case 5: return 4;
-                case 6: return 7;
-                case 7: return 6;
-                case 8: return 7;
-            }
-        }
-        else if(numNodes == 12){
-            switch(warehouseID){
-                case 0: return 1;
-                case 1: return 2;
-                case 2: return 1;
-                case 3: return 2;
-                case 4: return 5;
-                case 5: return 4;
-                case 6: return 5;
-                case 7: return 6;
-                case 8: return 9;
-                case 9: return 8;
-                case 10: return 9;
-                case 11: return 10;
-            }
-        }
-        // simply get the next HW in order of id
-        short tempdst = (short)(warehouseID+1);
-        if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
         return tempdst;
     }
 
-    private short getSecondNearestWH() {
-        if(numNodes == 6){
-            switch(warehouseID){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 1;
-                case 4: return 2;
-                case 5: return 3;
-            }
+    private short[] generate3Dests(){
+        short [] tempdst = new short[3];
+        tempdst[0] = (short) warehouseID;
+        if(randomNumber(1, 100, gen) <= localityPercentage){
+            tempdst[1] = getNearestWH(0);
+            tempdst[2] = getNearestWH(1);
+        }else {
+            tempdst[1] = getNearestWH(1);
+            tempdst[2] = getNearestWH(2);
         }
-        else if(numNodes == 9){
-            switch(warehouseID){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 5;
-                case 4: return 6;
-                case 5: return 3;
-                case 6: return 8;
-                case 7: return 5;
-                case 8: return 6;
-            }
+        LinkedHashSet<Short> set = new LinkedHashSet<Short>();
+ 
+        // remove duplicates
+        for (short s : tempdst) set.add(s);
+        short [] finaldst = new short[set.size()];
+        int i = 0;
+        for(short s : set){
+            finaldst[i] = s;
+            i++;
         }
-        else if(numNodes == 12){
-            switch(warehouseID){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 1;
-                case 4: return 6;
-                case 5: return 7;
-                case 6: return 4;
-                case 7: return 5;
-                case 8: return 10;
-                case 9: return 7;
-                case 10: return 8;
-                case 11: return 9;
-            }
+        Arrays.sort(finaldst);
+
+        return finaldst;
+    }
+
+    private short getNearestWH(int index) {
+        short tempdst = -1;
+
+        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouseID).split(" ")[index].trim());} catch(Exception e){}
+
+        if(tempdst == -1){
+            // simply get the next HW in order of id
+            tempdst = (short)(warehouseID+1);
+            if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
         }
-        // simply get the next HW in order of id
-        short tempdst = (short)(warehouseID+1);
-        if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
         return tempdst;
     }
 

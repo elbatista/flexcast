@@ -5,10 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import byzcast.messages.ByzCastMessage;
 import util.ArgsParser;
+import util.FileManager;
 import util.Stats;
 
 public class TpccByzCastClient extends ByzCastClient {
@@ -17,27 +20,25 @@ public class TpccByzCastClient extends ByzCastClient {
     private int NUM_TX = 0;
     private int warehouseCount = 10;  // number of warehouses
     private int warehouseID = 0;  // client's main warehouse
-
+    private int localityPercentage = 99;
     // Tpcc workload
     private static final int newOrderWeight = 45;
     private static final int paymentWeight = 43;
     private static final int orderStatusWeight = 4;
     private static final int deliveryWeight = 4;
     private static final int stockLevelWeight = 4;
+    private HashMap<Short, String> nearestWHs = new HashMap<>();
 
     // enable for local-only workload
     boolean localOnly = false;
-
     double numNewOrderTx = 0;
     double numPaymentTx = 0;
     double numOrderStatusTx = 0;
     double numDeliveryTx = 0;
     double numStockLevelTx = 0;
-
     double multiPartitionTx = 0;
     double partitionsAccessedMultiPartitionTxs = 0;
     double partitionsAccessedAllTxs = 0;
-
     double numItemsAccessesNewOrder;
 
     int dest2NewOrder = 0;
@@ -55,7 +56,8 @@ public class TpccByzCastClient extends ByzCastClient {
     public TpccByzCastClient(short id, ArgsParser args) {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
-        print("ByzCast TPCC Client");
+        print("ByzCast TPC-C Client");
+        FileManager.loadLocalityFile(nearestWHs);
         run();
     }
     
@@ -66,18 +68,20 @@ public class TpccByzCastClient extends ByzCastClient {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(5000);
+        sleep(2000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         print("All other clients ready!");
 
-        print("Started ByzCast tpcc experiment. Num nodes:", numNodes);
-        print("ByzCast tree:", args.getTree());
+        print("Started ByzCast TPC-C experiment. Num nodes:", numNodes);
+        print("ByzCast Tree:", args.getTree());
         print("My home warehouse:", warehouseID);
 
-        if(args.getLocality() == 0) print("No locality");
+        print("Locality", args.getLocality(), "%");
+        localityPercentage = args.getLocality();
         stats = new Stats(totalTime, numNodes);
+
         executeTransactions();
 
         if (stats.getCount() > 0) {
@@ -128,13 +132,12 @@ public class TpccByzCastClient extends ByzCastClient {
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
-
-        print("ONLY GLOBAL MSGS");
+        int totalMsgs=0;
 
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;
-            
+
             if (transactionType <= newOrderWeight) {
                 //transactionTypeName = "New-Order";
                 numDests = doNewOrder();
@@ -152,16 +155,9 @@ public class TpccByzCastClient extends ByzCastClient {
                 numDests = doStockLevel();
             }
 
-            if(numDests < 2) {
-                dest1--;
-                numDests = 2;
-            }
-
             ByzCastMessage m = newMessageTo(generateDests(numDests));
-            
-            // ByzCastMessage m = newMessageTo(disjointDsts());
-            multicast(m);
 
+            multicast(m);
             computeDistribution(m);
 
             now = System.nanoTime();
@@ -169,26 +165,19 @@ public class TpccByzCastClient extends ByzCastClient {
             stats.store((now - usLat) / 1000, (numDests > 1));
             usLat = now;
             NUM_TX++;
-        }
-        print("Finished ByzCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
-    }
 
-    @SuppressWarnings("unused")
-    private short[] disjointDsts() {
-        int rand = randomNumber(1, 3, gen);
-        switch (rand) {
-            case 1: return new short[]{0,1};
-            case 2: return new short[]{2,3};
-            case 3: return new short[]{4,5};
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
-        return null;
+        print("Finished ByzCast TPC-C experiment. Elapsed: ", elapsed / 1e9, "seconds");
     }
 
     private short[] generateDests(int numDests) {
         if(numDests == 1) return new short[]{(short)warehouseID};
         short [] tempdst = new short[numDests];
-        if(numDests == 2) generate2Dests(tempdst, numDests);
-        if(numDests >= 3) generateRandDests(tempdst, numDests);
+        if(numDests == 2) tempdst = generate2Dests();
+        if(numDests == 3) tempdst = generate3Dests();
+        if(numDests > 3) generateRandDests(tempdst, numDests);
         Arrays.sort(tempdst);
         return tempdst;
     }
@@ -206,81 +195,55 @@ public class TpccByzCastClient extends ByzCastClient {
         }
     }
 
-    private void generate2Dests(short[] tempdst, int numDests) {
-        
+    private short[] generate2Dests(){
+        short [] tempdst = new short[2];
         tempdst[0] = (short) warehouseID;
 
-        // rand
-        do {tempdst[1] = (short)randomNumber(0, (warehouseCount-1), gen);}
-        while (tempdst[1] == warehouseID);
+        if(randomNumber(1, 100, gen) <= localityPercentage)
+            tempdst[1] = getNearestWH(0);
+        else 
+            tempdst[1] = getNearestWH(1);
 
-        //locality 1
-        if(randomNumber(1, 100, gen) <= args.getLocality()){
-            tempdst[1] = getNearestWH();
-        }
-        else {
-            //locality 2
-            if(randomNumber(1, 100, gen) <= args.getLocality()){
-                tempdst[1] = getSecondNearestWH();
-            }
-        }
-    }
+        Arrays.sort(tempdst);
 
-    private short getNearestWH() {
-        if(numNodes == 6){
-            if(args.getTree() == 1 || args.getTree() == 2){
-                switch(warehouseID){
-                    case 0: return 1;
-                    case 1: return 0;
-                    case 2: return 5;
-                    case 3: return 4;
-                    case 4: return 3;
-                    case 5: return 2;
-                }
-            }
-            else if (args.getTree() == 4){
-                switch(warehouseID){
-                    case 0: return 1;
-                    case 1: return 0;
-                    case 2: return 3;
-                    case 3: return 2;
-                    case 4: return 5;
-                    case 5: return 4;
-                }
-            }
-        }
-        // simply get the next HW in order of id
-        short tempdst = (short)(warehouseID+1);
-        if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
         return tempdst;
     }
 
-    private short getSecondNearestWH() {
-        if(numNodes == 6){
-            if(args.getTree() == 1 || args.getTree() == 2){
-                switch(warehouseID){
-                    case 0: return 3;
-                    case 1: return 2;
-                    case 2: return 1;
-                    case 3: return 0;
-                    case 4: return 1;
-                    case 5: return 0;
-                }
-            }
-            else if (args.getTree() == 4){
-                switch(warehouseID){
-                    case 0: return 2;
-                    case 1: return 3;
-                    case 2: return 1;
-                    case 3: return 4;
-                    case 4: return 2;
-                    case 5: return 3;
-                }
-            }
+    private short[] generate3Dests(){
+        short [] tempdst = new short[3];
+        tempdst[0] = (short) warehouseID;
+        if(randomNumber(1, 100, gen) <= localityPercentage){
+            tempdst[1] = getNearestWH(0);
+            tempdst[2] = getNearestWH(1);
+        }else {
+            tempdst[1] = getNearestWH(1);
+            tempdst[2] = getNearestWH(2);
         }
-        // simply get the next HW in order of id
-        short tempdst = (short)(warehouseID+1);
-        if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
+        LinkedHashSet<Short> set = new LinkedHashSet<Short>();
+ 
+        // remove duplicates
+        for (short s : tempdst) set.add(s);
+        short [] finaldst = new short[set.size()];
+        int i = 0;
+        for(short s : set){
+            finaldst[i] = s;
+            i++;
+        }
+        Arrays.sort(finaldst);
+
+        return finaldst;
+    }
+
+    private short getNearestWH(int index) {
+        short tempdst = -1;
+
+        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouseID).split(" ")[index].trim());} catch(Exception e){}
+
+        if(tempdst == -1){
+            // simply get the next HW in order of id
+            tempdst = (short)(warehouseID+1);
+            if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
+        }
         return tempdst;
     }
 

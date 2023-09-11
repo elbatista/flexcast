@@ -15,6 +15,7 @@ import util.FileManager;
 import util.Stats;
 
 public class TpccClient extends Client {
+
     private final Random gen;
     private int NUM_TX = 0;
     private int warehouseCount = 10;  // number of warehouses
@@ -30,17 +31,14 @@ public class TpccClient extends Client {
 
     // enable for local-only workload
     boolean localOnly = false;
-
     double numNewOrderTx = 0;
     double numPaymentTx = 0;
     double numOrderStatusTx = 0;
     double numDeliveryTx = 0;
     double numStockLevelTx = 0;
-
     double multiPartitionTx = 0;
     double partitionsAccessedMultiPartitionTxs = 0;
     double partitionsAccessedAllTxs = 0;
-
     double numItemsAccessesNewOrder;
 
     int dest2NewOrder = 0;
@@ -58,7 +56,7 @@ public class TpccClient extends Client {
     public TpccClient(short id, ArgsParser args) {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
-        print("FlexCast TPCC Client");
+        print("FlexCast TPC-C Client");
         FileManager.loadLocalityFile(nearestWHs);
         run();
     }
@@ -70,18 +68,17 @@ public class TpccClient extends Client {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(3000);
+        sleep(2000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         print("All other clients ready!");
 
-        print("Started FlexCast tpcc experiment. Num nodes:", numNodes);
+        print("Started FlexCast TPC-C experiment. Num nodes:", numNodes);
         print("My home warehouse:", warehouseID);
 
         print("Locality", args.getLocality(), "%");
         localityPercentage = args.getLocality();
-        
         stats = new Stats(totalTime, numNodes);
 
         executeTransactions();
@@ -135,7 +132,7 @@ public class TpccClient extends Client {
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
         int totalMsgs=0;
-        
+
         while (elapsed / 1e9 < totalTime) {
             int transactionType = randomNumber(1, 100, gen);
             int numDests = 1;
@@ -158,7 +155,7 @@ public class TpccClient extends Client {
             }
 
             Message m = newMessageTo(generateDests(numDests));
-            
+
             multicast(m);
             computeDistribution(m);
 
@@ -171,7 +168,7 @@ public class TpccClient extends Client {
             totalMsgs++;
             if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
-        print("Finished FlexCast tpcc experiment. Elapsed: ", elapsed / 1e9, "seconds");
+        print("Finished FlexCast TPC-C experiment. Elapsed: ", elapsed / 1e9, "seconds");
     }
 
     private short[] generateDests(int numDests) {
@@ -196,26 +193,6 @@ public class TpccClient extends Client {
             tempdst[i] = newDst;
         }
     }
-
-    // private void generate2Dests(short[] tempdst, int numDests) {
-        
-    //     tempdst[0] = (short) warehouseID;
-
-    //     // rand
-    //     do {tempdst[1] = (short)randomNumber(0, (warehouseCount-1), gen);}
-    //     while (tempdst[1] == warehouseID);
-
-    //     //locality 1
-    //     if(randomNumber(1, 100, gen) <= args.getLocality()){
-    //         tempdst[1] = getNearestWH();
-    //     }
-    //     else {
-    //         //locality 2
-    //         if(randomNumber(1, 100, gen) <= args.getLocality()){
-    //             tempdst[1] = getSecondNearestWH();
-    //         }
-    //     }
-    // }
 
     private short[] generate2Dests(){
         short [] tempdst = new short[2];
@@ -259,7 +236,7 @@ public class TpccClient extends Client {
     private short getNearestWH(int index) {
         short tempdst = -1;
 
-        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouseID).split(" ")[index]);} catch(Exception e){}
+        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouseID).split(" ")[index].trim());} catch(Exception e){}
 
         if(tempdst == -1){
             // simply get the next HW in order of id
@@ -268,13 +245,6 @@ public class TpccClient extends Client {
         }
         return tempdst;
     }
-
-    // private short getSecondNearestWH() {
-    //     // simply get the next HW in order of id
-    //     short tempdst = (short)(warehouseID+1);
-    //     if(tempdst == warehouseCount) tempdst = (short)(warehouseID-1);
-    //     return tempdst;
-    // }
 
     public int doNewOrder() {
         int numItems = randomNumber(5, 15, gen);

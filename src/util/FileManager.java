@@ -302,8 +302,8 @@ public class FileManager extends BaseObj {
                 if(!line.startsWith("#")){ // ignore comments #
                     StringTokenizer str = new StringTokenizer(line, "-");
                     if(str.countTokens() > 1){
-                        short id = Short.valueOf(str.nextToken());
-                        String map = str.nextToken();
+                        short id = Short.valueOf(str.nextToken().trim());
+                        String map = str.nextToken().trim();
                         nearestWHs.put(id, map);
                     }
                 }

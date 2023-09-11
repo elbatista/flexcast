@@ -153,7 +153,7 @@ public class ClientProxy extends Node{
     }
 
     public Message multicast(Message m){
-        print("Send", m);
+        // print("Send", m);
         replies.clear();
         expectedReplies = (short) m.getDst().length;
         latsPerNode.clear();
