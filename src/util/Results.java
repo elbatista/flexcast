@@ -222,9 +222,9 @@ public class Results {
             for(int cli : sortedKeys){
                 printerOut.println(
                     cli + 
-                    "\t" + tpValues.get(cli).get("skeen")+ 
-                    "\t" + tpValues.get(cli).get("byzcast")+ 
-                    "\t" + tpValues.get(cli).get("flexcast")
+                    "\t" + tpValues.get(cli).get("skeen_gc"+gc)+ 
+                    "\t" + tpValues.get(cli).get("byzcast_gc"+gc)+ 
+                    "\t" + tpValues.get(cli).get("flexcast_gc"+gc)
                 );
             }
             printerOut.flush();
