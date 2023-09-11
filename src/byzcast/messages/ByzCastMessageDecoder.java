@@ -7,11 +7,12 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
+import util.MsgSize;
 
 public class ByzCastMessageDecoder extends ReplayingDecoder<ByzCastMessage> {
-    private ArrayList<Double> sizes;
+    private ArrayList<MsgSize> sizes;
 
-    public ByzCastMessageDecoder(ArrayList<Double> sizes){
+    public ByzCastMessageDecoder(ArrayList<MsgSize> sizes){
         this.sizes = sizes;
     }
 
@@ -25,7 +26,7 @@ public class ByzCastMessageDecoder extends ReplayingDecoder<ByzCastMessage> {
         try {
             ByzCastMessage m = (ByzCastMessage)ois.readObject();
             if(sizes != null && m.getType() == ByzCastMessage.Type.MSG){
-                sizes.add((double)size);
+                sizes.add(new MsgSize((double)size, m.getDst()));
             }
             out.add(m);
         }

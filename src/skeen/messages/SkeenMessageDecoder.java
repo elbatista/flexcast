@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
+import util.MsgSize;
 
 public class SkeenMessageDecoder extends ReplayingDecoder<SkeenMessage> {
-    private ArrayList<Double> sizes;
+    private ArrayList<MsgSize> sizes;
 
-    public SkeenMessageDecoder(ArrayList<Double> sizes){
+    public SkeenMessageDecoder(ArrayList<MsgSize> sizes){
         this.sizes = sizes;
     }
     @Override
@@ -25,7 +26,7 @@ public class SkeenMessageDecoder extends ReplayingDecoder<SkeenMessage> {
             SkeenMessage m = (SkeenMessage)ois.readObject();
 
             if(sizes != null && m.getType() == SkeenMessage.Type.MSG || m.getType() == SkeenMessage.Type.STEP1 || m.getType() == SkeenMessage.Type.STEP2){
-                sizes.add((double)size);
+                sizes.add(new MsgSize((double)size, m.getDst()));
             }
 
             out.add(m);

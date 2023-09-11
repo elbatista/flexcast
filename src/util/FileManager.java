@@ -279,10 +279,10 @@ public class FileManager extends BaseObj {
         }
     }
 
-    public void persistMsgSizes(ArrayList<Double> sizes, short id) {
+    public void persistMsgSizes(ArrayList<MsgSize> sizes, short id) {
         try {
             PrintWriter printerOut = new PrintWriter("files"+sep+"Node"+id+"MsgSizes.txt");
-            for(double size : sizes) printerOut.println(size);
+            for(MsgSize size : sizes) printerOut.println(size);
             printerOut.flush();
             printerOut.close();
             printF("Created msg sizes file");
