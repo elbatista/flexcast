@@ -12,6 +12,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -288,6 +289,32 @@ public class FileManager extends BaseObj {
             printF("Created msg sizes file");
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+
+    public static void loadLocalityFile(HashMap<Short, String> nearestWHs) {
+        try{
+
+            FileReader fr = new FileReader("config/locality.conf");
+            BufferedReader rd = new BufferedReader(fr);
+            String line = null;
+            while((line = rd.readLine()) != null){
+                if(!line.startsWith("#")){ // ignore comments #
+                    StringTokenizer str = new StringTokenizer(line, "-");
+                    if(str.countTokens() > 1){
+                        short id = Short.valueOf(str.nextToken());
+                        String map = str.nextToken();
+                        nearestWHs.put(id, map);
+                    }
+                }
+            }
+            fr.close();
+            rd.close();
+            //return graph;
+        }
+        catch(Exception e){
+            e.printStackTrace(System.out);
+            //return null;
         }
     }
 }
