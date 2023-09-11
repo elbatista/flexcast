@@ -133,13 +133,13 @@ public class Results {
     public static void main(String ... args){
         ArrayList<Double> latencies = new ArrayList<>();
         
-        String algo     = "flexcast";
+        String algo     = "byzcast";
         String locality = "99";
         short nodes     = 12;
-        int gc          = 10000;
-        int cli         = 768;
+        int gc          = 0;
+        int cli         = 96;
         
-        String basedir ="experiments/"+algo+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+        String basedir ="flexcast/experiments/"+algo+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/america"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));

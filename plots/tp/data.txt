@@ -128,3 +128,64 @@ AVG Throughput: 1656.6666666666656 ops/sec
 TP - Read 768 tp files. Avg 60 lines per file
 experiments/flexcast/12nodes/768cli/99%/gc3000
 AVG Throughput: 1948.3750000000005 ops/sec
+
+
+
+####
+TPCC with local msgs:
+TP - Read 24 tp files. Avg 60 lines per file
+flexcast/experiments/flexcast/12nodes/24cli/99%/gc0
+AVG Throughput: 2706.6666666666665 ops/sec
+TP - Read 48 tp files. Avg 60 lines per file
+flexcast/experiments/flexcast/12nodes/48cli/99%/gc0
+AVG Throughput: 5515.187499999999 ops/sec
+TP - Read 96 tp files. Avg 60 lines per file
+flexcast/experiments/flexcast/12nodes/96cli/99%/gc0
+AVG Throughput: 11061.000000000007 ops/sec
+TP - Read 192 tp files. Avg 60 lines per file
+flexcast/experiments/flexcast/12nodes/192cli/99%/gc0
+AVG Throughput: 21798.687499999985 ops/sec
+TP - Read 384 tp files. Avg 60 lines per file
+flexcast/experiments/flexcast/12nodes/384cli/99%/gc0
+AVG Throughput: 44053.22916666668 ops/sec
+TP - Read 768 tp files. Avg 60 lines per file
+flexcast/experiments/flexcast/12nodes/768cli/99%/gc0
+AVG Throughput: 74372.83333333339 ops/sec
+
+TP - Read 24 tp files. Avg 60 lines per file
+flexcast/experiments/skeen/12nodes/24cli/99%/gc0
+AVG Throughput: 2490.833333333333 ops/sec
+TP - Read 48 tp files. Avg 60 lines per file
+flexcast/experiments/skeen/12nodes/48cli/99%/gc0
+AVG Throughput: 4887.166666666667 ops/sec
+TP - Read 96 tp files. Avg 60 lines per file
+flexcast/experiments/skeen/12nodes/96cli/99%/gc0
+AVG Throughput: 9498.375 ops/sec
+TP - Read 192 tp files. Avg 60 lines per file
+flexcast/experiments/skeen/12nodes/192cli/99%/gc0
+AVG Throughput: 18399.395833333332 ops/sec
+TP - Read 384 tp files. Avg 60 lines per file
+flexcast/experiments/skeen/12nodes/384cli/99%/gc0
+AVG Throughput: 36163.958333333336 ops/sec
+TP - Read 768 tp files. Avg 60 lines per file
+flexcast/experiments/skeen/12nodes/768cli/99%/gc0
+AVG Throughput: 69945.81249999987 ops/sec
+
+TP - Read 24 tp files. Avg 60 lines per file
+flexcast/experiments/byzcast/12nodes/24cli/99%/gc0
+AVG Throughput: 1998.7083333333335 ops/sec
+TP - Read 48 tp files. Avg 60 lines per file
+flexcast/experiments/byzcast/12nodes/48cli/99%/gc0
+AVG Throughput: 4027.124999999999 ops/sec
+TP - Read 96 tp files. Avg 60 lines per file
+flexcast/experiments/byzcast/12nodes/96cli/99%/gc0
+AVG Throughput: 8100.35416666667 ops/sec
+TP - Read 192 tp files. Avg 60 lines per file
+flexcast/experiments/byzcast/12nodes/192cli/99%/gc0
+AVG Throughput: 16172.374999999996 ops/sec
+TP - Read 384 tp files. Avg 60 lines per file
+flexcast/experiments/byzcast/12nodes/384cli/99%/gc0
+AVG Throughput: 32626.729166666693 ops/sec
+TP - Read 768 tp files. Avg 60 lines per file
+flexcast/experiments/byzcast/12nodes/768cli/99%/gc0
+AVG Throughput: 64775.27083333333 ops/sec

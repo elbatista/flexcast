@@ -1,8 +1,8 @@
 #!/bin/bash
 duration=60;
 algo=(0 1 2);
-clients=(96 192 384);
-#12 24 48     768
+clients=(24 48 96);
+#12  384 768 192  
 servers=12;
 nodes=24;
 locality=99;
@@ -17,11 +17,11 @@ do
     cat ./config/${servers}nodes/servers-${algodesc[$a]}.conf > ./config/servers.conf
     cat ./config/${servers}nodes/clients.conf > ./config/clients.conf
     if [ "$a" -eq 2 ]; then cat ./config/${servers}nodes/byzcast-tree.config > ./config/byzcast.config; fi
-    if [ "$a" -eq 0 ]; then 
-        gc=1000; 
-    else 
-        gc=0; 
-    fi
+    # if [ "$a" -eq 0 ]; then 
+    #     gc=1000; 
+    # else 
+    #     gc=0; 
+    # fi
     for c in "${clients[@]}"
     do
         clispernode=$(($c/12))
