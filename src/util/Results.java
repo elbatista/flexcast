@@ -148,9 +148,9 @@ public class Results {
         
         String localities [] = {"99"};
         short numnodes []    = {12};
-        String algos []      = {"flexcast","skeen","byzcast"};
+        String algos []      = {"flexcast"};
         int clients []       = {12, 24, 48, 96, 192, 384, 768};
-        int gc               = 0;
+        int gc               = 500;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
