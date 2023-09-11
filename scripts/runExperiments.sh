@@ -1,13 +1,13 @@
 #!/bin/bash
 duration=60;
-algo=(2);
-clients=(96 192 384);
-#12 24 48 96 192 384 768   
+algo=(0);
+clients=(12 24 48 96 192 384 768);
+#  
 servers=12;
 nodes=24;
 locality=99;
 # msgs=0;
-gc=0;
+gc=1000;
 clispernode=1;
 algodesc=("flexcast" "skeen" "byzcast");
 tpcc='-t';

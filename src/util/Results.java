@@ -149,7 +149,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast","skeen","byzcast"};
-        int clients []       = {96, 192, 384};
+        int clients []       = {12, 24, 48, 96, 192, 384, 768};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -174,12 +174,12 @@ public class Results {
                         System.out.println(basedir);
                         System.out.println("AVG Throughput: "+avgtp+" ops/sec");
                         if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        tpValues.get(cli).put(algo, avgtp);
+                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                     }
                     
                 }
-                writeTPFile(tpValues, nodes, locality);
+                writeTPFile(tpValues, nodes, locality, gc);
             }
         }
 
@@ -214,10 +214,9 @@ public class Results {
         
     }
 
-    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality) {
+    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc) {
         try {
-            
-            PrintWriter printerOut = new PrintWriter("flexcast/plots/tp/TP_"+nodes+"nodes_"+locality+"%.txt");
+            PrintWriter printerOut = new PrintWriter("flexcast/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+".txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
             Collections.sort(sortedKeys);
             for(int cli : sortedKeys){

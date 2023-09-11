@@ -1,0 +1,7 @@
+12	null	null	null
+24	null	null	null
+48	null	null	null
+96	null	null	null
+192	null	null	null
+384	null	null	null
+768	null	null	null
