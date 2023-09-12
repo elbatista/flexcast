@@ -137,7 +137,7 @@ do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/
 done
 
-expdir="$basedir/experiments/${algodesc[$2]}/${servers}nodes/${3}cli/${locality}%/gc${gc}"
+expdir="$basedir/experiments/${algodesc[$2]}-aws-loc-file-90%/${servers}nodes/${3}cli/${locality}%/gc${gc}"
 mkdir -p $expdir/config
 echo "moving data to" $expdir >> $basedir/logs/execution.log;
 cp -r $basedir/logs $expdir/

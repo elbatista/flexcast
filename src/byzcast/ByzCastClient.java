@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
@@ -35,7 +36,8 @@ public class ByzCastClient extends ByzCastClientProxy {
     // protected Stats stats;
     protected final Random gen;
     private short warehouse;
-    
+    private HashMap<Short, String> nearestWHs = new HashMap<>();
+
     public ByzCastClient(short id, ArgsParser args, boolean start){
         super(id, args.getTree());
         this.args = args;
@@ -45,6 +47,7 @@ public class ByzCastClient extends ByzCastClientProxy {
         this.warehouse = (short) args.getHomeWarehouse();
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
+        FileManager.loadLocalityFile(nearestWHs);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         for(Node server : nodes) connectTo(server, syncAllConnections);
         numNodes = (short) nodes.size();
@@ -109,7 +112,6 @@ public class ByzCastClient extends ByzCastClientProxy {
             try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
             stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-byzcast.txt", 15);
             stats.persistPerNodes("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-byzcast-per-node.txt", 15);
-
             print("LOCAL STATS:", stats);
         }
 
@@ -161,8 +163,8 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private short[] generateDests(){
-        
-        if(randomNumber(1, 100, gen) < 99){
+
+        if(randomNumber(1, 100, gen) <= 90){
             return new short[]{warehouse};
         }
 
@@ -193,9 +195,9 @@ public class ByzCastClient extends ByzCastClientProxy {
         tempdst[0] = warehouse;
 
         if(randomNumber(1, 100, gen) <= localityPercentage)
-            tempdst[1] = getNearestWH(warehouse);
+            tempdst[1] = getNearestWH(0);
         else 
-            tempdst[1] = getSecondNearestWH(warehouse);
+            tempdst[1] = getNearestWH(1);
 
         Arrays.sort(tempdst);
 
@@ -206,11 +208,11 @@ public class ByzCastClient extends ByzCastClientProxy {
         short [] tempdst = new short[3];
         tempdst[0] = warehouse;
         if(randomNumber(1, 100, gen) <= localityPercentage){
-            tempdst[1] = getNearestWH(warehouse);
-            tempdst[2] = getSecondNearestWH(warehouse);
+            tempdst[1] = getNearestWH(0);
+            tempdst[2] = getNearestWH(1);
         }else {
-            tempdst[1] = getSecondNearestWH(warehouse);
-            tempdst[2] = getThirdNearestWH(warehouse);
+            tempdst[1] = getNearestWH(1);
+            tempdst[2] = getNearestWH(2);
         }
         LinkedHashSet<Short> set = new LinkedHashSet<Short>();
  
@@ -227,158 +229,171 @@ public class ByzCastClient extends ByzCastClientProxy {
         return finaldst;
     }
 
-    private short getNearestWH(short warehouseparam) {
-        if(numNodes == 9){
-            switch(warehouseparam){
-                case 0: return 1;
-                case 1: return 2;
-                case 2: return 3;
-                case 3: return 4;
-                case 4: return 5;
-                case 5: return 4;
-                case 6: return 7;
-                case 7: return 8;
-                case 8: return 7;
-                default: return warehouseparam;
-            }
-        } else if(numNodes == 12){
-            switch(warehouseparam){
-                case 0: return 1;
-                case 1: return 2;
-                case 2: return 1;
-                case 3: return 2;
-                case 4: return 5;
-                case 5: return 4;
-                case 6: return 7;
-                case 7: return 6;
-                case 8: return 9;
-                case 9: return 8;
-                case 10: return 9;
-                case 11: return 10;
-                default: return warehouseparam;
-            }
-        } else if(numNodes == 13){
-            switch(warehouseparam){
-                case 0: return 1;
-                case 1: return 2;
-                case 2: return 3;
-                case 3: return 4;
-                case 4: return 5;
-                case 5: return 6;
-                case 6: return 7;
-                case 7: return 8;
-                case 8: return 9;
-                case 9: return 10;
-                case 10: return 11;
-                case 11: return 12;
-                case 12: return 11;
-                default: return warehouseparam;
-            }
+    private short getNearestWH(int index) {
+        short tempdst = -1;
+
+        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouse).split(" ")[index].trim());} catch(Exception e){}
+
+        if(tempdst == -1){
+            // simply get the next HW in order of id
+            tempdst = (short)(warehouse+1);
+            if(tempdst == numNodes) tempdst = (short)(warehouse-1);
         }
-        return warehouseparam;
+        return tempdst;
     }
 
-    private short getSecondNearestWH(short warehouseparam) {
-        if(numNodes == 9){
-            switch(warehouseparam){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 5;
-                case 4: return 2;
-                case 5: return 3;
-                case 6: return 8;
-                case 7: return 5;
-                case 8: return 6;
-                default: return warehouseparam;
-            }
-        } else if(numNodes == 12){
-            switch(warehouseparam){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 1;
-                case 4: return 6;
-                case 5: return 7;
-                case 6: return 4;
-                case 7: return 5;
-                case 8: return 10;
-                case 9: return 11;
-                case 10: return 8;
-                case 11: return 9;
-                default: return warehouseparam;
-            }
-        } else if(numNodes == 13){
-            switch(warehouseparam){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 1;
-                case 4: return 2;
-                case 5: return 7;
-                case 6: return 8;
-                case 7: return 5;
-                case 8: return 6;
-                case 9: return 11;
-                case 10: return 12;
-                case 11: return 9;
-                case 12: return 10;
-                default: return warehouseparam;
-            }
-        }
-        return warehouseparam;
-    }
+    // private short getNearestWH(short warehouseparam) {
+    //     if(numNodes == 9){
+    //         switch(warehouseparam){
+    //             case 0: return 1;
+    //             case 1: return 2;
+    //             case 2: return 3;
+    //             case 3: return 4;
+    //             case 4: return 5;
+    //             case 5: return 4;
+    //             case 6: return 7;
+    //             case 7: return 8;
+    //             case 8: return 7;
+    //             default: return warehouseparam;
+    //         }
+    //     } else if(numNodes == 12){
+    //         switch(warehouseparam){
+    //             case 0: return 1;
+    //             case 1: return 2;
+    //             case 2: return 1;
+    //             case 3: return 2;
+    //             case 4: return 5;
+    //             case 5: return 4;
+    //             case 6: return 7;
+    //             case 7: return 6;
+    //             case 8: return 9;
+    //             case 9: return 8;
+    //             case 10: return 9;
+    //             case 11: return 10;
+    //             default: return warehouseparam;
+    //         }
+    //     } else if(numNodes == 13){
+    //         switch(warehouseparam){
+    //             case 0: return 1;
+    //             case 1: return 2;
+    //             case 2: return 3;
+    //             case 3: return 4;
+    //             case 4: return 5;
+    //             case 5: return 6;
+    //             case 6: return 7;
+    //             case 7: return 8;
+    //             case 8: return 9;
+    //             case 9: return 10;
+    //             case 10: return 11;
+    //             case 11: return 12;
+    //             case 12: return 11;
+    //             default: return warehouseparam;
+    //         }
+    //     }
+    //     return warehouseparam;
+    // }
 
-    private short getThirdNearestWH(short warehouseparam) {
-        if(numNodes == 9){
-            switch(warehouseparam){
-                case 0: return 3;
-                case 1: return 4;
-                case 2: return 5;
-                case 3: return 0;
-                case 4: return 1;
-                case 5: return 2;
-                case 6: return 3;
-                case 7: return 4;
-                case 8: return 5;
-                default: return warehouseparam;
-            }
-        } else if(numNodes == 12){
-            switch(warehouseparam){
-                case 0: return 3;
-                case 1: return 4;
-                case 2: return 5;
-                case 3: return 0;
-                case 4: return 7;
-                case 5: return 1;
-                case 6: return 3;
-                case 7: return 4;
-                case 8: return 11;
-                case 9: return 6;
-                case 10: return 7;
-                case 11: return 8;
-                default: return warehouseparam;
-            }
-        } else if(numNodes == 13){
-            switch(warehouseparam){
-                case 0: return 3;
-                case 1: return 4;
-                case 2: return 5;
-                case 3: return 0;
-                case 4: return 2;
-                case 5: return 8;
-                case 6: return 9;
-                case 7: return 10;
-                case 8: return 5;
-                case 9: return 12;
-                case 10: return 7;
-                case 11: return 8;
-                case 12: return 9;
-                default: return warehouseparam;
-            }
-        }
-        return warehouseparam;
-    }
+    // private short getSecondNearestWH(short warehouseparam) {
+    //     if(numNodes == 9){
+    //         switch(warehouseparam){
+    //             case 0: return 2;
+    //             case 1: return 3;
+    //             case 2: return 0;
+    //             case 3: return 5;
+    //             case 4: return 2;
+    //             case 5: return 3;
+    //             case 6: return 8;
+    //             case 7: return 5;
+    //             case 8: return 6;
+    //             default: return warehouseparam;
+    //         }
+    //     } else if(numNodes == 12){
+    //         switch(warehouseparam){
+    //             case 0: return 2;
+    //             case 1: return 3;
+    //             case 2: return 0;
+    //             case 3: return 1;
+    //             case 4: return 6;
+    //             case 5: return 7;
+    //             case 6: return 4;
+    //             case 7: return 5;
+    //             case 8: return 10;
+    //             case 9: return 11;
+    //             case 10: return 8;
+    //             case 11: return 9;
+    //             default: return warehouseparam;
+    //         }
+    //     } else if(numNodes == 13){
+    //         switch(warehouseparam){
+    //             case 0: return 2;
+    //             case 1: return 3;
+    //             case 2: return 0;
+    //             case 3: return 1;
+    //             case 4: return 2;
+    //             case 5: return 7;
+    //             case 6: return 8;
+    //             case 7: return 5;
+    //             case 8: return 6;
+    //             case 9: return 11;
+    //             case 10: return 12;
+    //             case 11: return 9;
+    //             case 12: return 10;
+    //             default: return warehouseparam;
+    //         }
+    //     }
+    //     return warehouseparam;
+    // }
+
+    // private short getThirdNearestWH(short warehouseparam) {
+    //     if(numNodes == 9){
+    //         switch(warehouseparam){
+    //             case 0: return 3;
+    //             case 1: return 4;
+    //             case 2: return 5;
+    //             case 3: return 0;
+    //             case 4: return 1;
+    //             case 5: return 2;
+    //             case 6: return 3;
+    //             case 7: return 4;
+    //             case 8: return 5;
+    //             default: return warehouseparam;
+    //         }
+    //     } else if(numNodes == 12){
+    //         switch(warehouseparam){
+    //             case 0: return 3;
+    //             case 1: return 4;
+    //             case 2: return 5;
+    //             case 3: return 0;
+    //             case 4: return 7;
+    //             case 5: return 1;
+    //             case 6: return 3;
+    //             case 7: return 4;
+    //             case 8: return 11;
+    //             case 9: return 6;
+    //             case 10: return 7;
+    //             case 11: return 8;
+    //             default: return warehouseparam;
+    //         }
+    //     } else if(numNodes == 13){
+    //         switch(warehouseparam){
+    //             case 0: return 3;
+    //             case 1: return 4;
+    //             case 2: return 5;
+    //             case 3: return 0;
+    //             case 4: return 2;
+    //             case 5: return 8;
+    //             case 6: return 9;
+    //             case 7: return 10;
+    //             case 8: return 5;
+    //             case 9: return 12;
+    //             case 10: return 7;
+    //             case 11: return 8;
+    //             case 12: return 9;
+    //             default: return warehouseparam;
+    //         }
+    //     }
+    //     return warehouseparam;
+    // }
 
     public static int randomNumber(int min, int max, Random r) {
         return (int) (r.nextDouble() * (max - min + 1) + min);

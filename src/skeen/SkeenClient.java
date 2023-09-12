@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
@@ -30,9 +31,8 @@ public class SkeenClient extends SkeenClientProxy {
     private int [] destsSizes;
     protected int [][] wloadDist2dests;
     protected int [][][] wloadDist3dests;
-    // protected Stats stats;
     protected final Random gen;
-    
+    private HashMap<Short, String> nearestWHs = new HashMap<>();
 
     public SkeenClient(short id, ArgsParser args, boolean start){
         super(id);
@@ -41,6 +41,7 @@ public class SkeenClient extends SkeenClientProxy {
         this.files = new FileManager();
         this.localityPercentage = args.getLocality();
         ArrayList<Node> nodes = files.loadHosts();
+        FileManager.loadLocalityFile(nearestWHs);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         for(Node server : nodes) connectTo(server, syncAllConnections);
         numNodes = (short) nodes.size();
@@ -66,12 +67,11 @@ public class SkeenClient extends SkeenClientProxy {
         printF("Connected to all servers!");
         // send initialization message to all servers
         sendInitMessage();
-        //sleep(1000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
         print("All other clients ready!");
-        
+
         print("Started skeen experiment");
         if(args.getNumPartitions() > 0) print (args.getNumPartitions(), "partitions");
         printF("Locality:", localityPercentage, "%");
@@ -130,7 +130,7 @@ public class SkeenClient extends SkeenClientProxy {
             wloadDist2dests[m.getDst()[0]][m.getDst()[1]]++;
         } else if (m.getDst().length == 3){
             wloadDist3dests[m.getDst()[0]][m.getDst()[1]][m.getDst()[2]]++;
-        } 
+        }
     }
 
     protected SkeenMessage newMessageTo(short... dst){
@@ -151,10 +151,10 @@ public class SkeenClient extends SkeenClientProxy {
 
     private short[] generateDests(){
 
-        if(randomNumber(1, 100, gen) < 99){
+        if(randomNumber(1, 100, gen) <= 90){
             return new short[]{warehouse};
         }
-        
+
         if(localityPercentage == 0){
             return generateRandDests();
         }
@@ -162,15 +162,28 @@ public class SkeenClient extends SkeenClientProxy {
             return generate2Dests();
         return generate3Dests();
     }
+    private short[] generateRandDests() {
+        Set<Short> uniqueNumbers = new HashSet<>();
+        int size = randomNumber(2, numNodes, gen); // only global
+        while (uniqueNumbers.size() < size)
+            uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
+        short [] tempdst = new short[size];
+        short i = 0;
+        for(short u : uniqueNumbers.stream().sorted().collect(Collectors.toList())){
+            tempdst[i] = u;
+            i++;
+        }
+        return tempdst;
+    }
 
     private short[] generate2Dests(){
         short [] tempdst = new short[2];
         tempdst[0] = warehouse;
 
         if(randomNumber(1, 100, gen) <= localityPercentage)
-            tempdst[1] = getNearestWH(warehouse);
+            tempdst[1] = getNearestWH(0);
         else 
-            tempdst[1] = getSecondNearestWH(warehouse);
+            tempdst[1] = getNearestWH(1);
 
         Arrays.sort(tempdst);
 
@@ -181,11 +194,11 @@ public class SkeenClient extends SkeenClientProxy {
         short [] tempdst = new short[3];
         tempdst[0] = warehouse;
         if(randomNumber(1, 100, gen) <= localityPercentage){
-            tempdst[1] = getNearestWH(warehouse);
-            tempdst[2] = getSecondNearestWH(warehouse);
+            tempdst[1] = getNearestWH(0);
+            tempdst[2] = getNearestWH(1);
         }else {
-            tempdst[1] = getSecondNearestWH(warehouse);
-            tempdst[2] = getThirdNearestWH(warehouse);
+            tempdst[1] = getNearestWH(1);
+            tempdst[2] = getNearestWH(2);
         }
         LinkedHashSet<Short> set = new LinkedHashSet<Short>();
  
@@ -202,124 +215,124 @@ public class SkeenClient extends SkeenClientProxy {
         return finaldst;
     }
 
-    private short getNearestWH(short warehouseparam) {
-        if(numNodes == 9){
-            switch(warehouseparam){
-                case 0: return 1;
-                case 1: return 2;
-                case 2: return 1;
-                case 3: return 4;
-                case 4: return 5;
-                case 5: return 4;
-                case 6: return 7;
-                case 7: return 8;
-                case 8: return 7;
-                default: return warehouseparam;
-            }
-        }
-        else if(numNodes == 12){
-            switch(warehouseparam){
-                case 0: return 1;
-                case 1: return 2;
-                case 2: return 1;
-                case 3: return 2;
-                case 4: return 5;
-                case 5: return 6;
-                case 6: return 7;
-                case 7: return 6;
-                case 8: return 9;
-                case 9: return 10;
-                case 10: return 9;
-                case 11: return 10;
-                default: return warehouseparam;
-            }
-        } 
-        return warehouseparam;
-    }
-    private short getSecondNearestWH(short warehouseparam) {
-        if(numNodes == 9){
-            switch(warehouseparam){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 2;
-                case 3: return 5;
-                case 4: return 2;
-                case 5: return 3;
-                case 6: return 8;
-                case 7: return 5;
-                case 8: return 6;
-                default: return warehouseparam;
-            }
-        }
-        else if(numNodes == 12){
-            switch(warehouseparam){
-                case 0: return 2;
-                case 1: return 3;
-                case 2: return 0;
-                case 3: return 1;
-                case 4: return 6;
-                case 5: return 7;
-                case 6: return 4;
-                case 7: return 5;
-                case 8: return 10;
-                case 9: return 11;
-                case 10: return 8;
-                case 11: return 9;
-                default: return warehouseparam;
-            }
-        } 
-        return warehouseparam;
-    }
-    private short getThirdNearestWH(short warehouseparam) {
-        if(numNodes == 9){
-            switch(warehouseparam){
-                case 0: return 3;
-                case 1: return 4;
-                case 2: return 5;
-                case 3: return 0;
-                case 4: return 7;
-                case 5: return 8;
-                case 6: return 3;
-                case 7: return 4;
-                case 8: return 5;
-                default: return warehouseparam;
-            }
-        }
-        else if(numNodes == 12){
-            switch(warehouseparam){
-                case 0: return 3;
-                case 1: return 4;
-                case 2: return 5;
-                case 3: return 0;
-                case 4: return 7;
-                case 5: return 8;
-                case 6: return 2;
-                case 7: return 4;
-                case 8: return 11;
-                case 9: return 6;
-                case 10: return 7;
-                case 11: return 8;
-                default: return warehouseparam;
-            }
-        } 
-        return warehouseparam;
-    }
+    private short getNearestWH(int index) {
+        short tempdst = -1;
 
-    private short[] generateRandDests() {
-        Set<Short> uniqueNumbers = new HashSet<>();
-        int size = randomNumber(2, numNodes, gen); // only global
-        while (uniqueNumbers.size() < size)
-            uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
-        short [] tempdst = new short[size];
-        short i = 0;
-        for(short u : uniqueNumbers.stream().sorted().collect(Collectors.toList())){
-            tempdst[i] = u;
-            i++;
+        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouse).split(" ")[index].trim());} catch(Exception e){}
+
+        if(tempdst == -1){
+            // simply get the next HW in order of id
+            tempdst = (short)(warehouse+1);
+            if(tempdst == numNodes) tempdst = (short)(warehouse-1);
         }
         return tempdst;
     }
 
+    // private short getNearestWH(short warehouseparam) {
+    //     if(numNodes == 9){
+    //         switch(warehouseparam){
+    //             case 0: return 1;
+    //             case 1: return 2;
+    //             case 2: return 1;
+    //             case 3: return 4;
+    //             case 4: return 5;
+    //             case 5: return 4;
+    //             case 6: return 7;
+    //             case 7: return 8;
+    //             case 8: return 7;
+    //             default: return warehouseparam;
+    //         }
+    //     }
+    //     else if(numNodes == 12){
+    //         switch(warehouseparam){
+    //             case 0: return 1;
+    //             case 1: return 2;
+    //             case 2: return 1;
+    //             case 3: return 2;
+    //             case 4: return 5;
+    //             case 5: return 6;
+    //             case 6: return 7;
+    //             case 7: return 6;
+    //             case 8: return 9;
+    //             case 9: return 10;
+    //             case 10: return 9;
+    //             case 11: return 10;
+    //             default: return warehouseparam;
+    //         }
+    //     } 
+    //     return warehouseparam;
+    // }
+    // private short getSecondNearestWH(short warehouseparam) {
+    //     if(numNodes == 9){
+    //         switch(warehouseparam){
+    //             case 0: return 2;
+    //             case 1: return 3;
+    //             case 2: return 2;
+    //             case 3: return 5;
+    //             case 4: return 2;
+    //             case 5: return 3;
+    //             case 6: return 8;
+    //             case 7: return 5;
+    //             case 8: return 6;
+    //             default: return warehouseparam;
+    //         }
+    //     }
+    //     else if(numNodes == 12){
+    //         switch(warehouseparam){
+    //             case 0: return 2;
+    //             case 1: return 3;
+    //             case 2: return 0;
+    //             case 3: return 1;
+    //             case 4: return 6;
+    //             case 5: return 7;
+    //             case 6: return 4;
+    //             case 7: return 5;
+    //             case 8: return 10;
+    //             case 9: return 11;
+    //             case 10: return 8;
+    //             case 11: return 9;
+    //             default: return warehouseparam;
+    //         }
+    //     } 
+    //     return warehouseparam;
+    // }
+    // private short getThirdNearestWH(short warehouseparam) {
+    //     if(numNodes == 9){
+    //         switch(warehouseparam){
+    //             case 0: return 3;
+    //             case 1: return 4;
+    //             case 2: return 5;
+    //             case 3: return 0;
+    //             case 4: return 7;
+    //             case 5: return 8;
+    //             case 6: return 3;
+    //             case 7: return 4;
+    //             case 8: return 5;
+    //             default: return warehouseparam;
+    //         }
+    //     }
+    //     else if(numNodes == 12){
+    //         switch(warehouseparam){
+    //             case 0: return 3;
+    //             case 1: return 4;
+    //             case 2: return 5;
+    //             case 3: return 0;
+    //             case 4: return 7;
+    //             case 5: return 8;
+    //             case 6: return 2;
+    //             case 7: return 4;
+    //             case 8: return 11;
+    //             case 9: return 6;
+    //             case 10: return 7;
+    //             case 11: return 8;
+    //             default: return warehouseparam;
+    //         }
+    //     } 
+    //     return warehouseparam;
+    // }
+
     public static int randomNumber(int min, int max, Random r) {
         return (int) (r.nextDouble() * (max - min + 1) + min);
     }
+
 }

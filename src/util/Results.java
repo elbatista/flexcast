@@ -148,9 +148,9 @@ public class Results {
         
         String localities [] = {"99"};
         short numnodes []    = {12};
-        String algos []      = {"flexcast"};
-        int clients []       = {12, 24, 48, 96, 192, 384, 768};
-        int gc               = 500;
+        String algos []      = {"flexcast","skeen", "byzcast"};
+        int clients []       = {12, 24, 96,192,384, 768};
+        int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
@@ -161,7 +161,7 @@ public class Results {
                 for(String algo : algos){
                     for(int cli : clients){
                         
-                        String basedir ="flexcast/experiments/"+algo+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+                        String basedir ="flexcast/experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
                         //////////// TP
                         double avgtp = 0;
                         totalFiles = 0;
@@ -216,7 +216,7 @@ public class Results {
 
     private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc) {
         try {
-            PrintWriter printerOut = new PrintWriter("flexcast/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+".txt");
+            PrintWriter printerOut = new PrintWriter("flexcast/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
             Collections.sort(sortedKeys);
             for(int cli : sortedKeys){

@@ -68,7 +68,7 @@ public class TpccClient extends Client {
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         // send initialization message to all servers
         sendInitMessage();
-        sleep(2000);
+        //sleep(2000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
