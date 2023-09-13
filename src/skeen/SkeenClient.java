@@ -80,6 +80,7 @@ public class SkeenClient extends SkeenClientProxy {
         stats = new Stats(totalTime, numNodes);
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
+        int totalMsgs=0;
 
         while ((elapsed / 1e9) < totalTime) {
             SkeenMessage m = newMessage();
@@ -93,6 +94,8 @@ public class SkeenClient extends SkeenClientProxy {
             computeDistribution(m);
             
             usLat = now;
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
 
         if (stats.getCount() > 0) {

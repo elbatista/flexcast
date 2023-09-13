@@ -93,6 +93,7 @@ public class ByzCastClient extends ByzCastClientProxy {
 
         long startTime = System.nanoTime(), now;
         long elapsed = 0, usLat = startTime;
+        int totalMsgs=0;
 
         while ((elapsed / 1e9) < totalTime) {
             ByzCastMessage m = newMessage();
@@ -106,6 +107,8 @@ public class ByzCastClient extends ByzCastClientProxy {
             computeDistribution(m);
             
             usLat = now;
+            totalMsgs++;
+            if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
 
         if (stats.getCount() > 0) {

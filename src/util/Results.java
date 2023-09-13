@@ -143,13 +143,50 @@ public class Results {
         }
     }
 
+    private static void processMsgSizeFiles(String strpath, short nodes, String locality, int gc, int cli, String algo) {
+        int[] qty = new int[nodes];
+        int[] avgsize = new int[nodes];
+        try {
+            Files.list(Paths.get(strpath)) 
+            .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);}catch (Exception e) {return false;}})
+            .forEach(path -> {
+                if(!path.getFileName().toString().contains("MsgSizes")) return;
+                short node = Short.valueOf(path.getFileName().toString().replaceAll("[^0-9]", ""));
+                Scanner scan = null;
+                int qtyMsgs=0;
+                double size=0;
+                try{scan = new Scanner(path.toFile());}catch (Exception e) {}
+                while(scan.hasNext()){
+                    String line = scan.nextLine();
+                    StringTokenizer str = new StringTokenizer(line, ";");
+                    size += Double.valueOf(str.nextToken()); // skip the first column (text)
+                    qtyMsgs++;
+                }
+                qty[node] = qtyMsgs;
+                avgsize[node] = (int)(size/qtyMsgs);
+            });
+            
+            PrintWriter printerOut = new PrintWriter("plots/msgsizes/"+algo+"_"+nodes+"nodes_"+cli +"cli_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
+            
+            for(int i=0; i < nodes; i++){
+                printerOut.println(i + "\t" + qty[i] + "\t" + avgsize[i]);
+                // System.out.println("Node"+node+": "+qtyMsgs+" msgs (avg "+(int)(size/qtyMsgs)+" bytes each)");
+            }
+            printerOut.flush();
+            printerOut.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast","skeen", "byzcast"};
-        int clients []       = {12, 24, 96,192,384, 768};
+        int clients []       = {192};//{12, 24, 48, 96, 192, 384, 768};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -161,21 +198,20 @@ public class Results {
                 for(String algo : algos){
                     for(int cli : clients){
                         
-                        String basedir ="flexcast/experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
-                        //////////// TP
-                        double avgtp = 0;
-                        totalFiles = 0;
+                        String basedir ="experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+                        
+                        // ###################### Throughput ######################
+                        // double avgtp = 0;
+                        // totalFiles = 0;
+                        // avgtp += readTPFiles(basedir+"/logs");
+                        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+                        // System.out.println(basedir);
+                        // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+                        // if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        // tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
-                        avgtp += readTPFiles(basedir+"/logs");
-                        // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/europe");
-                        // avgtp += readTPFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/logs/clients/asia");
-
-                        System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
-                        System.out.println(basedir);
-                        System.out.println("AVG Throughput: "+avgtp+" ops/sec");
-                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
-
+                        // ###################### Msg Sizes ######################
+                        processMsgSizeFiles(basedir+"/files", nodes, locality, gc, cli, algo);
                     }
                     
                 }
@@ -216,7 +252,7 @@ public class Results {
 
     private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc) {
         try {
-            PrintWriter printerOut = new PrintWriter("flexcast/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
+            PrintWriter printerOut = new PrintWriter("plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
             Collections.sort(sortedKeys);
             for(int cli : sortedKeys){
