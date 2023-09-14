@@ -13,7 +13,7 @@ ID=-1;
 log="";
 warehouse=0;
 iniport=3000;
-basedir=/usr/local/projects/flexcast;
+basedir=~/flexcast;
 duration=$1;
 algo=$2;
 clients=$3;
@@ -56,7 +56,7 @@ ant clean; ant;
 echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
 for i in $(seq 1 $nodes)
 do
-    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results; mkdir $basedir/config"
+    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir -p $basedir/logs; mkdir -p $basedir/files; mkdir -p $basedir/results; mkdir -p $basedir/config"
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
     scp -q -o StrictHostKeyChecking=accept-new $basedir/config/*.conf* node$i:$basedir/config/
@@ -128,10 +128,7 @@ for i in $(seq 1 $nodes)
 do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/logs/* $basedir/logs/
 done
-# for i in $(seq 1 $servers)
-# do
-#     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/files/* $basedir/files/
-# done
+
 for i in $(seq $(($servers+1)) $nodes)
 do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/

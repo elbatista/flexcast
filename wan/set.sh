@@ -65,10 +65,10 @@ do
 		echo "$NODE,$IP,$IFACE" >> $IFACES_FILE
 	fi
 
-	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p /usr/local/projects/flexcast/wan;"
-	scp -q -o StrictHostKeyChecking=accept-new /usr/local/projects/flexcast/wan/* $NODE:/usr/local/projects/flexcast/wan/
+	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p ~/flexcast/wan;"
+	scp -q -o StrictHostKeyChecking=accept-new ~/flexcast/wan/* $NODE:~/flexcast/wan/
 
-	COMMAND="ssh $NODE sudo python /usr/local/projects/flexcast/wan/latsetter.py set $IPS_FILE $LATENCIES_FILE $IFACE"
+	COMMAND="ssh $NODE sudo python ~/flexcast/wan/latsetter.py set $IPS_FILE $LATENCIES_FILE $IFACE"
 	if [ -n "$DRY_RUN" ]
 	then
 		echo $ $COMMAND "(DRY-RUN)"

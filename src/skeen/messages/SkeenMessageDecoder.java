@@ -26,7 +26,7 @@ public class SkeenMessageDecoder extends ReplayingDecoder<SkeenMessage> {
             SkeenMessage m = (SkeenMessage)ois.readObject();
 
             if(sizes != null && m.getType() == SkeenMessage.Type.MSG || m.getType() == SkeenMessage.Type.STEP1 || m.getType() == SkeenMessage.Type.STEP2){
-                sizes.add(new MsgSize((double)size, m.getDst()));
+                sizes.add(new MsgSize(System.nanoTime(), (double)size, m.getDst()));
             }
 
             out.add(m);
