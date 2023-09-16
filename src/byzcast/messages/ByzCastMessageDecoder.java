@@ -26,7 +26,7 @@ public class ByzCastMessageDecoder extends ReplayingDecoder<ByzCastMessage> {
         try {
             ByzCastMessage m = (ByzCastMessage)ois.readObject();
             if(sizes != null && m.getType() == ByzCastMessage.Type.MSG){
-                sizes.add(new MsgSize(System.nanoTime(), (double)size, m.getDst()));
+                sizes.add(new MsgSize(System.nanoTime(), m.getId(), (double)size, m.getDst()));
             }
             out.add(m);
         }

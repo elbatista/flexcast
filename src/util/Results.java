@@ -233,7 +233,7 @@ public class Results {
         }
     }
 
-    private static void processMsgSizeFilesDiscrete(String strpath, short nodes, String locality, int gc, int cli, String algo) {
+    private static void processMsgSizeFilesDiscrete(String strpath, short nodes, String locality, int gc, int cli, String algo, short [] nodeMap) {
         
         HashMap<Integer, ArrayList<MsgSize>> values = new HashMap<>();
         
@@ -246,14 +246,16 @@ public class Results {
                 values.put((int)node, new ArrayList<>());
                 Scanner scan = null;
                 long time;
+                int id;
                 double size=0;
                 try{scan = new Scanner(path.toFile());}catch (Exception e) {}
                 while(scan.hasNext()){
                     String line = scan.nextLine();
                     StringTokenizer str = new StringTokenizer(line, ";");
                     time = Long.valueOf(str.nextToken()); 
+                    id = Integer.valueOf(str.nextToken()); 
                     size = Double.valueOf(str.nextToken()); 
-                    values.get((int)node).add(new MsgSize(time, size, null));
+                    values.get((int)node).add(new MsgSize(time, id, size, null));
                 }
             });
 
@@ -284,7 +286,7 @@ public class Results {
                 }
                 if(qtyPerSec.size() > 0 && sizePerSec.size() > 0){
                     // System.out.println(Stats.of(qtyPerSec).mean() + " msg/sec; " + Stats.of(sizePerSec).mean() +" bytes each (avg)");
-                    printerOut.println(node + "\t" + Stats.of(qtyPerSec).mean() + "\t" + Stats.of(sizePerSec).mean());
+                    printerOut.println(nodeMap[node] + "\t" + Stats.of(qtyPerSec).mean() + "\t" + Stats.of(sizePerSec).mean());
                 }
             }
             
@@ -311,14 +313,16 @@ public class Results {
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
-        
+        short [] nodeMap;
         for(String locality : localities){
             for(short nodes : numnodes){
                 tpValues = new HashMap<>();
+                nodeMap = new short[nodes];
                 for(String algo : algos){
                     for(int cli : clients){
                         
                         String basedir ="experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+                        loadNodesMap(nodeMap, basedir);
                         
                         // ###################### Throughput ######################
                         // double avgtp = 0;
@@ -331,7 +335,7 @@ public class Results {
                         // tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
-                        processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo);
+                        processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
                     }
                     
                 }
@@ -368,6 +372,19 @@ public class Results {
         // writeCDFFiles(values, algo, locality);
 
         
+    }
+
+    private static void loadNodesMap(short[] nodeMap, String basedir) {
+        Scanner scan = null;
+        int index = 0;
+        try{scan = new Scanner(Paths.get(basedir+"/config/servers.conf"));}catch (Exception e) {}
+        while(scan.hasNext()){
+            String line = scan.nextLine();
+            StringTokenizer str = new StringTokenizer(line, ",");
+            short node = Short.valueOf(str.nextToken().replaceAll("[^0-9]", ""));
+            nodeMap[index] = node;
+            index++;
+        }
     }
 
 }
