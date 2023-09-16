@@ -1,11 +1,11 @@
 #!/bin/bash
 duration=60;
-algo=(0);
-clients=(192);
-# 12 24 48 96  384 768
+algo=(0 1 2);
+clients=(24 48 96 192 384 768);
+#  
 servers=12;
 nodes=24;
-locality=99;
+locality=90;
 # msgs=0;
 gc=0;
 clispernode=1;
