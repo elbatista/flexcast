@@ -236,7 +236,7 @@ public class Results {
     private static void processMsgSizeFilesDiscrete(String strpath, short nodes, String locality, int gc, int cli, String algo, short [] nodeMap) {
         
         HashMap<Integer, ArrayList<MsgSize>> values = new HashMap<>();
-        
+
         try {
             Files.list(Paths.get(strpath)) 
             .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);}catch (Exception e) {return false;}})
@@ -307,7 +307,7 @@ public class Results {
         
         String localities [] = {"99"};
         short numnodes []    = {12};
-        String algos []      = {"flexcast"};
+        String algos []      = {"flexcast", "skeen", "byzcast"};
         int clients []       = {192};//{12, 24, 48, 96, 192, 384, 768};
         int gc               = 0;
 
@@ -380,6 +380,7 @@ public class Results {
         try{scan = new Scanner(Paths.get(basedir+"/config/servers.conf"));}catch (Exception e) {}
         while(scan.hasNext()){
             String line = scan.nextLine();
+            if(line.startsWith("#")) continue;
             StringTokenizer str = new StringTokenizer(line, ",");
             short node = Short.valueOf(str.nextToken().replaceAll("[^0-9]", ""));
             nodeMap[index] = node;
