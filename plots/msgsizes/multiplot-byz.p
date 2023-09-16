@@ -2,8 +2,8 @@ set terminal pdf #dashed size 5, 3 font "Helvetica, 22"
 set output 'multi-byz.pdf'
 
 set multiplot layout 3, 1 
-set tmargin 1.75
-set bmargin 3.1
+set tmargin 2
+#set bmargin 3.1
 set style data histogram
 #set style fill pattern border -1
 set boxwidth 1

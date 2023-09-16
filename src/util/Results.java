@@ -9,8 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.TimeUnit;
 import com.google.common.math.Quantiles;
@@ -267,12 +269,12 @@ public class Results {
                 long iniTime = sub.get(0).getTime();
                 int qty = 0;
                 double size = 0;
-                System.out.println("Node" + node + " ---------");
+                //System.out.println("Node" + node + " ---------");
                 ArrayList<Integer> qtyPerSec = new ArrayList<>();
                 ArrayList<Double> sizePerSec = new ArrayList<>();
                 for(MsgSize m : sub){
                     if((m.getTime()-iniTime) >= second){
-                        System.out.println(qty + " msgs/sec; " + ((size > 0 && qty > 0) ? size/qty : 0) + " bytes each (avg)");
+                        //System.out.println(qty + " msgs/sec; " + ((size > 0 && qty > 0) ? size/qty : 0) + " bytes each (avg)");
                         qtyPerSec.add(qty);
                         sizePerSec.add((size > 0 && qty > 0) ? size/qty : 0);
                         iniTime = m.getTime();
@@ -325,25 +327,27 @@ public class Results {
                         loadNodesMap(nodeMap, basedir);
                         
                         // ###################### Throughput ######################
-                        // double avgtp = 0;
-                        // totalFiles = 0;
-                        // avgtp += readTPFiles(basedir+"/logs");
+                        double avgtp = 0;
+                        totalFiles = 0;
+                        avgtp += readTPFiles(basedir+"/logs");
                         // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
                         // System.out.println(basedir);
                         // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
-                        // if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        // tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
+                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
-                        processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+                        //processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+
+                        // ###################### Num Msg Per Node ######################
+                        processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
                     }
                     
                 }
-                // writeTPFile(tpValues, nodes, locality, gc);
+                writeTPFile(tpValues, nodes, locality, gc);
             }
         }
 
-        
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/america"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
         // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));
@@ -372,6 +376,52 @@ public class Results {
         // writeCDFFiles(values, algo, locality);
 
         
+    }
+
+    private static void processTotalMsgsPerNode(String strpath, short nodes, String locality, int gc, int cli,String algo, short[] nodeMap) {
+        HashMap<Short, Set<Integer>> values = new HashMap<>();
+        for(short i = 0; i < nodes; i++) values.put(i, new HashSet<>());
+        try {
+            Files.list(Paths.get(strpath)) 
+            .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);} catch (Exception e) {return false;}})
+            .forEach(path -> {
+                if(!path.getFileName().toString().contains("MsgSizes")) return;
+
+                short node = Short.valueOf(path.getFileName().toString().replaceAll("[^0-9]", ""));
+                
+                //System.out.println(path.toString());
+
+                Scanner scan = null;
+                try{scan = new Scanner(path.toFile());}catch (Exception e) {}
+                while(scan.hasNext()){
+                    String line = scan.nextLine();
+                    StringTokenizer str = new StringTokenizer(line, ";");
+                    str.nextToken();                            // skip time
+                    int id = Integer.valueOf(str.nextToken());  // get id
+                    str.nextToken();                            // skip size
+                    str.nextToken();                            // skip qtd dests
+                    String dst = str.nextToken();               // get dests
+                    String [] arrdst = dst.replace("[", "").replace("]", "").split(",");
+                    for(String d : arrdst){
+                        if(Short.valueOf(d.trim()).equals(node)){
+                            values.get(node).add(id);
+                        }
+                    }
+                }
+            });
+
+            PrintWriter printerOut = new PrintWriter("plots/msgspernode/"+algo+"_"+nodes+"nodes_"+cli +"cli_"+locality+"%_gc"+gc+".txt");
+            
+            for(short node : values.keySet()){
+                printerOut.println(nodeMap[node] + "\t" + values.get(node).size());
+            }
+
+            printerOut.flush();
+            printerOut.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }      
     }
 
     private static void loadNodesMap(short[] nodeMap, String basedir) {
