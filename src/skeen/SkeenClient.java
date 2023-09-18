@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -14,11 +15,13 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 import base.Node;
+import flexcast.messages.Message;
 import skeen.messages.SkeenMessage;
 import skeen.messages.SkeenMessage.Type;
 import skeen.proxies.SkeenClientProxy;
 import util.ArgsParser;
 import util.FileManager;
+import util.OrderItem;
 import util.Stats;
 
 public class SkeenClient extends SkeenClientProxy {
@@ -33,6 +36,16 @@ public class SkeenClient extends SkeenClientProxy {
     protected int [][][] wloadDist3dests;
     protected final Random gen;
     private HashMap<Short, String> nearestWHs = new HashMap<>();
+    double AcumTt = 0;
+    int TtCount = 0;
+    protected final Random thinkTimeRand;
+
+    // Tpcc workload distribution
+    private static final int newOrderWeight = 45;
+    private static final int paymentWeight = 43;
+    private static final int orderStatusWeight = 4;
+    private static final int deliveryWeight = 4;
+    private static final int stockLevelWeight = 4;
 
     public SkeenClient(short id, ArgsParser args, boolean start){
         super(id);
@@ -50,6 +63,7 @@ public class SkeenClient extends SkeenClientProxy {
         wloadDist2dests = new int [numNodes][numNodes];
         wloadDist3dests = new int [numNodes][numNodes][numNodes];
         gen = new Random(System.nanoTime());
+        thinkTimeRand = new Random(System.nanoTime());
         if(start) start();
     }
     
@@ -78,22 +92,29 @@ public class SkeenClient extends SkeenClientProxy {
         printF("My home warehouse:", warehouse);
         if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
         stats = new Stats(totalTime, numNodes);
-        long startTime = System.nanoTime(), now;
-        long elapsed = 0, usLat = startTime;
+        long startTime = System.nanoTime();
+        long now;
+        long elapsed = 0;//, usLat = startTime;
         int totalMsgs=0;
 
         while ((elapsed / 1e9) < totalTime) {
             SkeenMessage m = newMessage();
-            multicast(m);
+            
+            generatePayload(m);
+
             now = System.nanoTime();
-            stats.store((now - usLat) / 1000, (m.getDst().length > 1));
+            multicast(m);
+            stats.store((System.nanoTime() - now) / 1000, (m.getDst().length > 1));
+
             elapsed = (now - startTime);
 
             destsSizes[m.getDst().length-1]++;
 
             computeDistribution(m);
+
+            thinkTime();
             
-            usLat = now;
+            // usLat = now;
             totalMsgs++;
             if(args.getNumMessages() > 0 && totalMsgs == args.getNumMessages()) break;
         }
@@ -113,6 +134,50 @@ public class SkeenClient extends SkeenClientProxy {
 
         print("Finished skeen experiment. Elapsed: ", elapsed / 1e9, "seconds");
         exit();
+    }
+
+    private void generatePayload(SkeenMessage m) {
+        int transactionType = randomNumber(1, 100, gen);
+        m.setOrderDate(new Date());
+        if (transactionType <= newOrderWeight) {
+            m.setTransaction(Message.TransactionType.NEW);
+            int numItems = randomNumber(5, 15, gen);
+            for (int i = 0; i < numItems; i++) {
+                m.getItems().add(new OrderItem(randomNumber(1, 100000, gen), randomNumber(1, 10, gen)));
+            }
+        } else if (transactionType <= newOrderWeight + paymentWeight) {
+            m.setTransaction(Message.TransactionType.PAYMENT);
+            m.setPaymentAmount(gen.nextDouble(1, 5000));
+        } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight) {
+            m.setTransaction(Message.TransactionType.STATUS);
+        } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight) {
+            m.setTransaction(Message.TransactionType.DELIVERY);
+            m.setCarrierid_or_threshold(randomNumber(1, 10, gen));
+        } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight + stockLevelWeight) {
+            m.setTransaction(Message.TransactionType.STOCK);
+            m.setCarrierid_or_threshold(randomNumber(10, 20, gen));
+        }
+    }
+
+    private void thinkTime() {
+        /*
+         * Tt = -log(r) * u 
+         * where: log  = natural log (base e)  
+         * Tt  = think time  
+         * r  = random number uniformly distributed between 0 and 1  
+         * u  = mean think time 
+         * 
+         * Each distribution may be truncated at 10 times its mean value
+         */
+        // double rand = thinkTimeRand.nextDouble();
+        double u = 1;
+        if(TtCount > 0) u = AcumTt/TtCount;
+        double Tt = Math.log(thinkTimeRand.nextDouble()) * u;
+        AcumTt += Tt;
+        TtCount++;
+        long sleepTime = (long)(Tt*1000);
+        print("Think Time:", sleepTime, "sec");
+        sleep(sleepTime);
     }
 
     protected void printWloadDistribution() {

@@ -6,14 +6,17 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import org.javatuples.Pair;
 import io.netty.channel.Channel;
 import util.BaseObj;
+import util.OrderItem;
 
 public class Message extends BaseObj implements Externalizable {
     public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY, GC}
+    public enum TransactionType {NEW, PAYMENT, STATUS, DELIVERY, STOCK}
     private short sender = -1, idNotifier = -1;
     private int id = -1, cliId = -1;
     private Type type;
@@ -22,20 +25,34 @@ public class Message extends BaseObj implements Externalizable {
     private ArrayList<Pair<Short, Integer>> notifList;
     private int idNotif=-1;
     
+    //payload fields
+    private TransactionType transaction;
+    private Date orderDate;
+
+    //neworder
+    private ArrayList<OrderItem> items;
+
+    //payment
+    private double paymentAmount;
+
+    //delivery and stocklevel
+    private int carrierid_or_threshold;
+    
     // "transient" fields
     private Channel channelIn;
     private HashSet<Integer> pendNotifOrigins;
 
     // constructors
     public Message(){
+        items = new ArrayList<>();
         hst = new HashMap<>();
         notifList = new ArrayList<>();
     }
 
     public Message(int id){
+        this();
         this.id = id;
-        hst = new HashMap<>();
-        notifList = new ArrayList<>();
+        // notifList = new ArrayList<>();
     }
 
     // methods
@@ -45,6 +62,30 @@ public class Message extends BaseObj implements Externalizable {
 
     public void setId(int id) {
         this.id = id;
+    }
+    
+    public TransactionType getTransaction() {
+        return transaction;
+    }
+
+    public void setTransaction(TransactionType transaction) {
+        this.transaction = transaction;
+    }
+
+    public ArrayList<OrderItem> getItems() {
+        return items;
+    }
+
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
+    }
+
+    public void setPaymentAmount(double paymentAmount) {
+        this.paymentAmount = paymentAmount;
+    }
+
+    public void setCarrierid_or_threshold(int carrierid_or_threshold) {
+        this.carrierid_or_threshold = carrierid_or_threshold;
     }
 
     public HashSet<Integer> getPendNotifOrigins() {
@@ -182,6 +223,41 @@ public class Message extends BaseObj implements Externalizable {
         writeExtDsts(out);
         writeExtHst(out);
         writeExtNotifList(out);
+        writeExtPayload(out);
+    }
+
+    private void writeExtPayload(ObjectOutput out) throws IOException{
+        switch(transaction){
+            case NEW: {
+                out.writeByte(1); 
+                out.writeInt(items.size());
+                for(OrderItem item : items){
+                    out.writeInt(item.getId());
+                    out.writeInt(item.getQty());
+                }
+                break;
+            }
+            case PAYMENT: {
+                out.writeByte(2); 
+                out.writeDouble(paymentAmount);
+                break;
+            }
+            case STATUS: {
+                out.writeByte(3);
+                break;
+            }
+            case DELIVERY: {
+                out.writeByte(4); 
+                out.writeInt(carrierid_or_threshold);
+                break;
+            }
+            case STOCK: {
+                out.writeByte(5); 
+                out.writeInt(carrierid_or_threshold);
+                break;
+            }
+        }
+        out.writeLong(orderDate.getTime());
     }
 
     private void writeExtNotifList(ObjectOutput out) throws IOException{
@@ -302,6 +378,31 @@ public class Message extends BaseObj implements Externalizable {
         readExtDsts(in);
         readExtHst(in);
         readExtNotifList(in);
+        readExtPayload(in);
+    }
+
+    private void readExtPayload(ObjectInput in) throws IOException {
+        short transtype = in.readByte();
+        switch(transtype){
+            case 1: {
+                int i = in.readInt();
+                for(int j = 0; j < i; j++){
+                    int itemid = in.readInt();
+                    int qty = in.readInt();
+                    items.add(new OrderItem(itemid, qty));
+                }
+                break;
+            }
+            case 2: {
+                paymentAmount = in.readDouble();
+                break;
+            }
+            case 4,5: {
+                carrierid_or_threshold = in.readInt();
+                break;
+            }
+        }
+        orderDate = new Date(in.readLong());
     }
 
     private void readExtNotifList(ObjectInput in) throws IOException {
