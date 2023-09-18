@@ -310,7 +310,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
-        int clients []       = {192};//{12, 24, 48, 96, 192, 384, 768};
+        int clients []       = {24, 48, 96, 192, 384, 768};//{12};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -340,7 +340,7 @@ public class Results {
                         //processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
 
                         // ###################### Num Msg Per Node ######################
-                        processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+                        // processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
                     }
                     
                 }

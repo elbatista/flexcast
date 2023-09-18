@@ -182,14 +182,15 @@ public class ByzCastClient extends ByzCastClientProxy {
          * Each distribution may be truncated at 10 times its mean value
          */
         // double rand = thinkTimeRand.nextDouble();
-        double u = 1;
-        if(TtCount > 0) u = AcumTt/TtCount;
-        double Tt = Math.log(thinkTimeRand.nextDouble()) * u;
-        AcumTt += Tt;
-        TtCount++;
-        long sleepTime = (long)(Tt*1000);
-        print("Think Time:", sleepTime, "sec");
-        sleep(sleepTime);
+        // double u = 1;
+        // if(TtCount > 0) u = AcumTt/TtCount;
+        // double Tt = Math.log(thinkTimeRand.nextDouble()) * u;
+        // AcumTt += Tt;
+        // TtCount++;
+        // long sleepTime = (long)(Tt*1000);
+        // print("Think Time:", sleepTime, "sec");
+        // sleep(sleepTime);
+        sleep(randomNumber(100, 200, gen));
     }
 
     protected void printWloadDistribution() {
