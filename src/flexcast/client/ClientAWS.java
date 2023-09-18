@@ -163,7 +163,7 @@ public class ClientAWS extends ClientProxy {
             }
         } else if (transactionType <= newOrderWeight + paymentWeight) {
             m.setTransaction(Message.TransactionType.PAYMENT);
-            m.setPaymentAmount(gen.nextDouble(1, 5000));
+            m.setPaymentAmount(randomNumber(1, 5000, gen));
         } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight) {
             m.setTransaction(Message.TransactionType.STATUS);
         } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight) {
@@ -189,11 +189,32 @@ public class ClientAWS extends ClientProxy {
         double u = 1;
         if(TtCount > 0) u = AcumTt/TtCount;
         double Tt = Math.log(thinkTimeRand.nextDouble()) * u;
+        Tt = Math.abs(Tt);
         AcumTt += Tt;
         TtCount++;
         long sleepTime = (long)(Tt*1000);
         print("Think Time:", sleepTime, "sec");
         sleep(sleepTime);
+    }
+
+    public static void main (String [] args){
+        double AcumTt=0;
+        int TtCount=0;
+        double u = 1;
+
+        for(int i = 0; i < 100 ; i++) {
+            
+            
+            double Tt = Math.abs(Math.log(new Random().nextDouble()) * u);
+
+            AcumTt += Tt;
+            TtCount++;
+            u = AcumTt/TtCount;
+
+            //long sleepTime = (long)(Tt*10);
+            System.out.println("Think Time: " + Tt);
+
+        }
     }
 
     private void runGCClient() {

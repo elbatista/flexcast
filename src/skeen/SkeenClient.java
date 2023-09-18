@@ -147,7 +147,7 @@ public class SkeenClient extends SkeenClientProxy {
             }
         } else if (transactionType <= newOrderWeight + paymentWeight) {
             m.setTransaction(Message.TransactionType.PAYMENT);
-            m.setPaymentAmount(gen.nextDouble(1, 5000));
+            m.setPaymentAmount(randomNumber(1, 5000, gen));
         } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight) {
             m.setTransaction(Message.TransactionType.STATUS);
         } else if (transactionType <= newOrderWeight + paymentWeight + orderStatusWeight + deliveryWeight) {

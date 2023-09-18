@@ -15,6 +15,7 @@ import util.BaseObj;
 import util.OrderItem;
 
 public class Message extends BaseObj implements Externalizable {
+
     public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY, GC}
     public enum TransactionType {NEW, PAYMENT, STATUS, DELIVERY, STOCK}
     private short sender = -1, idNotifier = -1;
@@ -31,6 +32,10 @@ public class Message extends BaseObj implements Externalizable {
 
     //neworder
     private ArrayList<OrderItem> items;
+
+    public void setItems(ArrayList<OrderItem> items) {
+        this.items = items;
+    }
 
     //payment
     private double paymentAmount;
@@ -64,6 +69,17 @@ public class Message extends BaseObj implements Externalizable {
         this.id = id;
     }
     
+    public Date getOrderDate() {
+        return orderDate;
+    }
+
+    public double getPaymentAmount() {
+        return paymentAmount;
+    }
+
+    public int getCarrierid_or_threshold() {
+        return carrierid_or_threshold;
+    }
     public TransactionType getTransaction() {
         return transaction;
     }
@@ -383,8 +399,10 @@ public class Message extends BaseObj implements Externalizable {
 
     private void readExtPayload(ObjectInput in) throws IOException {
         short transtype = in.readByte();
+        
         switch(transtype){
             case 1: {
+                setTransaction(TransactionType.NEW);
                 int i = in.readInt();
                 for(int j = 0; j < i; j++){
                     int itemid = in.readInt();
@@ -394,10 +412,21 @@ public class Message extends BaseObj implements Externalizable {
                 break;
             }
             case 2: {
+                setTransaction(TransactionType.PAYMENT);
                 paymentAmount = in.readDouble();
                 break;
             }
-            case 4,5: {
+            case 3: {
+                setTransaction(TransactionType.STATUS);
+                break;
+            }
+            case 4: {
+                setTransaction(TransactionType.DELIVERY);
+                carrierid_or_threshold = in.readInt();
+                break;
+            }
+            case 5: {
+                setTransaction(TransactionType.STOCK);
                 carrierid_or_threshold = in.readInt();
                 break;
             }

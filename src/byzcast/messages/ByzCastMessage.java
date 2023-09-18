@@ -210,6 +210,7 @@ public class ByzCastMessage extends BaseObj implements Externalizable {
         short transtype = in.readByte();
         switch(transtype){
             case 1: {
+                setTransaction(TransactionType.NEW);
                 int i = in.readInt();
                 for(int j = 0; j < i; j++){
                     int itemid = in.readInt();
@@ -219,10 +220,21 @@ public class ByzCastMessage extends BaseObj implements Externalizable {
                 break;
             }
             case 2: {
+                setTransaction(TransactionType.PAYMENT);
                 paymentAmount = in.readDouble();
                 break;
             }
-            case 4,5: {
+            case 3: {
+                setTransaction(TransactionType.STATUS);
+                break;
+            }
+            case 4: {
+                setTransaction(TransactionType.DELIVERY);
+                carrierid_or_threshold = in.readInt();
+                break;
+            }
+            case 5: {
+                setTransaction(TransactionType.STOCK);
                 carrierid_or_threshold = in.readInt();
                 break;
             }

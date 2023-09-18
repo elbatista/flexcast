@@ -3,6 +3,8 @@ package flexcast.server;
 import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
+import util.OrderItem;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -12,6 +14,7 @@ import base.Node;
 import flexcast.messages.LightMessage;
 import flexcast.messages.Message;
 import flexcast.messages.LightMessagesList.Item;
+import flexcast.messages.Message.TransactionType;
 import flexcast.messages.Message.Type;
 
 // @SuppressWarnings("unused")
@@ -264,6 +267,13 @@ public class FlexCastNode extends ServerProxy {
                 toSend.setDst(m.getDst());
                 toSend.setCliId(m.getCliId());
                 toSend.setSender(getId());
+
+                toSend.setTransaction(m.getTransaction());
+                toSend.setOrderDate(m.getOrderDate());
+                toSend.setItems(m.getItems());
+                toSend.setPaymentAmount(m.getPaymentAmount());
+                toSend.setCarrierid_or_threshold(m.getCarrierid_or_threshold());
+
                 //add notif list
                 if(notifs != null && notifs.size() > 0) {
                     toSend.setNotifList(notifs);
