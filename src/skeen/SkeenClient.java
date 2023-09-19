@@ -79,6 +79,8 @@ public class SkeenClient extends SkeenClientProxy {
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
         printF("Connected to all servers!");
+        sleep(5000);
+        
         // send initialization message to all servers
         sendInitMessage();
         // send ready message to a server

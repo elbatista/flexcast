@@ -89,7 +89,7 @@ public class ClientAWS extends ClientProxy {
 
         printF("Connected to all servers!");
         printF("DAG TOPOLY:", dagTop);
-        //sleep(1000);
+        sleep(5000);
 
         // send initialization message to all servers
         sendInitMessage();

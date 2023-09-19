@@ -1,10 +1,10 @@
 #!/bin/bash
 duration=60;
-algo=(0 1 2);
+algo=(0);
 clients=(1536);
 #  24 48 96 192 384 768
 servers=12;
-nodes=24;
+nodes=36;
 locality=99;
 # msgs=0;
 gc=0;
@@ -26,7 +26,7 @@ do
     # fi
     for c in "${clients[@]}"
     do
-        clispernode=$(($c/12))
+        clispernode=$(($c/24))
         ./scripts/runCluster.sh $duration $a $c $servers $nodes $locality 0 $gc $clispernode $tpcc;
         # cat ./config/servers.conf
     done

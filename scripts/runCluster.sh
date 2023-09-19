@@ -52,7 +52,7 @@ done < <( awk '!/^ *#/ && NF' "$serverfile");
 
 cd $basedir;
 echo compiling source code >> $basedir/logs/execution.log;
-# ant clean; ant;
+ant clean; ant;
 echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
 for i in $(seq 1 $nodes)
 do
@@ -88,7 +88,7 @@ do
     for i in $(seq 1 $clispernode)
     do
         ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc
-        sleep .6;
+        sleep .1;
         ID=$(($ID+1));
     done
     lastnode=$node;

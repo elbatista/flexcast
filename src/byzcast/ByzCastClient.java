@@ -91,9 +91,10 @@ public class ByzCastClient extends ByzCastClientProxy {
     private void start() {
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
+        sleep(5000);
+        
         // send initialization message to all servers
         sendInitMessage();
-        //sleep(3000);
         // send ready message to a server
         // the server will reply when all clients are ready, then we "guarantee" all clients start at (~) the same time
         sendReadyMessage();
