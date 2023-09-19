@@ -1,8 +1,9 @@
 #!/bin/bash
 duration=60;
-algo=(0);
-clients=(1536);
-#  24 48 96 192 384 768
+algo=(2);
+clients=(1440);
+# 24 48 96 192 384 768
+# 24 960
 servers=12;
 nodes=36;
 locality=99;

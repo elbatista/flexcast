@@ -7,7 +7,7 @@ set xlabel font "Helvetica, 22"
 set ylabel font "Helvetica, 22"
 set xtics font "Helvetica, 15"
 set ytics font "Helvetica, 22"
-set output 'tp-payload-tt.pdf'
+set output 'tp-payload-ttlog.pdf'
 set xtics out nomirror rotate by 60 right
 #set yrange [0:6]
 

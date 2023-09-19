@@ -10,7 +10,7 @@ fi
 
 i=0;
 ID=-1;
-log="";
+log="null";
 warehouse=0;
 iniport=3000;
 basedir=~/flexcast;
@@ -53,12 +53,13 @@ done < <( awk '!/^ *#/ && NF' "$serverfile");
 cd $basedir;
 echo compiling source code >> $basedir/logs/execution.log;
 ant clean; ant;
-echo updating all other nodes with source code, config, and directories >> $basedir/logs/execution.log;
+echo updating all other nodes with source code, config, scripts, and directories >> $basedir/logs/execution.log;
 for i in $(seq 1 $nodes)
 do
     ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir -p $basedir/logs; mkdir -p $basedir/files; mkdir -p $basedir/results; mkdir -p $basedir/config"
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
+    scp -q -r -o StrictHostKeyChecking=accept-new $basedir/scripts node$i:$basedir/scripts
     scp -q -o StrictHostKeyChecking=accept-new $basedir/config/*.conf* node$i:$basedir/config/
 done
 
@@ -85,12 +86,12 @@ while IFS=, read -r node region nodewarehouse
 do
     warehouse="${warehouses[$nodewarehouse]}"
     echo "$clispernode clients on $node region $region assume as primary warehouse: $warehouse ($nodewarehouse)" >> $basedir/logs/execution.log;
-    for i in $(seq 1 $clispernode)
-    do
-        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc
-        sleep .1;
-        ID=$(($ID+1));
-    done
+    # for i in $(seq 1 $clispernode)
+    # do
+        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode # >> $basedir/logs/execution.log;
+        sleep 1;
+        ID=$(($ID+$clispernode));
+    # done
     lastnode=$node;
 done < <( awk '!/^ *#/ && NF'  "$clifile");
 

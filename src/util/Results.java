@@ -261,7 +261,7 @@ public class Results {
                 }
             });
 
-            PrintWriter printerOut = new PrintWriter("plots/msgsizes/"+algo+"_"+nodes+"nodes_"+cli +"cli_"+locality+"%_gc"+gc+"-aws-loc-file-90%___v2.txt");
+            PrintWriter printerOut = new PrintWriter("plots/msgsizes/"+algo+"_"+nodes+"nodes_"+cli +"cli_"+locality+"%_gc"+gc+"-ttlog.txt");
 
             for(int node : values.keySet()){
                 List<MsgSize> l = values.get(node);
@@ -310,7 +310,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
-        int clients []       = {24, 48, 96, 192, 384, 768};//{12};
+        int clients []       = {24,240,480,720,960,1200,1440};//{24, 192, 384, 576, 768, 960, 1200};//{12};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -337,7 +337,7 @@ public class Results {
                         tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
-                        //processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+                        // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
 
                         // ###################### Num Msg Per Node ######################
                         // processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
@@ -410,7 +410,7 @@ public class Results {
                 }
             });
 
-            PrintWriter printerOut = new PrintWriter("plots/msgspernode/"+algo+"_"+nodes+"nodes_"+cli +"cli_"+locality+"%_gc"+gc+".txt");
+            PrintWriter printerOut = new PrintWriter("plots/msgspernode/"+algo+"_"+nodes+"nodes_"+cli +"cli_"+locality+"%_gc"+gc+"_ttlog.txt");
             
             for(short node : values.keySet()){
                 printerOut.println(nodeMap[node] + "\t" + values.get(node).size());

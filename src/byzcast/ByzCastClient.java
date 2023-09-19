@@ -91,7 +91,7 @@ public class ByzCastClient extends ByzCastClientProxy {
     private void start() {
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){print("Broken barrier!!!!");}
-        sleep(5000);
+        sleep(10000);
         
         // send initialization message to all servers
         sendInitMessage();
@@ -182,16 +182,11 @@ public class ByzCastClient extends ByzCastClientProxy {
          * 
          * Each distribution may be truncated at 10 times its mean value
          */
-        // double rand = thinkTimeRand.nextDouble();
-        // double u = 1;
-        // if(TtCount > 0) u = AcumTt/TtCount;
-        // double Tt = Math.log(thinkTimeRand.nextDouble()) * u;
-        // AcumTt += Tt;
-        // TtCount++;
-        // long sleepTime = (long)(Tt*1000);
-        // print("Think Time:", sleepTime, "sec");
-        // sleep(sleepTime);
-        sleep(100);
+        double r = thinkTimeRand.nextDouble();
+        double u = 100;
+        double Tt = -Math.log(r) * u;
+        if(Tt > (1000)) Tt = 1000;
+        sleep((long)Tt);
     }
 
     protected void printWloadDistribution() {
