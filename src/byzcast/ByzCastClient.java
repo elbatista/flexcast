@@ -190,7 +190,7 @@ public class ByzCastClient extends ByzCastClientProxy {
         // long sleepTime = (long)(Tt*1000);
         // print("Think Time:", sleepTime, "sec");
         // sleep(sleepTime);
-        sleep(randomNumber(100, 200, gen));
+        sleep(100);
     }
 
     protected void printWloadDistribution() {
