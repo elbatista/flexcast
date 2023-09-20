@@ -310,7 +310,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
-        int clients []       = {24,240,480,720,960,1200,1440};//{24, 192, 384, 576, 768, 960, 1200};//{12};
+        int clients []       = {240};//{24,240,480,720,960,1200,1440};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -337,14 +337,14 @@ public class Results {
                         tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
-                        // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+                        processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
 
                         // ###################### Num Msg Per Node ######################
                         // processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
                     }
                     
                 }
-                writeTPFile(tpValues, nodes, locality, gc);
+                // writeTPFile(tpValues, nodes, locality, gc);
             }
         }
 
