@@ -178,17 +178,17 @@ public class Results {
                 i++;
             }
          
-            PrintWriter printerOut = new PrintWriter("CDF_"+algo+"_"+locality+"%loc_node1.txt");
+            PrintWriter printerOut = new PrintWriter("plots/lat-cdf/CDF_"+algo+"_"+locality+"%loc_node1.txt");
             for(double v: array[0]) printerOut.println(v);
             printerOut.flush();
             printerOut.close();
 
-            printerOut = new PrintWriter("CDF_"+algo+"_"+locality+"%loc_node2.txt");
+            printerOut = new PrintWriter("plots/lat-cdf/CDF_"+algo+"_"+locality+"%loc_node2.txt");
             for(double v: array[1]) printerOut.println(v);
             printerOut.flush();
             printerOut.close();
 
-            printerOut = new PrintWriter("CDF_"+algo+"_"+locality+"%loc_node3.txt");
+            printerOut = new PrintWriter("plots/lat-cdf/CDF_"+algo+"_"+locality+"%loc_node3.txt");
             for(double v: array[2]) printerOut.println(v);
             printerOut.flush();
             printerOut.close();
@@ -310,7 +310,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
-        int clients []       = {240};//{24,240,480,720,960,1200,1440};
+        int clients []       = {720};//{24,240,480,720,960,1200,1440};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -325,6 +325,21 @@ public class Results {
                         
                         String basedir ="experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
                         loadNodesMap(nodeMap, basedir);
+
+
+                        // ###################### Latencies per Node ######################
+                        HashMap<Short, ArrayList<Double>> values = new HashMap<>();
+                        for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
+                        for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
+                            for(short i = 0; i < nodesLat.size(); i++){
+                                values.get(i).add(nodesLat.get(i));
+                            }
+                        }
+                        for(short n = 0; n < nodes; n++) 
+                            if(values.get(n).size()>0) 
+                                System.out.println("Node " + n + ": " + Stats.of(values.get(n)).mean()  + "(" + Stats.of(values.get(n)).sampleStandardDeviation() + ")" + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(values.get(n)));
+                        writeCDFFiles(values, algo, locality);
+
                         
                         // ###################### Throughput ######################
                         double avgtp = 0;
@@ -337,7 +352,7 @@ public class Results {
                         tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
-                        processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+                        // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
 
                         // ###################### Num Msg Per Node ######################
                         // processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
