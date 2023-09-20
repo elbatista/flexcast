@@ -271,9 +271,9 @@ public class ByzCastClient extends ByzCastClientProxy {
         tempdst[0] = warehouse;
 
         if(randomNumber(1, 100, gen) <= localityPercentage)
-            tempdst[1] = getNearestWH(warehouse);// getNearestWH(0);
+            tempdst[1] = getNearestWH(0);
         else 
-            tempdst[1] = getSecondNearestWH(warehouse) ;//getNearestWH(1);
+            tempdst[1] = getNearestWH(1);
 
         Arrays.sort(tempdst);
 
@@ -284,11 +284,11 @@ public class ByzCastClient extends ByzCastClientProxy {
         short [] tempdst = new short[3];
         tempdst[0] = warehouse;
         if(randomNumber(1, 100, gen) <= localityPercentage){
-            tempdst[1] = getNearestWH(warehouse);//getNearestWH(0);
-            tempdst[2] = getSecondNearestWH(warehouse);//getNearestWH(1);
+            tempdst[1] = getNearestWH(0);
+            tempdst[2] = getNearestWH(1);
         }else {
-            tempdst[1] = getSecondNearestWH(warehouse);//getNearestWH(1);
-            tempdst[2] = getThirdNearestWH(warehouse);//getNearestWH(2);
+            tempdst[1] = getNearestWH(1);
+            tempdst[2] = getNearestWH(2);
         }
         LinkedHashSet<Short> set = new LinkedHashSet<Short>();
  
@@ -305,18 +305,18 @@ public class ByzCastClient extends ByzCastClientProxy {
         return finaldst;
     }
 
-    // private short getNearestWH(int index) {
-    //     short tempdst = -1;
+    private short getNearestWH(int index) {
+        short tempdst = -1;
 
-    //     try{tempdst = Short.valueOf(nearestWHs.get((short)warehouse).split(" ")[index].trim());} catch(Exception e){}
+        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouse).split(" ")[index].trim());} catch(Exception e){}
 
-    //     if(tempdst == -1){
-    //         // simply get the next HW in order of id
-    //         tempdst = (short)(warehouse+1);
-    //         if(tempdst == numNodes) tempdst = (short)(warehouse-1);
-    //     }
-    //     return tempdst;
-    // }
+        if(tempdst == -1){
+            // simply get the next HW in order of id
+            tempdst = (short)(warehouse+1);
+            if(tempdst == numNodes) tempdst = (short)(warehouse-1);
+        }
+        return tempdst;
+    }
 
     private short getNearestWH(short warehouseparam) {
         if(numNodes == 9){

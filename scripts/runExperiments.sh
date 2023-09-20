@@ -1,7 +1,7 @@
 #!/bin/bash
 duration=60;
-algo=(1);
-clients=(192);
+algo=(0 1 2);
+clients=(192 720);
 # 24 48 96 192 384 768
 # 24 960
 servers=12;
@@ -12,8 +12,8 @@ gc=0;
 clispernode=1;
 algodesc=("flexcast" "skeen" "byzcast");
 tpcc='null';
-payload='null';   # '-payload';
-thinktime='null'; # '-tt';
+payload='-payload';
+thinktime='-tt';
 localm='null';
 
 for a in "${algo[@]}"
