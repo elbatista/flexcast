@@ -9,7 +9,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class ArgsParser {
-    private Option log, id, numMsgs, clientCount, duration, tpcc, numPartitions, locality, homewarehouse, region, algorithm, tree, gc;
+    private Option log, id, numMsgs, clientCount, duration, tpcc, numPartitions, 
+    locality, homewarehouse, region, algorithm, tree, gc, payload, tt, localMsgs;
     private Options options;
     private CommandLineParser parser;
     private CommandLine line;
@@ -23,7 +24,10 @@ public class ArgsParser {
         duration = Option.builder("d").desc("time to execute in seconds (defaults to 120)").argName("seconds").hasArg().numberOfArgs(1).type(Short.class).build();
         tpcc = Option.builder("t").desc("tpcc workload").argName("tpcc").type(Boolean.class).build();
         log = Option.builder("log").desc("log").argName("log").type(Boolean.class).build();
+        payload = Option.builder("payload").desc("payload").argName("payload").type(Boolean.class).build();
         numPartitions = Option.builder("np").desc("max number of partitions per request (defaults to 10)").argName("#partitions").hasArg().numberOfArgs(1).type(Short.class).build();
+        tt = Option.builder("tt").desc("tt").argName("tt").type(Boolean.class).build();
+        localMsgs = Option.builder("localMsgs").desc("localMsgs").argName("localMsgs").type(Boolean.class).build();
         locality = Option.builder("l").desc("with locality").argName("locality").hasArg().numberOfArgs(1).type(Integer.class).build();
         homewarehouse = Option.builder("w").desc("home warehouse").argName("homewarehouse").hasArg().numberOfArgs(1).type(Integer.class).build();
         region = Option.builder("r").desc("region").argName("region").hasArg().numberOfArgs(1).type(String.class).build();
@@ -53,6 +57,9 @@ public class ArgsParser {
         parser.options.addOption(parser.tree);
         parser.options.addOption(parser.log);
         parser.options.addOption(parser.gc);
+        parser.options.addOption(parser.payload);
+        parser.options.addOption(parser.tt);
+        parser.options.addOption(parser.localMsgs);
         parser.parse(args);
         return parser;
     }
@@ -69,6 +76,7 @@ public class ArgsParser {
         parser.options.addOption(parser.duration);
         parser.options.addOption(parser.log);
         parser.options.addOption(parser.tree);
+        parser.options.addOption(parser.payload);
         parser.parse(args);
         return parser;
     }
@@ -107,6 +115,18 @@ public class ArgsParser {
 
     public boolean getLog() {
         return line.hasOption("log");
+    }
+
+    public boolean shouldSendPayload() {
+        return line.hasOption("payload");
+    }
+
+    public boolean thinkTime() {
+        return line.hasOption("tt");
+    }
+
+        public boolean includeLocalMsgs() {
+        return line.hasOption("localMsgs");
     }
 
     public short getNumPartitions() {

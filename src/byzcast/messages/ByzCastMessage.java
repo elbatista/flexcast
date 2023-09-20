@@ -154,6 +154,7 @@ public class ByzCastMessage extends BaseObj implements Externalizable {
 
     private void writeExtPayload(ObjectOutput out) throws IOException{
         switch(transaction){
+            case NOPAYLOAD: {out.writeByte(10); return;}
             case NEW: {
                 out.writeByte(1); 
                 out.writeInt(items.size());
@@ -209,6 +210,7 @@ public class ByzCastMessage extends BaseObj implements Externalizable {
     private void readExtPayload(ObjectInput in) throws IOException {
         short transtype = in.readByte();
         switch(transtype){
+            case 10: setTransaction(TransactionType.NOPAYLOAD); return;
             case 1: {
                 setTransaction(TransactionType.NEW);
                 int i = in.readInt();

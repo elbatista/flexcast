@@ -17,7 +17,7 @@ import util.OrderItem;
 public class Message extends BaseObj implements Externalizable {
 
     public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY, GC}
-    public enum TransactionType {NEW, PAYMENT, STATUS, DELIVERY, STOCK}
+    public enum TransactionType {NEW, PAYMENT, STATUS, DELIVERY, STOCK, NOPAYLOAD}
     private short sender = -1, idNotifier = -1;
     private int id = -1, cliId = -1;
     private Type type;
@@ -244,6 +244,7 @@ public class Message extends BaseObj implements Externalizable {
 
     private void writeExtPayload(ObjectOutput out) throws IOException{
         switch(transaction){
+            case NOPAYLOAD: {out.writeByte(10); return;}
             case NEW: {
                 out.writeByte(1); 
                 out.writeInt(items.size());
@@ -401,6 +402,7 @@ public class Message extends BaseObj implements Externalizable {
         short transtype = in.readByte();
         
         switch(transtype){
+            case 10: setTransaction(TransactionType.NOPAYLOAD); return;
             case 1: {
                 setTransaction(TransactionType.NEW);
                 int i = in.readInt();

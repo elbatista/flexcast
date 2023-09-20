@@ -41,7 +41,8 @@ public class ByzCastClient extends ByzCastClientProxy {
     protected final Random thinkTimeRand;
     private short warehouse;
     private HashMap<Short, String> nearestWHs = new HashMap<>();
-
+    private boolean sendPayload, tt, includeLocalMsgs;
+    
     double AcumTt = 0;
     int TtCount = 0;
 
@@ -57,6 +58,9 @@ public class ByzCastClient extends ByzCastClientProxy {
         this.args = args;
         totalTime = args.getDuration();
         this.files = new FileManager();
+        this.sendPayload = args.shouldSendPayload();
+        this.tt = args.thinkTime();
+        this.includeLocalMsgs = args.includeLocalMsgs();
         this.localityPercentage = args.getLocality();
         this.warehouse = (short) args.getHomeWarehouse();
         this.gen = new Random(System.nanoTime());
@@ -104,6 +108,10 @@ public class ByzCastClient extends ByzCastClientProxy {
         print("Locality:", localityPercentage, "%");
         print("ByzCast Tree:", args.getTree());
         print("My home warehouse:", warehouse);
+        if(sendPayload) printF("Sending a TPCC like PAYLOAD in messages");
+        if(tt) printF("Using Think Time");
+        if(includeLocalMsgs) printF("Including LOCAL messages");
+        else printF("ONLY GLOBAL messages");
         stats = new Stats(totalTime, numNodes);
 
         long startTime = System.nanoTime();
@@ -125,7 +133,7 @@ public class ByzCastClient extends ByzCastClientProxy {
 
             computeDistribution(m);
 
-            thinkTime();
+            if(tt) thinkTime();
             
             // usLat = now;
             totalMsgs++;
@@ -150,6 +158,10 @@ public class ByzCastClient extends ByzCastClientProxy {
     }
 
     private void generatePayload(ByzCastMessage m) {
+        if(!sendPayload) {
+            m.setTransaction(Message.TransactionType.NOPAYLOAD);
+            return;
+        }
         int transactionType = randomNumber(1, 100, gen);
         m.setOrderDate(new Date());
         if (transactionType <= newOrderWeight) {
@@ -228,7 +240,7 @@ public class ByzCastClient extends ByzCastClientProxy {
 
     private short[] generateDests(){
 
-        if(randomNumber(1, 100, gen) <= 90){
+        if(includeLocalMsgs && randomNumber(1, 100, gen) <= 90){
             return new short[]{warehouse};
         }
 

@@ -1,10 +1,10 @@
 #!/bin/bash
-if [ "$#" -lt 10 ]; then 
+if [ "$#" -lt 13 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
     echo  "Usage: $0 <duration:sec> \
     <algo:0-flex;1-skeen;2-byz> \
     <#clis> <#servers> <#nodes> \
-    <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc>"
+    <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm>"
     exit 0; 
 fi
 
@@ -24,6 +24,9 @@ msgs=$7;
 gc=$8;
 clispernode=$9;
 tpcc=${10}
+payload=${11}
+thinktime=${12}
+localm=${13}
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
 mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
@@ -31,7 +34,8 @@ mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
 echo false > $basedir/files/stop;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 echo "started experiment on" $(date) >> $basedir/logs/execution.log;
-echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8 clispernode=$9 tpcc=$tpcc" >> $basedir/logs/execution.log;
+echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8 \
+clispernode=$9 tpcc=$tpcc payload=$payload thinktime=$thinktime" >> $basedir/logs/execution.log;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 
 ./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
@@ -74,7 +78,7 @@ do
     ID=$(($ID+1));
     echo "starting server $ID on $node region $region" >> $basedir/logs/execution.log;
     warehouses[$node]=$ID;
-    ./scripts/sshserver.sh $node $basedir $ID $algo $duration $clients $log
+    ./scripts/sshserver.sh $node $basedir $ID $algo $duration $clients $log $payload
     sleep .5;
 done < <( awk '!/^ *#/ && NF' "$serverfile");
 echo "started $servers servers"  >> $basedir/logs/execution.log;
@@ -88,7 +92,7 @@ do
     echo "$clispernode clients on $node region $region assume as primary warehouse: $warehouse ($nodewarehouse)" >> $basedir/logs/execution.log;
     # for i in $(seq 1 $clispernode)
     # do
-        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode # >> $basedir/logs/execution.log;
+        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm # >> $basedir/logs/execution.log;
         sleep 1;
         ID=$(($ID+$clispernode));
     # done

@@ -310,7 +310,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
-        int clients []       = {240};//{24,240,480,720,960,1200,1440};
+        int clients []       = {192};//{24,240,480,720,960,1200,1440};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -325,7 +325,6 @@ public class Results {
                         
                         String basedir ="experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
                         loadNodesMap(nodeMap, basedir);
-
 
                         // ###################### Latencies per Node ######################
                         HashMap<Short, ArrayList<Double>> values = new HashMap<>();

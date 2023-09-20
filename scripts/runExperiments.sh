@@ -1,7 +1,7 @@
 #!/bin/bash
 duration=60;
-algo=(2);
-clients=(1440);
+algo=(1);
+clients=(192);
 # 24 48 96 192 384 768
 # 24 960
 servers=12;
@@ -12,6 +12,9 @@ gc=0;
 clispernode=1;
 algodesc=("flexcast" "skeen" "byzcast");
 tpcc='null';
+payload='null';   # '-payload';
+thinktime='null'; # '-tt';
+localm='null';
 
 for a in "${algo[@]}"
 do
@@ -28,7 +31,7 @@ do
     for c in "${clients[@]}"
     do
         clispernode=$(($c/24))
-        ./scripts/runCluster.sh $duration $a $c $servers $nodes $locality 0 $gc $clispernode $tpcc;
+        ./scripts/runCluster.sh $duration $a $c $servers $nodes $locality 0 $gc $clispernode $tpcc $payload $thinktime $localm;
         # cat ./config/servers.conf
     done
 done

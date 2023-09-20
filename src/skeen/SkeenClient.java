@@ -39,7 +39,8 @@ public class SkeenClient extends SkeenClientProxy {
     double AcumTt = 0;
     int TtCount = 0;
     protected final Random thinkTimeRand;
-
+    private boolean sendPayload, tt, includeLocalMsgs;
+    
     // Tpcc workload distribution
     private static final int newOrderWeight = 45;
     private static final int paymentWeight = 43;
@@ -52,6 +53,9 @@ public class SkeenClient extends SkeenClientProxy {
         this.args = args;
         totalTime = args.getDuration();
         this.files = new FileManager();
+        this.sendPayload = args.shouldSendPayload();
+        this.tt = args.thinkTime();
+        this.includeLocalMsgs = args.includeLocalMsgs();
         this.localityPercentage = args.getLocality();
         ArrayList<Node> nodes = files.loadHosts();
         FileManager.loadLocalityFile(nearestWHs);
@@ -93,6 +97,10 @@ public class SkeenClient extends SkeenClientProxy {
         printF("Locality:", localityPercentage, "%");
         printF("My home warehouse:", warehouse);
         if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
+        if(sendPayload) printF("Sending a TPCC like PAYLOAD in messages");
+        if(tt) printF("Using Think Time");
+        if(includeLocalMsgs) printF("Including LOCAL messages");
+        else printF("ONLY GLOBAL messages");
         stats = new Stats(totalTime, numNodes);
         long startTime = System.nanoTime();
         long now;
@@ -114,7 +122,7 @@ public class SkeenClient extends SkeenClientProxy {
 
             computeDistribution(m);
 
-            thinkTime();
+            if(tt) thinkTime();
             
             // usLat = now;
             totalMsgs++;
@@ -139,6 +147,10 @@ public class SkeenClient extends SkeenClientProxy {
     }
 
     private void generatePayload(SkeenMessage m) {
+        if(!sendPayload) {
+            m.setTransaction(Message.TransactionType.NOPAYLOAD);
+            return;
+        }
         int transactionType = randomNumber(1, 100, gen);
         m.setOrderDate(new Date());
         if (transactionType <= newOrderWeight) {
@@ -217,7 +229,7 @@ public class SkeenClient extends SkeenClientProxy {
 
     private short[] generateDests(){
 
-        if(randomNumber(1, 100, gen) <= 90){
+        if(includeLocalMsgs && randomNumber(1, 100, gen) <= 90){
             return new short[]{warehouse};
         }
 

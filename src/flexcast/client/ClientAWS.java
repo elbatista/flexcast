@@ -35,6 +35,7 @@ public class ClientAWS extends ClientProxy {
     protected final Random gen;
     protected final Random thinkTimeRand;
     private short warehouse;
+    private boolean sendPayload, tt, includeLocalMsgs;
     private int gc=0, dagTop = 1;
     private HashMap<Short, String> nearestWHs = new HashMap<>();
     double AcumTt = 0;
@@ -52,6 +53,9 @@ public class ClientAWS extends ClientProxy {
         this.args = args;
         totalTime = args.getDuration();
         this.files = new FileManager();
+        this.sendPayload = args.shouldSendPayload();
+        this.tt = args.thinkTime();
+        this.includeLocalMsgs = args.includeLocalMsgs();
         this.localityPercentage = args.getLocality();
         this.warehouse = (short) args.getHomeWarehouse();
         this.gc = args.getGC();
@@ -107,6 +111,10 @@ public class ClientAWS extends ClientProxy {
             printF("Locality:", localityPercentage, "%");
             printF("My home warehouse:", warehouse);
             if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
+            if(sendPayload) printF("Sending a TPCC like PAYLOAD in messages");
+            if(tt) printF("Using Think Time");
+            if(includeLocalMsgs) printF("Including LOCAL messages");
+            else printF("ONLY GLOBAL messages");
             stats = new Stats(totalTime, numNodes);
 
             long startTime = System.nanoTime();
@@ -130,7 +138,7 @@ public class ClientAWS extends ClientProxy {
 
                 computeDistribution(m);
 
-                thinkTime();
+                if(tt) thinkTime();
                 
                 //usLat = now;
                 totalMsgs++;
@@ -153,6 +161,10 @@ public class ClientAWS extends ClientProxy {
     }
 
     private void generatePayload(Message m) {
+        if(!sendPayload) {
+            m.setTransaction(Message.TransactionType.NOPAYLOAD);
+            return;
+        }
         int transactionType = randomNumber(1, 100, gen);
         m.setOrderDate(new Date());
         if (transactionType <= newOrderWeight) {
@@ -190,26 +202,6 @@ public class ClientAWS extends ClientProxy {
         double Tt = -Math.log(r) * u;
         if(Tt > (1000)) Tt = 1000;
         sleep((long)Tt);
-    }
-
-    public static void main (String [] args){
-        double AcumTt=0;
-        int TtCount=0;
-        double u = 1;
-
-        for(int i = 0; i < 100 ; i++) {
-            
-            
-            double Tt = Math.abs(Math.log(new Random().nextDouble()) * u);
-
-            AcumTt += Tt;
-            TtCount++;
-            u = AcumTt/TtCount;
-
-            //long sleepTime = (long)(Tt*10);
-            System.out.println("Think Time: " + Tt);
-
-        }
     }
 
     private void runGCClient() {
@@ -275,7 +267,7 @@ public class ClientAWS extends ClientProxy {
 
     private short[] generateDests(){
 
-        if(randomNumber(1, 100, gen) <= 90){
+        if(includeLocalMsgs && randomNumber(1, 100, gen) <= 90){
             return new short[]{warehouse};
         }
 
