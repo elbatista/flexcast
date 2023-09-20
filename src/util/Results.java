@@ -310,7 +310,7 @@ public class Results {
         String localities [] = {"99"};
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
-        int clients []       = {720};//{24,240,480,720,960,1200,1440};
+        int clients []       = {240};//{24,240,480,720,960,1200,1440};
         int gc               = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
@@ -342,14 +342,14 @@ public class Results {
 
                         
                         // ###################### Throughput ######################
-                        double avgtp = 0;
-                        totalFiles = 0;
-                        avgtp += readTPFiles(basedir+"/logs");
-                        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
-                        // System.out.println(basedir);
-                        // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
-                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
+                        // double avgtp = 0;
+                        // totalFiles = 0;
+                        // avgtp += readTPFiles(basedir+"/logs");
+                        // // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+                        // // System.out.println(basedir);
+                        // // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+                        // if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        // tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
                         // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);

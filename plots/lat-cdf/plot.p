@@ -24,9 +24,9 @@ set xrange [1:500]
 set output 'cdf-dest1-99.pdf'
 
 plot \
-"CDF_flexcast_99%loc_node1.txt" using 1:(.0000102) smooth cumul w lines t "FlexCast", \
-"CDF_byzcast_99%loc_node1.txt"  using 1:(.0000102) smooth cumul w lines t "ByzCast", \
-"CDF_skeen_99%loc_node1.txt"    using 1:(.0000102) smooth cumul w lines t "Skeen"
+"CDF_flexcast_99%loc_node1.txt" using 1:(.0000035) smooth cumul w lines t "FlexCast", \
+"CDF_byzcast_99%loc_node1.txt"  using 1:(.0000035) smooth cumul w lines t "ByzCast", \
+"CDF_skeen_99%loc_node1.txt"    using 1:(.0000035) smooth cumul w lines t "Skeen"
 
 set xrange [1:1500]
 
