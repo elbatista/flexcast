@@ -311,7 +311,8 @@ public class Results {
         short numnodes []    = {12};
         String algos []      = {"flexcast", "skeen", "byzcast"};
         int clients []       = {192};//{24,240,480,720,960,1200,1440};
-        int gc               = 0;
+        int gcflex           = 100;
+        int gcall            = 0;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
@@ -321,6 +322,8 @@ public class Results {
                 tpValues = new HashMap<>();
                 nodeMap = new short[nodes];
                 for(String algo : algos){
+                    int gc = gcall;
+                    if(algo.equals("flexcast")) gc = gcflex; 
                     for(int cli : clients){
                         
                         String basedir ="experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;

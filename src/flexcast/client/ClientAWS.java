@@ -15,6 +15,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 import base.Node;
+import flexcast.messages.Message.TransactionType;
 import flexcast.messages.Message.Type;
 import proxies.ClientProxy;
 import util.ArgsParser;
@@ -111,7 +112,7 @@ public class ClientAWS extends ClientProxy {
             printF("Locality:", localityPercentage, "%");
             printF("My home warehouse:", warehouse);
             if(args.getNumMessages() > 0) printF("Will send", args.getNumMessages(), "messages");
-            if(sendPayload) printF("Sending a TPCC like PAYLOAD in messages");
+            if(sendPayload) printF("Sending a TPCC-like PAYLOAD in messages");
             if(tt) printF("Using Think Time");
             if(includeLocalMsgs) printF("Including LOCAL messages");
             else printF("ONLY GLOBAL messages");
@@ -213,6 +214,7 @@ public class ClientAWS extends ClientProxy {
         while ((elapsed / 1e9) < (totalTime+2)) {
             // envia msg de "flush"
             Message m = newMessageTo(allDests());
+            m.setTransaction(TransactionType.NOPAYLOAD);
             multicast(m);
             printF("Sent and received all replies for flush message", m);
             // apos receber resposta de todos nodes (todos entregaram a msg de flush)
