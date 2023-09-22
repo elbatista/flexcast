@@ -1,10 +1,10 @@
 #!/bin/bash
-if [ "$#" -lt 13 ]; then 
+if [ "$#" -lt 14 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
     echo  "Usage: $0 <duration:sec> \
     <algo:0-flex;1-skeen;2-byz> \
     <#clis> <#servers> <#nodes> \
-    <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm>"
+    <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm> <dag_tree>"
     exit 0; 
 fi
 
@@ -27,6 +27,8 @@ tpcc=${10}
 payload=${11}
 thinktime=${12}
 localm=${13}
+dag_tree=${14}
+
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
 mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
@@ -35,7 +37,7 @@ echo false > $basedir/files/stop;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 echo "started experiment on" $(date) >> $basedir/logs/execution.log;
 echo "duration=$1 algo=${algodesc[$2]} clients=$3 servers=$4 nodes=$5 locality=$6 msgs=$7 gc=$8 \
-clispernode=$9 tpcc=$tpcc payload=$payload thinktime=$thinktime" >> $basedir/logs/execution.log;
+clispernode=$9 tpcc=$tpcc payload=$payload thinktime=$thinktime" dag_tree=$dag_tree >> $basedir/logs/execution.log;
 echo "------------------------------------------------------------------------------------------------" >> $basedir/logs/execution.log;
 
 ./scripts/killAll.sh $nodes >> $basedir/logs/execution.log;
@@ -92,7 +94,7 @@ do
     echo "$clispernode clients on $node region $region assume as primary warehouse: $warehouse ($nodewarehouse)" >> $basedir/logs/execution.log;
     # for i in $(seq 1 $clispernode)
     # do
-        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm # >> $basedir/logs/execution.log;
+        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm $dag_tree # >> $basedir/logs/execution.log;
         sleep 1;
         ID=$(($ID+$clispernode));
     # done
@@ -139,7 +141,7 @@ do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/
 done
 
-expdir="$basedir/experiments/${algodesc[$2]}-aws-loc-file-90%/${servers}nodes/${3}cli/${locality}%/gc${gc}"
+expdir="$basedir/experiments/${algodesc[$2]}-aws-loc-file-90%-dag_tree$dag_tree/${servers}nodes/${3}cli/${locality}%/gc${gc}"
 mkdir -p $expdir/config
 echo "moving data to" $expdir >> $basedir/logs/execution.log;
 cp -r $basedir/logs $expdir/
