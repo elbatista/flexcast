@@ -313,7 +313,7 @@ public class Results {
         int clients []       = {192};//{24,240,480,720,960,1200,1440};
         int gcflex           = 0;
         int gcall            = 0;
-        int dag              = 2;
+        int dag              = 3;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();

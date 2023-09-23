@@ -68,7 +68,7 @@ do
 	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p ~/flexcast/wan;"
 	scp -q -o StrictHostKeyChecking=accept-new ~/flexcast/wan/* $NODE:~/flexcast/wan/
 
-	COMMAND="ssh $NODE sudo python ~/flexcast/wan/latsetter.py set $IPS_FILE $LATENCIES_FILE $IFACE"
+	COMMAND="ssh $NODE sudo python3 ~/flexcast/wan/latsetter.py set $IPS_FILE $LATENCIES_FILE $IFACE"
 	if [ -n "$DRY_RUN" ]
 	then
 		echo $ $COMMAND "(DRY-RUN)"
