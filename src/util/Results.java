@@ -307,12 +307,13 @@ public class Results {
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"99"};
+        String localities [] = {"90"};
         short numnodes []    = {12};
-        String algos []      = {"flexcast", "skeen", "byzcast"};
+        String algos []      = {"byzcast"};// , "flexcast", "skeen"};
         int clients []       = {192};//{24,240,480,720,960,1200,1440};
-        int gcflex           = 100;
+        int gcflex           = 0;
         int gcall            = 0;
+        int dag              = 2;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
@@ -326,9 +327,10 @@ public class Results {
                     if(algo.equals("flexcast")) gc = gcflex; 
                     for(int cli : clients){
                         
-                        String basedir ="experiments/"+algo+"-aws-loc-file-90%/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+                        String basedir ="experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
                         loadNodesMap(nodeMap, basedir);
 
+                        System.out.println("Data from: "+ basedir);
                         // ###################### Latencies per Node ######################
                         HashMap<Short, ArrayList<Double>> values = new HashMap<>();
                         for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
@@ -339,9 +341,17 @@ public class Results {
                         }
                         for(short n = 0; n < nodes; n++) 
                             if(values.get(n).size()>0) 
-                                System.out.println("Node " + n + ": " + Stats.of(values.get(n)).mean()  + "(" + Stats.of(values.get(n)).sampleStandardDeviation() + ")" + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(values.get(n)));
-                        writeCDFFiles(values, algo, locality);
-
+                                System.out.println(
+                                    algo + 
+                                    " - Node " + n + ": " + (double)(int)Stats.of(values.get(n)).mean()  + 
+                                    " & " + Quantiles.scale(100).indexes(90,95,99).compute(values.get(n)).toString()
+                                    .replaceAll(",", " & ")
+                                    .replace("{","").replace("}","")
+                                    .replace("50=","").replace("90=","")
+                                    .replace("95=","").replace("99=","")
+                                );
+                        //writeCDFFiles(values, algo, locality);
+                        // writeCDFFiles3(values, algo, locality, cli, dag);
                         
                         // ###################### Throughput ######################
                         // double avgtp = 0;
@@ -393,6 +403,77 @@ public class Results {
         // writeCDFFiles(values, algo, locality);
 
         
+    }
+
+    private static void writeCDFFiles2(HashMap<Short, ArrayList<Double>> values, String algo, String locality) {
+        try{
+            PrintWriter printerOut = new PrintWriter("plots/lat-cdf2/CDF_"+algo+"_"+locality+"%loc_node1.txt");
+            ArrayList<Double> dest1 = values.get((short)0);
+
+            dest1.sort(Double::compare); //
+            // Collections.sort(dest1, Collections.reverseOrder());
+
+            int n = dest1.size();
+
+            print(algo, "first", dest1.get(0), "last", dest1.get(n-1));
+
+            int k = 1000;
+            int count = 1;
+
+            for(int i = 0; i < n; i++){
+                double value = dest1.get(i);
+                if(count%k == 0) {
+                    int percentil = (((count*100)/n)+1);
+                    // printerOut.println(percentil+" "+value);
+                }
+                count++;
+            }
+
+            // plotar k/10
+
+
+            printerOut.flush();
+            printerOut.close();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void writeCDFFiles3(HashMap<Short, ArrayList<Double>> values, String algo, String locality, int cli, int dag) {
+        try{
+            for(short d : new short[]{0,1,2}){
+                ArrayList<Double> dest = values.get(d);
+                PrintWriter printerOut = new PrintWriter("plots/lat-cdf2/CDF_"+algo+"_"+cli+"cli_"+locality+"%loc_dagtree"+dag+"_node"+(d+1)+".txt");
+                dest.sort(Double::compare);
+                
+                int n = dest.size();
+                int k = 1000;
+                if(d==2) k = 100;
+                int chunkSize = n/k;
+    
+                for(int i = 1; i <=  k; i++){
+                    int index = i*chunkSize;
+                    printerOut.println(i + " " + dest.get(index));
+                }
+    
+                printerOut.flush();
+                printerOut.close();
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static void print(Object... args){
+        System.out.println(toString(args));
+    }
+
+    private static String toString(Object... args){
+        String s = "";
+        for(Object obj : args)s+=String.valueOf((obj==null?"":obj))+" ";
+        return s;
     }
 
     private static void processTotalMsgsPerNode(String strpath, short nodes, String locality, int gc, int cli,String algo, short[] nodeMap) {
@@ -447,7 +528,7 @@ public class Results {
         try{scan = new Scanner(Paths.get(basedir+"/config/servers.conf"));}catch (Exception e) {}
         while(scan.hasNext()){
             String line = scan.nextLine();
-            if(line.startsWith("#")) continue;
+            if(line.startsWith("#") || line.equals("")) continue;
             StringTokenizer str = new StringTokenizer(line, ",");
             short node = Short.valueOf(str.nextToken().replaceAll("[^0-9]", ""));
             nodeMap[index] = node;

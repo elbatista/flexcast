@@ -6,7 +6,7 @@ import pandas as pd
 algos = ['flexcast', 'byzcast', 'skeen']
 
 for algo in algos:
-    data = pd.read_csv('CDF_'+algo+'_99%loc_node1.txt')
+    data = pd.read_csv('globalgc0withpaytt/CDF_'+algo+'_99%loc_node1.txt')
     # data = np.percentile(data,1)
 
     # getting data of the histogram

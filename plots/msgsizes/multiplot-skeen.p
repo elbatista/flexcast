@@ -4,7 +4,7 @@ set output 'multi-skeen.pdf'
 set multiplot layout 3, 1 
 set tmargin 2
 set style data histogram
-#set style fill pattern border -1
+set style fill pattern border 2
 set boxwidth 1
 set grid ytics
 set ytics font "Helvetica, 13"
@@ -14,7 +14,7 @@ set key top right
 set yrange [0:850]
 set ytics (0,200,400,600,800)
 set title "#Messages / sec"
-plot "skeen_12nodes_720cli_99%_gc0-ttlog.txt" using (($2)):xtic(1) t "ByzCast"
+plot "skeen_12nodes_720cli_99%_gc0-ttlog.txt" using (($2)):xtic(1) t "Skeen"
 
 #
 set title "Avg Message Size (Bytes / sec)"
