@@ -2,6 +2,7 @@ package proxies;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import comms.NettyServerChannel;
 import flexcast.messages.Message;
@@ -14,7 +15,7 @@ public abstract class ServerProxy extends ClientProxy {
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs;
     ArrayList<MsgSize> sizes = new ArrayList<>();
-
+    protected HashSet<Integer> restrictions = new HashSet();
     public ArrayList<MsgSize> getSizes() {
         return sizes;
     }
@@ -30,6 +31,11 @@ public abstract class ServerProxy extends ClientProxy {
                 while(true) {
                     Message m = bufferQueue.poll();
                     if(m != null) {
+                        // if blocked and is a new client message, ignore it (put back on the queue)
+                        if(!restrictions.isEmpty() && m.getType() == Type.MSG && m.getLca() == getId()){
+                            bufferQueue.offer(m);
+                            continue;
+                        }
                         receive(m);
                     }
                 }

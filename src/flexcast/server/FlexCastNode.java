@@ -4,7 +4,6 @@ import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
 import util.OrderItem;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -75,10 +74,10 @@ public class FlexCastNode extends ServerProxy {
         msgs++;
         history.addHst(m);
         if(getId() == m.getLca()){
-            if(history.getPenMsgs().size() > 0){
-                pendCliMsgs.add(m);
-                return;
-            }
+            // if(history.getPenMsgs().size() > 0){
+            //     pendCliMsgs.add(m);
+            //     return;
+            // }
             deliver(m);
         }
         else {
@@ -95,6 +94,8 @@ public class FlexCastNode extends ServerProxy {
 
             // cria pendencias de ack para os notificados da notif list
             pend.addNotifList(m.getSender(), m.getNotifList());
+
+            sendAcks(m);
 
             reprocessQueues();
         }
@@ -183,11 +184,11 @@ public class FlexCastNode extends ServerProxy {
                 }
             }
         }
-        if(history.getPenMsgs().isEmpty()){
-            for(Message x : pendCliMsgs)
-                deliver(x);
-            pendCliMsgs.clear();
-        }
+        // if(history.getPenMsgs().isEmpty()){
+        //     for(Message x : pendCliMsgs)
+        //         deliver(x);
+        //     pendCliMsgs.clear();
+        // }
     }
 
     private boolean canDeliver(Message m) {
@@ -238,6 +239,9 @@ public class FlexCastNode extends ServerProxy {
             }
         }
 
+        // se estou em uma restricao
+        // e nao sei 
+
         return true;
     }
 
@@ -249,9 +253,10 @@ public class FlexCastNode extends ServerProxy {
         }
         else {
             queues.get(m.getLca()).remove(0);
-            history.getPenMsgs().remove(m.getId());
+            history.getPendMsgs().remove(m.getId());
             processPendingNotifs(m);
-            sendAcks(m);
+            //sendAcks(m);
+            restrictions.remove(m.getId());
         }
         sendReply(m);
         print("Delivered", m);
@@ -355,6 +360,12 @@ public class FlexCastNode extends ServerProxy {
             myhst.add(item.get());
             item = item.getNext();
         }
+
+        if(toSend.isAddressedTo(getId()) ){//&& canDeliver(toSend)){
+            LightMessage lm = new LightMessage(toSend.getId(),toSend.getDst());
+            if(!myhst.contains(lm)) myhst.add(lm);
+        }
+
         if(myhst.size() > 0) toSend.addHst(getId(), myhst);
         if(toSend.getType() == Type.MSG) hstPointersPerDesc.put(dest, history.getMyHst().getLast());
     }
@@ -365,7 +376,7 @@ public class FlexCastNode extends ServerProxy {
         ArrayList<Pair<Short, Integer>> notifs = null;
         // last 2 nodes never have someone to notify
         if(getId() < (numNodes-2)) notifs = sendNotifs(m);
-
+        boolean sent = false;
         for(short dst : m.getDst()){
             if(dst > getId()){
                 Message ack = new Message(m.getId());
@@ -380,8 +391,12 @@ public class FlexCastNode extends ServerProxy {
                 addHst(ack, dst);
                 if(notifs != null && notifs.size() > 0) ack.setNotifList(notifs);
                 send(ack, dst);
+                sent=true;
                 print("Sent ack", ack, "to", dst);
             }
+        }
+        if (sent && m.isAddressedTo(getId())){
+            restrictions.add(m.getId());
         }
     }
 
@@ -424,7 +439,7 @@ public class FlexCastNode extends ServerProxy {
         printF("Queues are empty ! =]");
         files.persistMessages(history.getMyFullHst(), getId(), false, false);
         printF("-------------------------------------");
-        printF("pendingMessages size:", history.getPenMsgs().size());
+        printF("pendingMessages size:", history.getPendMsgs().size());
         printF("deliveredMsgs size:", history.getDeliveredMsgs().size());
         printF("full history size:", history.getMyFullHst().size());
         printF("msgs:", msgs);

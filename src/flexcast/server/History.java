@@ -45,7 +45,7 @@ public class History extends BaseObj {
         }
     }
 
-    public HashMap<Integer, PendingMessage> getPenMsgs() {
+    public HashMap<Integer, PendingMessage> getPendMsgs() {
         return pendingMessages;
     }
 
