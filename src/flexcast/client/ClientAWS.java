@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import base.Node;
 import flexcast.messages.Message.TransactionType;
 import flexcast.messages.Message.Type;
+import flexcast.reconfig.View;
 import proxies.ClientProxy;
 import util.ArgsParser;
 import util.FileManager;
@@ -67,7 +68,8 @@ public class ClientAWS extends ClientProxy {
         ArrayList<Node> nodes = files.loadHosts();
         FileManager.loadLocalityFile(nearestWHs);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
-        for(Node server : nodes) connectTo(server, syncAllConnections);
+        setViewOnProxy(new View(0, files));
+        connectToServers(syncAllConnections);
         numNodes = (short) nodes.size();
         destsSizes = new int [numNodes];
         wloadDist2dests = new int [numNodes][numNodes];
@@ -94,7 +96,7 @@ public class ClientAWS extends ClientProxy {
 
         printF("Connected to all servers!");
         printF("DAG TOPOLY:", dagTop);
-        sleep(10000);
+        // sleep(10000);
 
         // send initialization message to all servers
         sendInitMessage();

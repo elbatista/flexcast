@@ -4,8 +4,8 @@ import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
 import util.OrderItem;
-
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.javatuples.Pair;
@@ -16,78 +16,84 @@ import flexcast.messages.Message;
 import flexcast.messages.LightMessagesList.Item;
 import flexcast.messages.Message.TransactionType;
 import flexcast.messages.Message.Type;
+import flexcast.reconfig.View;
 
 // @SuppressWarnings("unused")
 public class FlexCastNode extends ServerProxy {
-    private short numNodes;
-    private int idNotif = 0;
     private FileManager files;
-    private History history;
-    private ArrayList<Short> ancestors = new ArrayList<>();
-    private ArrayList<Short> descendants = new ArrayList<>();
-    private HashMap<Short, ArrayList<Message>> queues = new HashMap<>();
-    protected LinkedList<Message> pendingNotifs = new LinkedList<>();
-    private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc = new HashMap<>();
-    private HashMap<Short, Item> hstPointersPerDesc = new HashMap<>();
+
+    // private short numNodes;
+    // private int idNotif = 0;
+    // private History history;
+    // private ArrayList<Short> ancestors = new ArrayList<>();
+    // private ArrayList<Short> descendants = new ArrayList<>();
+    // private HashMap<Short, ArrayList<Message>> queues = new HashMap<>();
+    // protected LinkedList<Message> pendingNotifs = new LinkedList<>();
+    // private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc = new HashMap<>();
+    // private HashMap<Short, Item> hstPointersPerDesc = new HashMap<>();
     
-    private ArrayList<Message> pendCliMsgs = new ArrayList<>();
-
-
+    private View currentView;
+    
     // TODO
     // TO REMOVE !
     private int msgs=0, acks=0, notifs=0, gcs=0;
-    HashMap<Integer, HashMap<Integer, Boolean>> map = new HashMap<>();
-    private ArrayList<Integer> gsizes = new ArrayList<>();
+    // private ArrayList<Message> pendCliMsgs = new ArrayList<>();
+    // HashMap<Integer, HashMap<Integer, Boolean>> map = new HashMap<>();
+    // private ArrayList<Integer> gsizes = new ArrayList<>();
 
 
     public FlexCastNode(short id, ArgsParser p){
         super(id, p.getClientCount());
         this.files = new FileManager();
         if(!p.getLog()) setPrint(false);
-        for(Node n : files.loadHosts()){
-            // data for each ancestor
-            if(n.getId() < id) {
-                ancestors.add(n.getId());
-                queues.put(n.getId(), new ArrayList<>());
-                ancHstPointersPerDesc.put(n.getId(), new HashMap<>());
-            }
+        currentView = new View(0, getId(), files);
+        setViewOnProxy(currentView);
+        setHost(currentView.getHost());
+        connectToServers();
+        // for(Node n : files.loadHosts()){
+        //     // data for each ancestor
+        //     if(n.getId() < id) {
+        //         ancestors.add(n.getId());
+        //         queues.put(n.getId(), new ArrayList<>());
+        //         ancHstPointersPerDesc.put(n.getId(), new HashMap<>());
+        //     }
 
-            // set data for myself
-            if(n.getId() == id) setHost(n.getHost());
+        //     // set data for myself
+        //     if(n.getId() == id) setHost(n.getHost());
 
-            // sets connection to each descendant
-            if(n.getId() > id) {
-                descendants.add(n.getId());
-                connectTo(n);
-                for(short anc : ancHstPointersPerDesc.keySet())
-                    ancHstPointersPerDesc.get(anc).put(n.getId(), null);
-            }
-            numNodes++;
-        }
-        // notifPointers = new Item[numNodes][numNodes][numNodes][numNodes];
-        history = new History(ancestors, getId());
+        //     // sets connection to each descendant
+        //     if(n.getId() > id) {
+        //         descendants.add(n.getId());
+        //         connectTo(n);
+        //         for(short anc : ancHstPointersPerDesc.keySet())
+        //             ancHstPointersPerDesc.get(anc).put(n.getId(), null);
+        //     }
+        //     numNodes++;
+        // }
+        // // notifPointers = new Item[numNodes][numNodes][numNodes][numNodes];
+        // history = new History(ancestors, getId());
         printF(this, "FlexCast - Start listening...");
     }
 
     @Override
     protected void receiveMsg(Message m){
-        print("Received msg", m, "queues", queues);
+        print("Received msg", m, "queues", getQueues());
         msgs++;
-        history.addHst(m);
+        getHistory().addHst(m);
         if(getId() == m.getLca()){
-            if(history.getPenMsgs().size() > 0){
-                pendCliMsgs.add(m);
-                return;
-            }
+            // if(history.getPenMsgs().size() > 0){
+            //     pendCliMsgs.add(m);
+            //     return;
+            // }
             deliver(m);
         }
         else {
-            queues.get(m.getLca()).add(m);
+            getQueues().get(m.getLca()).add(m);
         
-            PendingMessage pend = history.getPendMsg(m.getId());
+            PendingMessage pend = getHistory().getPendMsg(m.getId());
             if(pend == null){
                 pend = new PendingMessage(m.getId());
-                history.addPendMsg(m.getId(), pend);
+                getHistory().addPendMsg(m.getId(), pend);
             }
             pend.setMsg(m);
             for(short d : m.getDst()) if(d > m.getLca() && d < getId()) 
@@ -102,13 +108,13 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected void receiveAck(Message ack){
-        print("Received ack", ack, "from", ack.getSender(), "queues", queues);
+        print("Received ack", ack, "from", ack.getSender(), "queues", getQueues());
         acks++;
-        history.addHst(ack);
-        PendingMessage pend = history.getPendMsg(ack.getId());
+        getHistory().addHst(ack);
+        PendingMessage pend = getHistory().getPendMsg(ack.getId());
         if(pend == null){
             pend = new PendingMessage(ack.getId());
-            history.addPendMsg(ack.getId(), pend);
+            getHistory().addPendMsg(ack.getId(), pend);
         }
 
         // cria pendencias de ack para os notificados da notif list desse ack
@@ -126,27 +132,55 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected void receiveNotif(Message notif){
-        print("Received notif", notif, "from", notif.getSender(), "queues", queues);
+        print("Received notif", notif, "from", notif.getSender(), "queues", getQueues());
         notifs++;
-        history.addHst(notif);
+        getHistory().addHst(notif);
 
-        if(pendingNotifs.size() > 0){
-            pendingNotifs.add(notif);
+        if(getPendingNotifs().size() > 0){
+            getPendingNotifs().add(notif);
             return;
         }
         if(!canDeliverNotif(notif)){
-            pendingNotifs.add(notif);
+            getPendingNotifs().add(notif);
             return;
         }
 
         sendAcks(notif);
     }
 
+    private List<Short> getAncestors(){
+        return currentView.getAncestors();
+    }
+
+    private List<Short> getDescendants(){
+        return currentView.getDescendants();
+    }
+
+    private HashMap<Short, ArrayList<Message>> getQueues(){
+        return currentView.getQueues();
+    }
+
+    private LinkedList<Message> getPendingNotifs(){
+        return currentView.getPendingNotifs();
+    }
+
+    private History getHistory(){
+        return currentView.getHistory();
+    }
+
+    private HashMap<Short, HashMap<Short, Item>> getAncHstPointersPerDesc(){
+        return currentView.getAncHstPointersPerDesc();
+    }
+
+    private HashMap<Short, Item> getHstPointersPerDesc(){
+        return currentView.getHstPointersPerDesc();
+    }
+
     private boolean canDeliverNotif(Message notif) {
         boolean pend = false;
-        for(short a : ancestors){
-            for(LightMessage lm : history.getAncHstToMe(a)){
-                if(history.getDeliveredMsgs().get(lm.getId()) == null){
+        for(short a : getAncestors()){
+            for(LightMessage lm : getHistory().getAncHstToMe(a)){
+                if(getHistory().getDeliveredMsgs().get(lm.getId()) == null){
                     pend = true;
                     notif.getPendNotifOrigins().add(lm.getId());
                 }
@@ -156,14 +190,14 @@ public class FlexCastNode extends ServerProxy {
     }
 
     private void processPendingNotifs(Message delivered_m) {
-        if(pendingNotifs.size() == 0) return;
-        Message notif = pendingNotifs.peek();
+        if(getPendingNotifs().size() == 0) return;
+        Message notif = getPendingNotifs().peek();
         notif.getPendNotifOrigins().remove(Integer.valueOf(delivered_m.getId()));
         if(notif.getPendNotifOrigins().size() > 0) return;
         for(;;){
             sendAcks(notif);
-            pendingNotifs.removeFirst();
-            notif = pendingNotifs.peek();
+            getPendingNotifs().removeFirst();
+            notif = getPendingNotifs().peek();
             if(notif == null) return;
             if(!canDeliverNotif(notif)) return;
         }
@@ -173,7 +207,7 @@ public class FlexCastNode extends ServerProxy {
         boolean retry = true;
         while(retry){
             retry = false;
-            for(ArrayList<Message> queue : queues.values()){
+            for(ArrayList<Message> queue : getQueues().values()){
                 Message m = null;
                 try{ m = queue.get(0); } catch(IndexOutOfBoundsException ignore){}
 
@@ -183,16 +217,16 @@ public class FlexCastNode extends ServerProxy {
                 }
             }
         }
-        if(history.getPenMsgs().isEmpty()){
-            for(Message x : pendCliMsgs)
-                deliver(x);
-            pendCliMsgs.clear();
-        }
+        // if(history.getPenMsgs().isEmpty()){
+        //     for(Message x : pendCliMsgs)
+        //         deliver(x);
+        //     pendCliMsgs.clear();
+        // }
     }
 
     private boolean canDeliver(Message m) {
         // check all types of dependencies
-        PendingMessage pend = history.getPendMsg(m.getId());
+        PendingMessage pend = getHistory().getPendMsg(m.getId());
         if(pend == null) return false;
 
         if(pend.getMsg() == null) return false;
@@ -208,29 +242,29 @@ public class FlexCastNode extends ServerProxy {
     }
 
     private boolean noOpenDepenciesFound(LightMessage m) {
-        for(short a : ancestors){
-            for(LightMessage lm : history.getAncHstToMe(a)){
+        for(short a : getAncestors()){
+            for(LightMessage lm : getHistory().getAncHstToMe(a)){
                 
                 if(lm.equals(m)) break; // verifico somente mensagens que vem antes de m nos hsts de ancestrais
 
                 // se lm eh para mim e ainda nao entreguei lm
-                if(history.getDeliveredMsgs().get(lm.getId()) == null){
+                if(getHistory().getDeliveredMsgs().get(lm.getId()) == null){
                     // se lm precede m no grafo global, retornara falso
-                    if(history.messageM1preceedesM2(lm, m)) {
+                    if(getHistory().messageM1preceedesM2(lm, m)) {
                         print("Cant deliver", m, "needs to wait for", lm);
                         
-                        if(map.get(m.getId()) == null) map.put(m.getId(), new HashMap<>());
-                        map.get(m.getId()).put(lm.getId(), true);
+                        // if(map.get(m.getId()) == null) map.put(m.getId(), new HashMap<>());
+                        // map.get(m.getId()).put(lm.getId(), true);
 
-                        if(map.get(lm.getId()) != null){
-                            if(map.get(lm.getId()).get(m.getId()) != null){
-                                printF("Deadlock: Cant deliver m", m, "needs to wait for lm ", lm, "but lm depends on m");
-                                printF(queues);
-                                printF(history.getGraphString());
-                                new FileManager().stop();
-                                exit();
-                            }
-                        }
+                        // if(map.get(lm.getId()) != null){
+                        //     if(map.get(lm.getId()).get(m.getId()) != null){
+                        //         printF("Deadlock: Cant deliver m", m, "needs to wait for lm ", lm, "but lm depends on m");
+                        //         printF(queues);
+                        //         printF(history.getGraphString());
+                        //         new FileManager().stop();
+                        //         exit();
+                        //     }
+                        // }
 
                         return false;
                     }
@@ -242,14 +276,14 @@ public class FlexCastNode extends ServerProxy {
     }
 
     private void deliver(Message m) {
-        history.addToMyHst(m);
-        history.getDeliveredMsgs().put(m.getId(), true);
+        getHistory().addToMyHst(m);
+        getHistory().getDeliveredMsgs().put(m.getId(), true);
         if(m.getLca() == getId()){
             forward(m);
         }
         else {
-            queues.get(m.getLca()).remove(0);
-            history.getPenMsgs().remove(m.getId());
+            getQueues().get(m.getLca()).remove(0);
+            getHistory().getPenMsgs().remove(m.getId());
             processPendingNotifs(m);
             sendAcks(m);
         }
@@ -304,27 +338,28 @@ public class FlexCastNode extends ServerProxy {
             notif.setSender(getId());
             notif.setDst(m.getDst());
             notif.setType(Type.NOTIF);
-            notif.setIdNotif(idNotif);
+            notif.setIdNotif(currentView.getIdNotif());
             addHst(notif, d);
             send(notif, d);
-            dstsPair.add(new Pair<Short,Integer>(d, idNotif));
-            print("Sent notif", notif, "to", d, "with id", idNotif);
-            idNotif++;
+            dstsPair.add(new Pair<Short,Integer>(d, currentView.getIdNotif()));
+            print("Sent notif", notif, "to", d, "with id", currentView.getIdNotif());
+            // idNotif++;
+            currentView.incIdNotif();
         }
         return dstsPair;
     }
 
     private boolean isThereMsgTo(short son) {
         // olha hst de cada ancestral
-        for(short anc : ancestors){
-            for(LightMessage lm : history.getAncHst(anc)){
+        for(short anc : getAncestors()){
+            for(LightMessage lm : getHistory().getAncHst(anc)){
                 if(lm.isAddressedTo(son)){
                     return true;
                 }
             }
         }
         // olha meu hst
-        for(LightMessage lm : history.getMyHst()){
+        for(LightMessage lm : getHistory().getMyHst()){
             if(lm.isAddressedTo(son)){
                 return true;
             }
@@ -334,37 +369,41 @@ public class FlexCastNode extends ServerProxy {
 
     private void addHst(Message toSend, short dest) {
 
-        for(short anc : ancestors){
+        for(short anc : getAncestors()){
             // pega ponteiro para o meu hst de ancestral do destinatario em questao
-            Item item = ancHstPointersPerDesc.get(anc).get(dest);
-            if(item == null) item = history.getAncHst(anc).getFirst();
+            Item item = getAncHstPointersPerDesc().get(anc).get(dest);
+            if(item == null) item = getHistory().getAncHst(anc).getFirst();
             ArrayList<LightMessage> hst = new ArrayList<>();
             while(item != null){
                 hst.add(item.get());
                 item = item.getNext();
             }
             if(hst.size() > 0) toSend.addHst(anc, hst);
-            if(toSend.getType() == Type.MSG) ancHstPointersPerDesc.get(anc).put(dest, history.getAncHst(anc).getLast());
+            if(toSend.getType() == Type.MSG) getAncHstPointersPerDesc().get(anc).put(dest, getHistory().getAncHst(anc).getLast());
         }
 
         // pega ponteiro para o meu hst do destinatario em questao
-        Item item = hstPointersPerDesc.get(dest);
-        if(item == null) item = history.getMyHst().getFirst();
+        Item item = getHstPointersPerDesc().get(dest);
+        if(item == null) item = getHistory().getMyHst().getFirst();
         ArrayList<LightMessage> myhst = new ArrayList<>();
         while(item != null){
             myhst.add(item.get());
             item = item.getNext();
         }
         if(myhst.size() > 0) toSend.addHst(getId(), myhst);
-        if(toSend.getType() == Type.MSG) hstPointersPerDesc.put(dest, history.getMyHst().getLast());
+        if(toSend.getType() == Type.MSG) getHstPointersPerDesc().put(dest, getHistory().getMyHst().getLast());
+    }
+
+    private int getNumNodes() {
+        return currentView.getNumNodes();
     }
 
     private void sendAcks(Message m) {
-        if(getId() == (numNodes-1)) return; // last one doesnt have someone to send acks
+        if(getId() == (getNumNodes()-1)) return; // last one doesnt have someone to send acks
         
         ArrayList<Pair<Short, Integer>> notifs = null;
         // last 2 nodes never have someone to notify
-        if(getId() < (numNodes-2)) notifs = sendNotifs(m);
+        if(getId() < (getNumNodes()-2)) notifs = sendNotifs(m);
 
         for(short dst : m.getDst()){
             if(dst > getId()){
@@ -387,51 +426,51 @@ public class FlexCastNode extends ServerProxy {
 
     @Override
     protected void gc(int mid) {
-        gsizes.add(history.getGraphSize());
+        // gsizes.add(history.getGraphSize());
         gcs++;
         // faco o corte no hst dos ancestrais
-        for(short anc : ancestors){
-            history.getAncHst(anc).setAsFirst(mid);
-            history.getAncHstToMe(anc).setAsFirst(mid);
+        for(short anc : getAncestors()){
+            getHistory().getAncHst(anc).setAsFirst(mid);
+            getHistory().getAncHstToMe(anc).setAsFirst(mid);
         }
         // reinicializo os ponteiros
-        for(short anc : ancestors) {
-            ancHstPointersPerDesc.put(anc, new HashMap<>());
-            for(short des : descendants) {
-                ancHstPointersPerDesc.get(anc).put(des, null);
+        for(short anc : getAncestors()) {
+            getAncHstPointersPerDesc().put(anc, new HashMap<>());
+            for(short des : getDescendants()) {
+                getAncHstPointersPerDesc().get(anc).put(des, null);
             }
         }
 
         // corto o meu historico
-        history.getMyHst().setAsFirst(mid);
+        getHistory().getMyHst().setAsFirst(mid);
         // reinicializo os ponteiros
-        hstPointersPerDesc = new HashMap<>();
+        // hstPointersPerDesc = new HashMap<>();
+        currentView.resetHstPointersPerDesc();
 
-        history.rebuildGraph();
+        getHistory().rebuildGraph();
     }
-
 
     @Override
     protected void finish(){
-        for(short anc : queues.keySet()){
-            if(queues.get(anc).size() > 0){
+        for(short anc : getQueues().keySet()){
+            if(getQueues().get(anc).size() > 0){
                 printF("Queue of ancestor", anc, "is not empty!!!");
-                printF(queues.get(anc));
+                printF(getQueues().get(anc));
                 files.stop();
                 exit();
             }
         }
         printF("Queues are empty ! =]");
-        files.persistMessages(history.getMyFullHst(), getId(), false, false);
+        files.persistMessages(getHistory().getMyFullHst(), getId(), false, false);
         printF("-------------------------------------");
-        printF("pendingMessages size:", history.getPenMsgs().size());
-        printF("deliveredMsgs size:", history.getDeliveredMsgs().size());
-        printF("full history size:", history.getMyFullHst().size());
+        printF("pendingMessages size:", getHistory().getPenMsgs().size());
+        printF("deliveredMsgs size:", getHistory().getDeliveredMsgs().size());
+        printF("full history size:", getHistory().getMyFullHst().size());
         printF("msgs:", msgs);
         printF("acks:", acks);
         printF("notifs:", notifs);
         printF("gcs:", gcs);
-        if(gsizes != null && gsizes.size() > 0) printF("Avg Graph size:", Stats.of(gsizes).mean());
+        // if(gsizes != null && gsizes.size() > 0) printF("Avg Graph size:", Stats.of(gsizes).mean());
         // printF("Avg msg size", Stats.of(getSizes()).mean());
         files.persistMsgSizes(getSizes(), getId());
         printF("-------------------------------------");

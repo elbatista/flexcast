@@ -3,23 +3,27 @@ package comms;
 import java.util.concurrent.CyclicBarrier;
 import flexcast.messages.Message;
 import flexcast.messages.Message.Type;
+import flexcast.reconfig.View;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import proxies.ClientProxy;
 
 public class NettyClientChannelHandler extends ChannelInboundHandlerAdapter {
     private ClientProxy proxy;
+    private View view;
     private short dst;
     private CyclicBarrier syncAllConnections;
 
-    public NettyClientChannelHandler(ClientProxy p, short dst, CyclicBarrier syncAllConnections){
+    public NettyClientChannelHandler(ClientProxy p, short dst, CyclicBarrier syncAllConnections, View v){
         this.proxy = p;
         this.dst = dst;
+        this.view = v;
         this.syncAllConnections = syncAllConnections;
     }
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        proxy.setChannelToDest(ctx.channel(), dst);
+        while(!ctx.channel().isActive()){}
+        view.addConnection(dst, ctx.channel());
         if(syncAllConnections != null) 
             syncAllConnections.await();
     }

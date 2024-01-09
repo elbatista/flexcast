@@ -4,6 +4,7 @@ import java.util.concurrent.CyclicBarrier;
 import base.Node;
 import flexcast.messages.MessageDecoder;
 import flexcast.messages.MessageEncoder;
+import flexcast.reconfig.View;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -18,17 +19,19 @@ import proxies.ClientProxy;
 public class NettyClientChannel extends Thread {
 
     private ClientProxy serverProxy;
+    private View view;
     private Node node;
     CyclicBarrier syncAllConnections;
 
-    public NettyClientChannel(Node node, ClientProxy serverProxy){
-        this(node, serverProxy, null);
+    public NettyClientChannel(Node node, ClientProxy serverProxy, View v){
+        this(node, serverProxy, null, v);
     }
 
-    public NettyClientChannel(Node node, ClientProxy serverProxy, CyclicBarrier syncAllConnections){
+    public NettyClientChannel(Node node, ClientProxy serverProxy, CyclicBarrier syncAllConnections, View v){
         this.syncAllConnections = syncAllConnections;
         this.node = node;
         this.serverProxy = serverProxy;
+        this.view = v;
         start();
     }
 
@@ -45,7 +48,7 @@ public class NettyClientChannel extends Thread {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ch.pipeline().addLast(new MessageDecoder(null), new MessageEncoder(), 
-                        new NettyClientChannelHandler(serverProxy, node.getId(), syncAllConnections));
+                        new NettyClientChannelHandler(serverProxy, node.getId(), syncAllConnections, view));
                     }
                 });
                 Channel channel = null;

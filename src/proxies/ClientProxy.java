@@ -9,11 +9,11 @@ import base.Node;
 import comms.NettyClientChannel;
 import flexcast.messages.Message;
 import flexcast.messages.Message.Type;
+import flexcast.reconfig.View;
 import io.netty.channel.Channel;
 import util.Stats;
 
 public class ClientProxy extends Node{
-    private HashMap<Short, Channel> outChannels;
     private Semaphore sema = new Semaphore(0);
     private ReentrantLock lock = new ReentrantLock();
     private ArrayList<Message> replies = new ArrayList<>();
@@ -24,39 +24,33 @@ public class ClientProxy extends Node{
     private HashMap<Short, Long> latsPerNode = new HashMap<>();
     short lca;
     short[] dsts;
+    private View currentView;
 
     public ClientProxy(short id){
         super(id);
-        outChannels = new HashMap<>();
     }
 
-    public void connectTo(Node dest){
-        new NettyClientChannel(dest, this);
+    public void setViewOnProxy(View v){
+        this.currentView = v;
     }
 
-    public void connectTo(Node dest, CyclicBarrier syncAllConnections){
-        new NettyClientChannel(dest, this, syncAllConnections);
+    public void connectToServers(){
+        for(Node server : currentView.getNodes())
+            new NettyClientChannel(server, this, currentView);
     }
 
-    public void setChannelToDest(Channel c, short dst){
-        printF("Channel to node", dst, ":", c);
-        try {
-            outChannels.put(dst, c);
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            printF(e);
-            exit();
-        }
+    public void connectToServers(CyclicBarrier syncAllConnections){
+        for(Node server : currentView.getNodes())
+            new NettyClientChannel(server, this, syncAllConnections, currentView);
     }
 
     public void sendInitMessage(){
         Message m = new Message();
         m.setType(Type.CONN);
         m.setCliId(getId());
-        for(short i : outChannels.keySet()){
+        for(Channel c : currentView.getConnections()){
             try {
-                outChannels.get(i).writeAndFlush(m);
+                c.writeAndFlush(m);
                 sema.acquire();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -69,7 +63,7 @@ public class ClientProxy extends Node{
         m.setType(Type.READY);
         m.setCliId(getId());
         try {
-            outChannels.get((short)0).writeAndFlush(m);
+            currentView.getConnection((short)0).writeAndFlush(m);
             sema.acquire();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -80,9 +74,9 @@ public class ClientProxy extends Node{
         Message m = new Message();
         m.setType(Type.END);
         m.setCliId(getId());
-        for(short i : outChannels.keySet()){
+        for(Channel c : currentView.getConnections()){
             try {
-                outChannels.get(i).writeAndFlush(m);
+                c.writeAndFlush(m);
                 sema.acquire();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -97,7 +91,7 @@ public class ClientProxy extends Node{
         m.setCliId(getId());
         for(short i = (short)(numNodes-1); i >=0; i--){
             try {
-                outChannels.get(i).writeAndFlush(m);
+                currentView.getConnection(i).writeAndFlush(m);
                 sema.acquire();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -127,7 +121,7 @@ public class ClientProxy extends Node{
 
     public void send(Message m, short dst){
         try {
-            outChannels.get(dst).writeAndFlush(m);
+            currentView.getConnection(dst).writeAndFlush(m);
         }
         catch(Exception e){
             e.printStackTrace();
