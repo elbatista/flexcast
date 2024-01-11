@@ -47,6 +47,7 @@ public class ClientProxy extends Node{
     public void sendInitMessage(){
         Message m = new Message();
         m.setType(Type.CONN);
+        m.setViewId(currentView.getId());
         m.setCliId(getId());
         for(Channel c : currentView.getConnections()){
             try {
@@ -61,6 +62,7 @@ public class ClientProxy extends Node{
     public void sendReadyMessage(){
         Message m = new Message();
         m.setType(Type.READY);
+        m.setViewId(currentView.getId());
         m.setCliId(getId());
         try {
             currentView.getConnection((short)0).writeAndFlush(m);
@@ -73,6 +75,7 @@ public class ClientProxy extends Node{
     public void sendEndMessage(){
         Message m = new Message();
         m.setType(Type.END);
+        m.setViewId(currentView.getId());
         m.setCliId(getId());
         for(Channel c : currentView.getConnections()){
             try {
@@ -88,6 +91,7 @@ public class ClientProxy extends Node{
         Message m = new Message();
         m.setType(Type.GC);
         m.setId(id);
+        m.setViewId(currentView.getId());
         m.setCliId(getId());
         for(short i = (short)(numNodes-1); i >=0; i--){
             try {

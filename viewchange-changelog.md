@@ -1,0 +1,12 @@
+- Created View object that holds the data structures
+    - nodes info
+    - connection channels
+    - queues
+    - pendNotifs
+    - gc and prunning pointers
+    - history
+- Added view id field on messages
+- Clients hold a current view, initially view 0
+- Server holds a current and a nextview objects
+    - current view is initially view 0
+    - has a mechanism for the server to generate a new view when receiving a message of the next view.

@@ -36,7 +36,7 @@ public abstract class ServerProxy extends ClientProxy {
             }
         }).start();
     }
-    
+
     public void buffer(Message m){
         // client local msgs are immediately delivered 
         if(m.getType() == Type.MSG && m.getDst().length == 1){
@@ -48,6 +48,9 @@ public abstract class ServerProxy extends ClientProxy {
     }
 
     private void receive(Message m) {
+
+        if(!validateView(m)) return;
+
         switch(m.getType()){
             case MSG: receiveMsg(m); break;
             case ACK: receiveAck(m); break;
@@ -98,7 +101,7 @@ public abstract class ServerProxy extends ClientProxy {
     }
 
     protected void sendReply(Message m){
-        Message reply = new Message(m.getId());
+        Message reply = new Message(m.getId(), m.getViewId());
         reply.setSender(getId());
         reply.setType(Type.REPLY);
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
@@ -109,4 +112,7 @@ public abstract class ServerProxy extends ClientProxy {
     protected abstract void receiveMsg(Message m);
     protected abstract void receiveAck(Message m);
     protected abstract void receiveNotif(Message m);
+
+    // view change related methods
+    protected abstract boolean validateView(Message m);
 }

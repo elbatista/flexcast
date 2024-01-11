@@ -32,8 +32,8 @@ public class FlexCastNode extends ServerProxy {
     // private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc = new HashMap<>();
     // private HashMap<Short, Item> hstPointersPerDesc = new HashMap<>();
     
-    private View currentView;
-    
+    private View currentView, nextView;
+
     // TODO
     // TO REMOVE !
     private int msgs=0, acks=0, notifs=0, gcs=0;
@@ -46,7 +46,7 @@ public class FlexCastNode extends ServerProxy {
         super(id, p.getClientCount());
         this.files = new FileManager();
         if(!p.getLog()) setPrint(false);
-        currentView = new View(0, getId(), files);
+        currentView = new View(0, getId(), files.loadHosts());
         setViewOnProxy(currentView);
         setHost(currentView.getHost());
         connectToServers();
@@ -296,7 +296,7 @@ public class FlexCastNode extends ServerProxy {
         ArrayList<Pair<Short, Integer>> notifs = sendNotifs(m);
         for(short dest : m.getDst()){
             if(dest > getId()){
-                Message toSend = new Message(m.getId());
+                Message toSend = new Message(m.getId(), m.getViewId());
                 toSend.setType(Type.MSG);
                 toSend.setDst(m.getDst());
                 toSend.setCliId(m.getCliId());
@@ -334,7 +334,7 @@ public class FlexCastNode extends ServerProxy {
         }
 
         for(short d : dsts){
-            Message notif = new Message(m.getId());
+            Message notif = new Message(m.getId(), m.getViewId());
             notif.setSender(getId());
             notif.setDst(m.getDst());
             notif.setType(Type.NOTIF);
@@ -407,7 +407,7 @@ public class FlexCastNode extends ServerProxy {
 
         for(short dst : m.getDst()){
             if(dst > getId()){
-                Message ack = new Message(m.getId());
+                Message ack = new Message(m.getId(), m.getViewId());
                 ack.setType(Type.ACK);
                 ack.setDst(m.getDst());
                 ack.setSender(getId());
@@ -477,4 +477,32 @@ public class FlexCastNode extends ServerProxy {
         files.nodeFinished(getId());
         exit();
     }
+
+    /// View change related methods
+    @Override
+    protected boolean validateView(Message m){
+        if(m.getViewId() > currentView.getId()){
+            if((m.getViewId() > currentView.getId()+1)){
+                printF("Found a View greater than both current and next views", currentView.getId(), m.getViewId());
+                files.stop();
+                exit();
+            }
+
+            // if the current view is different from the message view, it means there is a new view but
+            // I didnt deliver the viewchange message yet, so i cannot switch to 
+            // the new view. Messages related to the new view are simply buffered in the new view object
+            // for later processing once the viewchange is complete
+            if(nextView == null){
+                nextView = new View(currentView.getId()+1);
+                printF("Created a new view:", nextView.getId());
+            }
+
+            nextView.bufferMessage(m);
+            printF("Buferred message", m ,"in view", nextView.getId());
+
+            return false;
+        }
+        return true;
+    }
+
 }

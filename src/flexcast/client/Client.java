@@ -33,6 +33,7 @@ public class Client extends ClientProxy {
     protected int [][][][] wloadDist4dests;
     protected int [][][][][] wloadDist5dests;
     protected Stats stats;
+    private View currentView;
     
     public Client(short id, ArgsParser args, boolean start){
         super(id);
@@ -42,7 +43,8 @@ public class Client extends ClientProxy {
         this.localityPercentage = args.getLocality();
         ArrayList<Node> nodes = files.loadHosts();
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
-        setViewOnProxy(new View(0, files));
+        currentView = new View(0, nodes);
+        setViewOnProxy(currentView);
         connectToServers(syncAllConnections);
         numNodes = (short) nodes.size();
         destsSizes = new int [numNodes];
@@ -166,7 +168,7 @@ public class Client extends ClientProxy {
     }
 
     private Message newMessage(){
-        Message m = new Message(nextSeqNumber());
+        Message m = new Message(nextSeqNumber(), currentView.getId());
         m.setType(Type.MSG);
         m.setDst(randomDests());
         m.setCliId(getId());

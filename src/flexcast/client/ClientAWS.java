@@ -42,6 +42,7 @@ public class ClientAWS extends ClientProxy {
     private HashMap<Short, String> nearestWHs = new HashMap<>();
     double AcumTt = 0;
     int TtCount = 0;
+    private View currentView;
 
     // Tpcc workload distribution
     private static final int newOrderWeight = 45;
@@ -68,7 +69,8 @@ public class ClientAWS extends ClientProxy {
         ArrayList<Node> nodes = files.loadHosts();
         FileManager.loadLocalityFile(nearestWHs);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
-        setViewOnProxy(new View(0, files));
+        currentView = new View(0, nodes);
+        setViewOnProxy(currentView);
         connectToServers(syncAllConnections);
         numNodes = (short) nodes.size();
         destsSizes = new int [numNodes];
@@ -129,6 +131,11 @@ public class ClientAWS extends ClientProxy {
                 
                 Message m = newMessage();
 
+                /// REMOVE!!!!!
+                if(getId()==0 & (elapsed / 1e9) > 5){
+                    m.setViewId(1);
+                }
+
                 generatePayload(m);
 
                 now = System.nanoTime();
@@ -142,6 +149,7 @@ public class ClientAWS extends ClientProxy {
                 computeDistribution(m);
 
                 if(tt) thinkTime();
+
                 
                 //usLat = now;
                 totalMsgs++;
@@ -254,7 +262,7 @@ public class ClientAWS extends ClientProxy {
     }
 
     protected Message newMessageTo(short... dst){
-        Message m = new Message(nextSeqNumber());
+        Message m = new Message(nextSeqNumber(), currentView.getId());
         m.setType(Type.MSG);
         m.setCliId(getId());
         m.setDst(dst);
@@ -262,7 +270,7 @@ public class ClientAWS extends ClientProxy {
     }
 
     private Message newMessage(){
-        Message m = new Message(nextSeqNumber());
+        Message m = new Message(nextSeqNumber(), currentView.getId());
         m.setType(Type.MSG);
         m.setDst(generateDests());
         m.setCliId(getId());
@@ -355,309 +363,6 @@ public class ClientAWS extends ClientProxy {
         }
         return tempdst;
     }
-
-    // private short getNearestWH(short warehouseparam) {
-    //     if(numNodes == 9){
-    //         if(dagTop == 1){
-    //             switch(warehouseparam){
-    //                 case 0: return 1;
-    //                 case 1: return 2;
-    //                 case 2: return 1;
-    //                 case 3: return 4;
-    //                 case 4: return 5;
-    //                 case 5: return 4;
-    //                 case 6: return 7;
-    //                 case 7: return 8;
-    //                 case 8: return 7;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 3){
-    //             switch(warehouseparam){
-    //                 case 0: return 1;
-    //                 case 1: return 2;
-    //                 case 2: return 1;
-    //                 case 3: return 4;
-    //                 case 4: return 5;
-    //                 case 5: return 4;
-    //                 case 6: return 7;
-    //                 case 7: return 8;
-    //                 case 8: return 7;
-    //                 default: return warehouseparam;
-    //             }
-    //         }
-    //     }else if(numNodes == 12){
-    //         if(dagTop == 1){
-    //             switch(warehouseparam){
-    //                 case 0: return 1;
-    //                 case 1: return 2;
-    //                 case 2: return 1;
-    //                 case 3: return 2;
-    //                 case 4: return 5;
-    //                 case 5: return 6;
-    //                 case 6: return 7;
-    //                 case 7: return 6;
-    //                 case 8: return 9;
-    //                 case 9: return 10;
-    //                 case 10: return 9;
-    //                 case 11: return 10;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 2){
-    //             switch(warehouseparam){
-    //                 case 0: return 1;
-    //                 case 1: return 2;
-    //                 case 2: return 3;
-    //                 case 3: return 2;
-    //                 case 4: return 5;
-    //                 case 5: return 6;
-    //                 case 6: return 7;
-    //                 case 7: return 6;
-    //                 case 8: return 9;
-    //                 case 9: return 10;
-    //                 case 10: return 9;
-    //                 case 11: return 10;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 3){
-    //             switch(warehouseparam){
-    //                 case 0: return 1;
-    //                 case 1: return 2;
-    //                 case 2: return 3;
-    //                 case 3: return 2;
-    //                 case 4: return 5;
-    //                 case 5: return 6;
-    //                 case 6: return 5;
-    //                 case 7: return 6;
-    //                 case 8: return 9;
-    //                 case 9: return 10;
-    //                 case 10: return 9;
-    //                 case 11: return 10;
-    //                 default: return warehouseparam;
-    //             }
-    //         }
-    //     } 
-    //     else if(numNodes == 13){
-    //         switch(warehouseparam){
-    //             case 0: return 1;
-    //             case 1: return 2;
-    //             case 2: return 3;
-    //             case 3: return 4;
-    //             case 4: return 5;
-    //             case 5: return 6;
-    //             case 6: return 7;
-    //             case 7: return 8;
-    //             case 8: return 9;
-    //             case 9: return 10;
-    //             case 10: return 11;
-    //             case 11: return 12;
-    //             case 12: return 11;
-    //             default: return warehouseparam;
-    //         }
-    //     }
-    //     return warehouseparam;
-    // }
-
-    // private short getSecondNearestWH(short warehouseparam) {
-    //     if(numNodes == 9){
-    //         if(dagTop == 1){
-    //             switch(warehouseparam){
-    //                 case 0: return 2;
-    //                 case 1: return 3;
-    //                 case 2: return 0;
-    //                 case 3: return 5;
-    //                 case 4: return 2;
-    //                 case 5: return 3;
-    //                 case 6: return 8;
-    //                 case 7: return 5;
-    //                 case 8: return 6;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 3){
-    //             switch(warehouseparam){
-    //                 case 0: return 2;
-    //                 case 1: return 3;
-    //                 case 2: return 0;
-    //                 case 3: return 5;
-    //                 case 4: return 2;
-    //                 case 5: return 3;
-    //                 case 6: return 8;
-    //                 case 7: return 6;
-    //                 case 8: return 6;
-    //                 default: return warehouseparam;
-    //             }
-    //         }
-    //     }if(numNodes == 12){
-    //         if(dagTop == 1){
-    //             switch(warehouseparam){
-    //                 case 0: return 2;
-    //                 case 1: return 3;
-    //                 case 2: return 0;
-    //                 case 3: return 1;
-    //                 case 4: return 6;
-    //                 case 5: return 7;
-    //                 case 6: return 4;
-    //                 case 7: return 5;
-    //                 case 8: return 10;
-    //                 case 9: return 11;
-    //                 case 10: return 8;
-    //                 case 11: return 9;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 2){
-    //             switch(warehouseparam){
-    //                 case 0: return 2;
-    //                 case 1: return 3;
-    //                 case 2: return 0;
-    //                 case 3: return 1;
-    //                 case 4: return 6;
-    //                 case 5: return 7;
-    //                 case 6: return 4;
-    //                 case 7: return 5;
-    //                 case 8: return 10;
-    //                 case 9: return 11;
-    //                 case 10: return 8;
-    //                 case 11: return 9;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 3){
-    //             switch(warehouseparam){
-    //                 case 0: return 2;
-    //                 case 1: return 3;
-    //                 case 2: return 0;
-    //                 case 3: return 1;
-    //                 case 4: return 6;
-    //                 case 5: return 7;
-    //                 case 6: return 4;
-    //                 case 7: return 5;
-    //                 case 8: return 10;
-    //                 case 9: return 11;
-    //                 case 10: return 8;
-    //                 case 11: return 9;
-    //                 default: return warehouseparam;
-    //             }
-    //         }
-    //     }
-    //     else if(numNodes == 13){
-    //         switch(warehouseparam){
-    //             case 0: return 2;
-    //             case 1: return 3;
-    //             case 2: return 0;
-    //             case 3: return 1;
-    //             case 4: return 2;
-    //             case 5: return 7;
-    //             case 6: return 8;
-    //             case 7: return 5;
-    //             case 8: return 6;
-    //             case 9: return 11;
-    //             case 10: return 12;
-    //             case 11: return 9;
-    //             case 12: return 10;
-    //             default: return warehouseparam;
-    //         }
-    //     }
-    //     return warehouseparam;
-    // }
-
-    // private short getThirdNearestWH(short warehouseparam) {
-    //     if(numNodes == 9){
-    //         if(dagTop == 1){
-    //             switch(warehouseparam){
-    //                 case 0: return 3;
-    //                 case 1: return 4;
-    //                 case 2: return 5;
-    //                 case 3: return 6;
-    //                 case 4: return 1;
-    //                 case 5: return 2;
-    //                 case 6: return 3;
-    //                 case 7: return 4;
-    //                 case 8: return 5;
-    //                 default: return warehouseparam;
-    //             }
-    //         }else if(dagTop == 3){
-    //             switch(warehouseparam){
-    //                 case 0: return 3;
-    //                 case 1: return 4;
-    //                 case 2: return 5;
-    //                 case 3: return 0;
-    //                 case 4: return 1;
-    //                 case 5: return 2;
-    //                 case 6: return 8;
-    //                 case 7: return 5;
-    //                 case 8: return 6;
-    //                 default: return warehouseparam;
-    //             }
-    //         }
-    //     }if(numNodes == 12){
-    //         if(dagTop == 1){
-    //             switch(warehouseparam){
-    //                 case 0: return 3;
-    //                 case 1: return 4;
-    //                 case 2: return 5;
-    //                 case 3: return 0;
-    //                 case 4: return 7;
-    //                 case 5: return 2;
-    //                 case 6: return 3;
-    //                 case 7: return 4;
-    //                 case 8: return 5;
-    //                 case 9: return 6;
-    //                 case 10: return 7;
-    //                 case 11: return 8;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 2){
-    //             switch(warehouseparam){
-    //                 case 0: return 3;
-    //                 case 1: return 4;
-    //                 case 2: return 5;
-    //                 case 3: return 6;
-    //                 case 4: return 7;
-    //                 case 5: return 8;
-    //                 case 6: return 3;
-    //                 case 7: return 4;
-    //                 case 8: return 5;
-    //                 case 9: return 6;
-    //                 case 10: return 7;
-    //                 case 11: return 8;
-    //                 default: return warehouseparam;
-    //             }
-    //         } else if(dagTop == 3){
-    //             switch(warehouseparam){
-    //                 case 0: return 3;
-    //                 case 1: return 4;
-    //                 case 2: return 5;
-    //                 case 3: return 0;
-    //                 case 4: return 1;
-    //                 case 5: return 2;
-    //                 case 6: return 3;
-    //                 case 7: return 4;
-    //                 case 8: return 11;
-    //                 case 9: return 11;
-    //                 case 10: return 7;
-    //                 case 11: return 8;
-    //                 default: return warehouseparam;
-    //             }
-    //         }
-    //     }
-    //     else if(numNodes == 13){
-    //         switch(warehouseparam){
-    //             case 0: return 3;
-    //             case 1: return 4;
-    //             case 2: return 5;
-    //             case 3: return 0;
-    //             case 4: return 2;
-    //             case 5: return 8;
-    //             case 6: return 9;
-    //             case 7: return 10;
-    //             case 8: return 5;
-    //             case 9: return 12;
-    //             case 10: return 7;
-    //             case 11: return 8;
-    //             case 12: return 9;
-    //             default: return warehouseparam;
-    //         }
-    //     }
-    //     return warehouseparam;
-    // }
 
     public static int randomNumber(int min, int max, Random r) {
         return (int) (r.nextDouble() * (max - min + 1) + min);

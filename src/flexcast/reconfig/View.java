@@ -12,13 +12,11 @@ import flexcast.messages.Message;
 import flexcast.server.History;
 import io.netty.channel.Channel;
 import util.BaseObj;
-import util.FileManager;
 
 public class View extends BaseObj{
     private int id;
     private short nodeid;
     private Host host;
-    private FileManager fileman;
     private int idNotif = 0;
     private History history;
     private ArrayList<Node> nodes;
@@ -29,26 +27,53 @@ public class View extends BaseObj{
     private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc;
     private HashMap<Short, Item> hstPointersPerDesc;
     private Channel [] serverConnections;
+    private ArrayList<Message> initBuffer;
 
-    public View (int id, FileManager fileman){
+    public View(int id){
         this.id = id;
-        this.fileman = fileman;
-        this.nodes = fileman.loadHosts();
-        this.serverConnections = new Channel[nodes.size()];
-    }
-
-    public View (int id, short nodeid, FileManager fileman){
-        this.id = id;
-        this.nodeid = nodeid;
-        this.fileman = fileman;
         this.ancestors              = new ArrayList<>();
+        this.initBuffer             = new ArrayList<>();
         this.descendants            = new ArrayList<>();
         this.queues                 = new HashMap<>();
         this.pendingNotifs          = new LinkedList<>();
         this.ancHstPointersPerDesc  = new HashMap<>();
         this.hstPointersPerDesc     = new HashMap<>();
-        this.nodes                  = fileman.loadHosts();
+    }
+
+    public View (int id, ArrayList<Node> nodes){
+        this.id = id;
+        this.nodes = nodes;
+        this.serverConnections = new Channel[nodes.size()];
+    }
+
+    public void prepareConnections(ArrayList<Node> nodes){
+        this.nodes = nodes;
+        this.serverConnections = new Channel[nodes.size()];
+    }
+
+    public View (int id, short nodeid, ArrayList<Node> nodes){
+        this.id = id;
+        this.nodeid = nodeid;
+        this.nodes = nodes;
+        this.ancestors              = new ArrayList<>();
+        this.initBuffer             = new ArrayList<>();
+        this.descendants            = new ArrayList<>();
+        this.queues                 = new HashMap<>();
+        this.pendingNotifs          = new LinkedList<>();
+        this.ancHstPointersPerDesc  = new HashMap<>();
+        this.hstPointersPerDesc     = new HashMap<>();
         this.serverConnections      = new Channel[nodes.size()];
+        createConnStructures();
+    }
+
+    public void prepareConnections(short nodeid, ArrayList<Node> nodes){
+        this.nodeid = nodeid;
+        this.nodes = nodes;
+        this.serverConnections = new Channel[nodes.size()];
+        createConnStructures();
+    }
+
+    public void createConnStructures(){
         for(Node n : nodes){
             // data for each ancestor
             if(n.getId() < nodeid) {
@@ -56,11 +81,9 @@ public class View extends BaseObj{
                 queues.put(n.getId(), new ArrayList<>());
                 ancHstPointersPerDesc.put(n.getId(), new HashMap<>());
             }
-
             // set data for myself
             if(n.getId() == nodeid) 
                 setHost(n.getHost());
-
             // sets data to each descendant
             if(n.getId() > nodeid) {
                 descendants.add(n.getId());
@@ -122,7 +145,10 @@ public class View extends BaseObj{
     public Channel getConnection(short dest){
         return serverConnections[dest];
     }
-    public List<Channel> getConnections(){
-        return Arrays.asList(serverConnections);
+    public Channel [] getConnections(){
+        return serverConnections;
+    }
+    public void bufferMessage(Message m){
+        initBuffer.add(m);
     }
 }

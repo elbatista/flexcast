@@ -21,6 +21,7 @@ public class Message extends BaseObj implements Externalizable {
     private short sender = -1, idNotifier = -1;
     private int id = -1, cliId = -1;
     private Type type;
+    private int viewid;
     private short [] dst;
     private HashMap<Short, LightMessagesList> hst;
     private ArrayList<Pair<Short, Integer>> notifList;
@@ -54,9 +55,10 @@ public class Message extends BaseObj implements Externalizable {
         notifList = new ArrayList<>();
     }
 
-    public Message(int id){
+    public Message(int id, int viewid){
         this();
         this.id = id;
+        this.viewid = viewid;
         // notifList = new ArrayList<>();
     }
 
@@ -67,6 +69,14 @@ public class Message extends BaseObj implements Externalizable {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public int getViewId() {
+        return viewid;
+    }
+
+    public void setViewId(int id) {
+        this.viewid = id;
     }
     
     public Date getOrderDate() {
@@ -204,7 +214,7 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     public String toString(){
-        return toString(getId(), getType(), Arrays.toString(getDst()), getHst(), "notifier:", getIdNotifier(), " nl:", getNotifList());
+        return toString(getId(), getViewId(), getType(), Arrays.toString(getDst()), getHst(), "notifier:", getIdNotifier(), " nl:", getNotifList());
     }
 
     public boolean isAddressedTo(short d){
@@ -233,6 +243,7 @@ public class Message extends BaseObj implements Externalizable {
         // type
         out.writeByte(1);
         out.writeInt(getId());
+        out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeShort(getSender());
         //out.writeInt(getNotifsSent());
@@ -323,6 +334,7 @@ public class Message extends BaseObj implements Externalizable {
         // type
         out.writeByte(2);
         out.writeInt(getId());
+        out.writeInt(getViewId());
         out.writeShort(getSender());
         out.writeShort(getIdNotifier());
         out.writeInt(getIdNotif());
@@ -335,6 +347,7 @@ public class Message extends BaseObj implements Externalizable {
         // type
         out.writeByte(3);
         out.writeInt(getId());
+        out.writeInt(getViewId());
         out.writeShort(getSender());
         out.writeInt(getIdNotif());
         writeExtDsts(out);
@@ -344,30 +357,35 @@ public class Message extends BaseObj implements Externalizable {
 
     private void writeExtConn(ObjectOutput out) throws IOException {
         out.writeByte(4);
+        out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeByte(getSender());
     }
     
     private void writeExtReady(ObjectOutput out) throws IOException {
         out.writeByte(9);
+        out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeByte(getSender());
     }
     
     private void writeExtEnd(ObjectOutput out) throws IOException {
         out.writeByte(10);
+        out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeByte(getSender());
     }
     
     private void writeExtReply(ObjectOutput out) throws IOException {
         out.writeByte(5);
+        out.writeInt(getViewId());
         out.writeByte(getSender());
     }
     
     private void writeExtGC(ObjectOutput out) throws IOException {
         out.writeByte(6);
         out.writeInt(getId());
+        out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeByte(getSender());
     }
@@ -390,6 +408,7 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtMsg(ObjectInput in) throws IOException {
         setType(Type.MSG);
         setId(in.readInt());
+        setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readShort());
         readExtDsts(in);
@@ -483,6 +502,7 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtAck(ObjectInput in) throws IOException {
         setType(Type.ACK);
         setId(in.readInt());
+        setViewId(in.readInt());
         setSender(in.readShort());
         setIdNotifier(in.readShort());
         setIdNotif(in.readInt());
@@ -494,6 +514,7 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtNotif(ObjectInput in) throws IOException {
         setType(Type.NOTIF);
         setId(in.readInt());
+        setViewId(in.readInt());
         setSender(in.readShort());
         setIdNotif(in.readInt());
         readExtDsts(in);
@@ -503,30 +524,35 @@ public class Message extends BaseObj implements Externalizable {
 
     private void readExtConn(ObjectInput in) throws IOException {
         setType(Type.CONN);
+        setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readByte());
     }
 
     private void readExtReady(ObjectInput in) throws IOException {
         setType(Type.READY);
+        setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readByte());
     }
 
     private void readExtEnd(ObjectInput in) throws IOException {
         setType(Type.END);
+        setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readByte());
     }
 
     private void readExtReply(ObjectInput in) throws IOException {
         setType(Type.REPLY);
+        setViewId(in.readInt());
         setSender(in.readByte());
     }
 
     private void readExtGC(ObjectInput in) throws IOException {
         setType(Type.GC);
         setId(in.readInt());
+        setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readByte());
     }
