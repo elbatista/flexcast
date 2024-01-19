@@ -1,6 +1,7 @@
 import byzcast.ByzCastClient;
 import byzcast.TpccByzCastClient;
 import flexcast.client.ClientAWS;
+import flexcast.client.GapsClient;
 import flexcast.client.TpccClient;
 import skeen.SkeenClient;
 import skeen.TpccSkeenClient;
@@ -12,10 +13,17 @@ public class MainClient {
 
         switch(p.getAlgorithm()){
             case 0: {
-                if(p.isTpcc())
+                if(p.isTpcc()){
                     new TpccClient(p.getId(), p);
-                else
-                    new ClientAWS(p.getId(), p, true);
+                }
+                else {
+                    if(p.gapClient()){
+                        new GapsClient(p.getId(), p);
+                    }
+                    else {
+                        new ClientAWS(p.getId(), p, true);
+                    }
+                }
             }; break;
             case 1: {
                 if(p.isTpcc())

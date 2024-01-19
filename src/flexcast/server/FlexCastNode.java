@@ -30,7 +30,7 @@ public class FlexCastNode extends ServerProxy {
     private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc = new HashMap<>();
     private HashMap<Short, Item> hstPointersPerDesc = new HashMap<>();
     
-    private ArrayList<Message> pendCliMsgs = new ArrayList<>();
+    // private ArrayList<Message> pendCliMsgs = new ArrayList<>();
 
 
     // TODO
@@ -75,10 +75,10 @@ public class FlexCastNode extends ServerProxy {
         msgs++;
         history.addHst(m);
         if(getId() == m.getLca()){
-            if(history.getPenMsgs().size() > 0){
-                pendCliMsgs.add(m);
-                return;
-            }
+            // if(history.getPenMsgs().size() > 0){
+            //     pendCliMsgs.add(m);
+            //     return;
+            // }
             deliver(m);
         }
         else {
@@ -183,11 +183,11 @@ public class FlexCastNode extends ServerProxy {
                 }
             }
         }
-        if(history.getPenMsgs().isEmpty()){
-            for(Message x : pendCliMsgs)
-                deliver(x);
-            pendCliMsgs.clear();
-        }
+        // if(history.getPenMsgs().isEmpty()){
+        //     for(Message x : pendCliMsgs)
+        //         deliver(x);
+        //     pendCliMsgs.clear();
+        // }
     }
 
     private boolean canDeliver(Message m) {
