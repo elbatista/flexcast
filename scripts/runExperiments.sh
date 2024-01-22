@@ -1,21 +1,22 @@
 #!/bin/bash
 duration=60;
-algo=(2);
-clients=(192);
+algo=(0);
+clients=(12);
 # 24 48 96 192 384 768
 # 24 960
 servers=12;
-nodes=36;
+nodes=24;
 locality=90;
 msgs=0;
-gc=0;
+gc=100;
 clispernode=1;
 algodesc=("flexcast" "skeen" "byzcast");
 tpcc='null';
 payload='null';         #'-payload';
 thinktime='null';       #'-tt';
 localm='null';
-dag_tree=3;
+dag_tree=1;
+gap=0;
 
 for a in "${algo[@]}"
 do
@@ -24,15 +25,16 @@ do
     cat ./config/${servers}nodes/clients.conf > ./config/clients.conf
     cat ./config/${servers}nodes/locality-${algodesc[$a]}.conf > ./config/locality.conf
     if [ "$a" -eq 2 ]; then cat ./config/${servers}nodes/byzcast-tree.config > ./config/byzcast.config; fi
-    if [ "$a" -eq 0 ]; then 
-        gc=0; 
-    else 
-        gc=0; 
-    fi
+    # if [ "$a" -eq 0 ]; then 
+    #     gc=0; 
+    # else 
+    #     gc=0; 
+    # fi
     for c in "${clients[@]}"
     do
-        clispernode=$(($c/24))
-        ./scripts/runCluster.sh $duration $a $c $servers $nodes $locality $msgs $gc $clispernode $tpcc $payload $thinktime $localm $dag_tree;
+        clispernode=$(($c/12))
+        ./scripts/runDSLabCluster.sh $duration $a $c $servers $nodes $locality $msgs $gc $clispernode $tpcc $payload $thinktime $localm $dag_tree $gap;
+        # ./scripts/runCluster.sh $duration $a $c $servers $nodes $locality $msgs $gc $clispernode $tpcc $payload $thinktime $localm $dag_tree;
         # cat ./config/servers.conf
     done
 done

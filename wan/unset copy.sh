@@ -1,8 +1,5 @@
 #!/bin/bash
 
-DRY_RUN=yes
-[ "$1" == "-x" ] && DRY_RUN=
-
 BASEDIR=$(dirname $(readlink -f $0))
 echo "Base directory: $BASEDIR"
 
@@ -15,15 +12,6 @@ then
 fi
 echo "IPs file: $IPS_FILE"
 
-LATENCIES_FILE=$BASEDIR/latencies.csv
-if [ ! -r "$LATENCIES_FILE" ]
-then
-	echo "ERROR: unable to find latencies file '$LATENCIES_FILE'"
-	exit 1
-fi
-echo "Latencies file: $LATENCIES_FILE"
-
-# Format: "$NODE,$IP,$IFACE"
 IFACES_FILE=$BASEDIR/ifaces.csv
 echo "Ifaces file: $IFACES_FILE"
 touch $IFACES_FILE
@@ -45,7 +33,7 @@ do
 		NODE=${NODE%.}
 
 		echo -n "Retrieving IFACE for $NODE: "
-		IFACE=$(ssh $NODE ip -br addr show to 192.168.3.0/24)
+		IFACE=$(ssh $NODE ip -br addr show to 10.10.1.0/24)
 		IFACE=$(echo $IFACE | cut -d' ' -f1)
 		echo "$IFACE"
 
@@ -65,21 +53,17 @@ do
 		echo "$NODE,$IP,$IFACE" >> $IFACES_FILE
 	fi
 
-	COMMAND="ssh $NODE sudo latency-setter set $IPS_FILE $LATENCIES_FILE $IFACE"
-	if [ -n "$DRY_RUN" ]
+	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p ~/flexcast/wan;"
+	scp -q -o StrictHostKeyChecking=accept-new ~/flexcast/wan/* $NODE:~/flexcast/wan/
+
+	COMMAND="ssh $NODE sudo python ~/flexcast/wan/latsetter.py unset $IFACE"
+	echo $ $COMMAND
+	$COMMAND
+	if [ "$?" != "0" ]
 	then
-		echo $ $COMMAND "(DRY-RUN)"
-	else
-		echo $ $COMMAND
-		$COMMAND #&
-		if [ "$?" != "0" ]
-		then
-			echo "ERROR: to setup node $NODE ($IP)"
-			exit 4
-		fi
+		echo "ERROR: to unset node $NODE ($IP)"
+		exit 4
 	fi
 done
-
-wait
 
 echo "Done."

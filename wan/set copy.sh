@@ -45,7 +45,7 @@ do
 		NODE=${NODE%.}
 
 		echo -n "Retrieving IFACE for $NODE: "
-		IFACE=$(ssh $NODE ip -br addr show to 192.168.3.0/24)
+		IFACE=$(ssh $NODE ip -br addr show to 10.10.1.0/24)
 		IFACE=$(echo $IFACE | cut -d' ' -f1)
 		echo "$IFACE"
 
@@ -65,7 +65,10 @@ do
 		echo "$NODE,$IP,$IFACE" >> $IFACES_FILE
 	fi
 
-	COMMAND="ssh $NODE sudo latency-setter set $IPS_FILE $LATENCIES_FILE $IFACE"
+	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p ~/flexcast/wan;"
+	scp -q -o StrictHostKeyChecking=accept-new ~/flexcast/wan/* $NODE:~/flexcast/wan/
+
+	COMMAND="ssh $NODE sudo python3 ~/flexcast/wan/latsetter.py set $IPS_FILE $LATENCIES_FILE $IFACE"
 	if [ -n "$DRY_RUN" ]
 	then
 		echo $ $COMMAND "(DRY-RUN)"

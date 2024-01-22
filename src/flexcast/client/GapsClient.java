@@ -100,7 +100,7 @@ public class GapsClient extends ClientProxy {
             multicast(m);
 
             stats.store((System.nanoTime() - now) / 1000, (m.getDst().length > 1));
-
+            
             elapsed = (now - startTime);
             
             totalMsgs++;
