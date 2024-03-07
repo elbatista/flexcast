@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import org.javatuples.Pair;
-
 import flexcast.messages.LightMessage;
 import flexcast.messages.Message;
+import flexcast.reconfig.View;
 
 public class PendingMessage {
     private int id;
@@ -87,8 +87,12 @@ public class PendingMessage {
         return true;
     }
 
-    public void addNotifList(short notifier, ArrayList<Pair<Short, Integer>> arrayList) {
+    public void addNotifList(short notifier, ArrayList<Pair<Short, Integer>> arrayList, View currentView) {
         for(Pair<Short, Integer> p : arrayList){
+
+            // if the notified is below in the CDAG, no need to wait for an ack from it
+            if(currentView.isDescendant(p.getValue0())) continue;
+
             NotifListAckObj item = new NotifListAckObj(notifier, p.getValue0(), p.getValue1());
             if(!notifLists.contains(item))
                 notifLists.add(item);

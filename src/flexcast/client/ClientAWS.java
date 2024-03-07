@@ -132,9 +132,9 @@ public class ClientAWS extends ClientProxy {
                 Message m = newMessage();
 
                 /// REMOVE!!!!!
-                if(getId()==0 & (elapsed / 1e9) > 5){
-                    m.setViewId(1);
-                }
+                // if(getId()==0 & (elapsed / 1e9) > 5){
+                //     m.setViewId(1);
+                // }
 
                 generatePayload(m);
 

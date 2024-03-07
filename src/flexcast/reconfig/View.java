@@ -1,7 +1,6 @@
 package flexcast.reconfig;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,6 +15,7 @@ import util.BaseObj;
 public class View extends BaseObj{
     private int id;
     private short nodeid;
+    private int nodepos;
     private Host host;
     private int idNotif = 0;
     private History history;
@@ -55,6 +55,12 @@ public class View extends BaseObj{
         this.id = id;
         this.nodeid = nodeid;
         this.nodes = nodes;
+        for(Node n : nodes){
+            if(n.getId() == nodeid){
+                this.nodepos = n.getPosition();
+                break;
+            }
+        }
         this.ancestors              = new ArrayList<>();
         this.initBuffer             = new ArrayList<>();
         this.descendants            = new ArrayList<>();
@@ -69,6 +75,12 @@ public class View extends BaseObj{
     public void prepareConnections(short nodeid, ArrayList<Node> nodes){
         this.nodeid = nodeid;
         this.nodes = nodes;
+        for(Node n : nodes){
+            if(n.getId()==id){
+                this.nodepos = n.getPosition();
+                break;
+            }
+        }
         this.serverConnections = new Channel[nodes.size()];
         createConnStructures();
     }
@@ -76,7 +88,7 @@ public class View extends BaseObj{
     public void createConnStructures(){
         for(Node n : nodes){
             // data for each ancestor
-            if(n.getId() < nodeid) {
+            if(n.getPosition() < nodepos) {
                 ancestors.add(n.getId());
                 queues.put(n.getId(), new ArrayList<>());
                 ancHstPointersPerDesc.put(n.getId(), new HashMap<>());
@@ -85,7 +97,7 @@ public class View extends BaseObj{
             if(n.getId() == nodeid) 
                 setHost(n.getHost());
             // sets data to each descendant
-            if(n.getId() > nodeid) {
+            if(n.getPosition() > nodepos) {
                 descendants.add(n.getId());
                 for(short anc : ancHstPointersPerDesc.keySet())
                     ancHstPointersPerDesc.get(anc).put(n.getId(), null);
@@ -150,5 +162,33 @@ public class View extends BaseObj{
     }
     public void bufferMessage(Message m){
         initBuffer.add(m);
+    }
+
+    public List<Short> getAncestorsButTheLca(Message m) {
+        ArrayList<Short> anc = new ArrayList<>();
+        // para pegar os dests antes do lca:
+        // dsts estao ordenados pela sua posicao no CDAG
+        // partindo do segundo (pula o lca), retorno os dests antes de mim (node) no array de dests da msg
+        for(int i=1; m.getDst()[i] != nodeid && i < m.getDst().length; i++){
+            anc.add(m.getDst()[i]);
+        }
+        return anc;
+    }
+
+    public List<Short> getInterNodes(Message m) {
+        ArrayList<Short> anc = new ArrayList<>();
+        // todos abaixo na hierarquia que nao sao dsts:
+        for (Node n : nodes){
+            if(n.getPosition() > nodepos && !m.isAddressedTo(n.getId())){
+                anc.add(n.getId());
+            }
+            //somente ateh o ultimo dest:
+            if(n.getId() == m.getDst()[m.getDst().length-1]) break;
+        }
+        return anc;
+    }
+
+    public boolean isDescendant(Short d) {
+        return getDescendants().contains(d);
     }
 }

@@ -34,6 +34,7 @@ public class FileManager extends BaseObj {
             FileReader fr = new FileReader("config"+sep+"hosts.config");
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
+            int pos = 0;
             while((line = rd.readLine()) != null){
                 if(!line.startsWith("#")){ // ignore comments
                     StringTokenizer str = new StringTokenizer(line, " ");
@@ -42,8 +43,9 @@ public class FileManager extends BaseObj {
                         String hostName = str.nextToken();
                         int port = Integer.valueOf(str.nextToken());
                         Host host = new Host(hostName, port);
-                        Node node = new Node(id, host);
+                        Node node = new Node(id, host, pos);
                         nodes.add(node);
+                        pos++;
                     }
                 }
             }

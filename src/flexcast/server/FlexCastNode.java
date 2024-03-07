@@ -3,44 +3,23 @@ package flexcast.server;
 import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
-import util.OrderItem;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.javatuples.Pair;
-import com.google.common.math.Stats;
-import base.Node;
 import flexcast.messages.LightMessage;
 import flexcast.messages.Message;
 import flexcast.messages.LightMessagesList.Item;
-import flexcast.messages.Message.TransactionType;
 import flexcast.messages.Message.Type;
 import flexcast.reconfig.View;
 
 // @SuppressWarnings("unused")
 public class FlexCastNode extends ServerProxy {
-    private FileManager files;
-
-    // private short numNodes;
-    // private int idNotif = 0;
-    // private History history;
-    // private ArrayList<Short> ancestors = new ArrayList<>();
-    // private ArrayList<Short> descendants = new ArrayList<>();
-    // private HashMap<Short, ArrayList<Message>> queues = new HashMap<>();
-    // protected LinkedList<Message> pendingNotifs = new LinkedList<>();
-    // private HashMap<Short, HashMap<Short, Item>> ancHstPointersPerDesc = new HashMap<>();
-    // private HashMap<Short, Item> hstPointersPerDesc = new HashMap<>();
-    
+    private FileManager files;    
     private View currentView, nextView;
-
-    // TODO
-    // TO REMOVE !
+    // TODO: REMOVE
     private int msgs=0, acks=0, notifs=0, gcs=0;
-    // private ArrayList<Message> pendCliMsgs = new ArrayList<>();
-    // HashMap<Integer, HashMap<Integer, Boolean>> map = new HashMap<>();
-    // private ArrayList<Integer> gsizes = new ArrayList<>();
-
 
     public FlexCastNode(short id, ArgsParser p){
         super(id, p.getClientCount());
@@ -50,28 +29,6 @@ public class FlexCastNode extends ServerProxy {
         setViewOnProxy(currentView);
         setHost(currentView.getHost());
         connectToServers();
-        // for(Node n : files.loadHosts()){
-        //     // data for each ancestor
-        //     if(n.getId() < id) {
-        //         ancestors.add(n.getId());
-        //         queues.put(n.getId(), new ArrayList<>());
-        //         ancHstPointersPerDesc.put(n.getId(), new HashMap<>());
-        //     }
-
-        //     // set data for myself
-        //     if(n.getId() == id) setHost(n.getHost());
-
-        //     // sets connection to each descendant
-        //     if(n.getId() > id) {
-        //         descendants.add(n.getId());
-        //         connectTo(n);
-        //         for(short anc : ancHstPointersPerDesc.keySet())
-        //             ancHstPointersPerDesc.get(anc).put(n.getId(), null);
-        //     }
-        //     numNodes++;
-        // }
-        // // notifPointers = new Item[numNodes][numNodes][numNodes][numNodes];
-        // history = new History(ancestors, getId());
         printF(this, "FlexCast - Start listening...");
     }
 
@@ -81,10 +38,6 @@ public class FlexCastNode extends ServerProxy {
         msgs++;
         getHistory().addHst(m);
         if(getId() == m.getLca()){
-            // if(history.getPenMsgs().size() > 0){
-            //     pendCliMsgs.add(m);
-            //     return;
-            // }
             deliver(m);
         }
         else {
@@ -96,11 +49,20 @@ public class FlexCastNode extends ServerProxy {
                 getHistory().addPendMsg(m.getId(), pend);
             }
             pend.setMsg(m);
-            for(short d : m.getDst()) if(d > m.getLca() && d < getId()) 
+            // for(short d : m.getDst()) {
+            //     if(d > m.getLca() && d < getId()) {
+            //         pend.incAcksFromDstsNeeded();
+            //     }
+            // }
+            // para pegar os dests antes do lca:
+            // dsts estao ordenados pela sua posicao no CDAG
+            // partindo do segundo (pula o lca), retorno os dests antes de mim (node) no array de dests da msg
+            for(int i=1; m.getDst()[i] != getId() && i < m.getDst().length; i++){
                 pend.incAcksFromDstsNeeded();
-
+            }
+            
             // cria pendencias de ack para os notificados da notif list
-            pend.addNotifList(m.getSender(), m.getNotifList());
+            pend.addNotifList(m.getSender(), m.getNotifList(), currentView);
 
             reprocessQueues();
         }
@@ -118,12 +80,15 @@ public class FlexCastNode extends ServerProxy {
         }
 
         // cria pendencias de ack para os notificados da notif list desse ack
-        pend.addNotifList(ack.getSender(), ack.getNotifList());
+        pend.addNotifList(ack.getSender(), ack.getNotifList(), currentView);
 
         // "entrega" o ack
+        // se for um ack de dest:
         if(ack.isAddressedTo(ack.getSender())){
             pend.decAcksFromDstsNeeded();
-        } else {
+        }
+        // ack de notificado: 
+        else {
             pend.addAckFromNotifList(ack.getIdNotifier(), ack.getSender(), ack.getIdNotif());
         }
 
@@ -217,11 +182,6 @@ public class FlexCastNode extends ServerProxy {
                 }
             }
         }
-        // if(history.getPenMsgs().isEmpty()){
-        //     for(Message x : pendCliMsgs)
-        //         deliver(x);
-        //     pendCliMsgs.clear();
-        // }
     }
 
     private boolean canDeliver(Message m) {
@@ -252,26 +212,11 @@ public class FlexCastNode extends ServerProxy {
                     // se lm precede m no grafo global, retornara falso
                     if(getHistory().messageM1preceedesM2(lm, m)) {
                         print("Cant deliver", m, "needs to wait for", lm);
-                        
-                        // if(map.get(m.getId()) == null) map.put(m.getId(), new HashMap<>());
-                        // map.get(m.getId()).put(lm.getId(), true);
-
-                        // if(map.get(lm.getId()) != null){
-                        //     if(map.get(lm.getId()).get(m.getId()) != null){
-                        //         printF("Deadlock: Cant deliver m", m, "needs to wait for lm ", lm, "but lm depends on m");
-                        //         printF(queues);
-                        //         printF(history.getGraphString());
-                        //         new FileManager().stop();
-                        //         exit();
-                        //     }
-                        // }
-
                         return false;
                     }
                 }
             }
         }
-
         return true;
     }
 
@@ -295,7 +240,7 @@ public class FlexCastNode extends ServerProxy {
         //send possible notifs
         ArrayList<Pair<Short, Integer>> notifs = sendNotifs(m);
         for(short dest : m.getDst()){
-            if(dest > getId()){
+            if(dest != getId()){
                 Message toSend = new Message(m.getId(), m.getViewId());
                 toSend.setType(Type.MSG);
                 toSend.setDst(m.getDst());
@@ -327,7 +272,8 @@ public class FlexCastNode extends ServerProxy {
         ArrayList<Short> dsts = new ArrayList<>();
 
         // notifico todos abaixo que nao sao dsts para qem eu tenha enviado msg:
-        for(short f = (short)(getId()+1); f < m.getDst()[m.getDst().length-1] && !m.isAddressedTo(f); f++){
+        // for(short f = (short)(getId()+1); f < m.getDst()[m.getDst().length-1] && !m.isAddressedTo(f); f++){
+        for(short f : currentView.getInterNodes(m)){
             if(!dsts.contains(f) && isThereMsgTo(f)) {
                 dsts.add(f);
             }
@@ -405,8 +351,8 @@ public class FlexCastNode extends ServerProxy {
         // last 2 nodes never have someone to notify
         if(getId() < (getNumNodes()-2)) notifs = sendNotifs(m);
 
-        for(short dst : m.getDst()){
-            if(dst > getId()){
+        for(short dst : getDescendants()){
+            if(m.isAddressedTo(dst)){
                 Message ack = new Message(m.getId(), m.getViewId());
                 ack.setType(Type.ACK);
                 ack.setDst(m.getDst());
@@ -498,7 +444,7 @@ public class FlexCastNode extends ServerProxy {
             }
 
             nextView.bufferMessage(m);
-            printF("Buferred message", m ,"in view", nextView.getId());
+            printF("Buffered message", m ,"in view", nextView.getId());
 
             return false;
         }

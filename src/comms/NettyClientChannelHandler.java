@@ -24,6 +24,7 @@ public class NettyClientChannelHandler extends ChannelInboundHandlerAdapter {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         while(!ctx.channel().isActive()){}
         view.addConnection(dst, ctx.channel());
+        System.out.println("Connected to node "+dst);
         if(syncAllConnections != null) 
             syncAllConnections.await();
     }
