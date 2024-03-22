@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedList;
 import org.javatuples.Pair;
+import base.Host;
+import base.Node;
 import flexcast.messages.LightMessage;
 import flexcast.messages.Message;
 import flexcast.messages.LightMessagesList.Item;
@@ -17,7 +19,7 @@ import flexcast.reconfig.View;
 // @SuppressWarnings("unused")
 public class FlexCastNode extends ServerProxy {
     private FileManager files;    
-    private View currentView, nextView;
+    private View nextView;
     // TODO: REMOVE
     private int msgs=0, acks=0, notifs=0, gcs=0;
 
@@ -26,10 +28,10 @@ public class FlexCastNode extends ServerProxy {
         this.files = new FileManager();
         if(!p.getLog()) setPrint(false);
         currentView = new View(0, getId(), files.loadHosts());
-        setViewOnProxy(currentView);
         setHost(currentView.getHost());
         connectToServers();
         printF(this, "FlexCast - Start listening...");
+        printF("Current view:", currentView);
     }
 
     @Override
@@ -57,8 +59,12 @@ public class FlexCastNode extends ServerProxy {
             // para pegar os dests antes do lca:
             // dsts estao ordenados pela sua posicao no CDAG
             // partindo do segundo (pula o lca), retorno os dests antes de mim (node) no array de dests da msg
-            for(int i=1; m.getDst()[i] != getId() && i < m.getDst().length; i++){
-                pend.incAcksFromDstsNeeded();
+            // for(int i=1; m.getDst()[i] != getId() && i < m.getDst().length; i++){
+            //     pend.incAcksFromDstsNeeded();
+            // }
+           
+            for(short d : getAncestors()){
+                if(d != m.getLca() && m.isAddressedTo(d)) pend.incAcksFromDstsNeeded();
             }
             
             // cria pendencias de ack para os notificados da notif list
@@ -102,10 +108,12 @@ public class FlexCastNode extends ServerProxy {
         getHistory().addHst(notif);
 
         if(getPendingNotifs().size() > 0){
+            print("Adding (direct) to pend notifs");
             getPendingNotifs().add(notif);
             return;
         }
         if(!canDeliverNotif(notif)){
+            print("Adding (direct) to pend notifs");
             getPendingNotifs().add(notif);
             return;
         }
@@ -225,6 +233,7 @@ public class FlexCastNode extends ServerProxy {
         getHistory().getDeliveredMsgs().put(m.getId(), true);
         if(m.getLca() == getId()){
             forward(m);
+            if(m.getType() == Type.MSG && m.getDst().length < getNumNodes()) currentView.addDstsFreq(m.getDst());
         }
         else {
             getQueues().get(m.getLca()).remove(0);
@@ -234,6 +243,39 @@ public class FlexCastNode extends ServerProxy {
         }
         sendReply(m);
         print("Delivered", m);
+
+        if(m.getType() == Type.VIEWCHANGE){
+            changeView(m);
+        }
+    }
+
+    protected void changeView(Message m) {
+        if (nextView == null){
+            nextView = new View(currentView.getId()+1);
+        }
+        // get the nodes from the current view
+        // change their position acording to new overlay
+        int pos = 0;
+        ArrayList<Node> newnodes = new ArrayList<>();
+        for(short s : m.getNewOverlay()){
+            Host h = currentView.getHostFromNode(s);
+            newnodes.add(new Node(s,h,pos));
+            pos++;
+        }
+        printF("Created new nodes array:", newnodes);
+        // store the new nodes in the new view, creating the structures in the new view following the new overlay
+        nextView.prepareConnections(getId(), newnodes);
+        // transfer fisical connections from prev view
+        nextView.setConnections(currentView.getConnections());
+        // set current view as next, and next to null
+        currentView = nextView;
+        nextView = null;
+
+
+        // TODO: ?????
+        // process any buffered message in the new view
+        printF("Changed to a new view:", currentView);
+        
     }
 
     private void forward(Message m){
@@ -242,7 +284,7 @@ public class FlexCastNode extends ServerProxy {
         for(short dest : m.getDst()){
             if(dest != getId()){
                 Message toSend = new Message(m.getId(), m.getViewId());
-                toSend.setType(Type.MSG);
+                toSend.setType(m.getType());
                 toSend.setDst(m.getDst());
                 toSend.setCliId(m.getCliId());
                 toSend.setSender(getId());
@@ -252,6 +294,10 @@ public class FlexCastNode extends ServerProxy {
                 toSend.setItems(m.getItems());
                 toSend.setPaymentAmount(m.getPaymentAmount());
                 toSend.setCarrierid_or_threshold(m.getCarrierid_or_threshold());
+
+                if(m.getType() == Type.VIEWCHANGE){
+                    toSend.setNewOverlay(m.getNewOverlay());
+                }
 
                 //add notif list
                 if(notifs != null && notifs.size() > 0) {
@@ -345,11 +391,12 @@ public class FlexCastNode extends ServerProxy {
     }
 
     private void sendAcks(Message m) {
-        if(getId() == (getNumNodes()-1)) return; // last one doesnt have someone to send acks
+        // if(getId() == (getNumNodes()-1)) return; // last one doesnt have someone to send acks
         
         ArrayList<Pair<Short, Integer>> notifs = null;
         // last 2 nodes never have someone to notify
-        if(getId() < (getNumNodes()-2)) notifs = sendNotifs(m);
+        // if(getId() < (getNumNodes()-2)) 
+        notifs = sendNotifs(m);
 
         for(short dst : getDescendants()){
             if(m.isAddressedTo(dst)){
@@ -416,6 +463,7 @@ public class FlexCastNode extends ServerProxy {
         printF("acks:", acks);
         printF("notifs:", notifs);
         printF("gcs:", gcs);
+        printF("DstsFreq:", currentView.getDstsFreq());
         // if(gsizes != null && gsizes.size() > 0) printF("Avg Graph size:", Stats.of(gsizes).mean());
         // printF("Avg msg size", Stats.of(getSizes()).mean());
         files.persistMsgSizes(getSizes(), getId());
@@ -445,7 +493,19 @@ public class FlexCastNode extends ServerProxy {
 
             nextView.bufferMessage(m);
             printF("Buffered message", m ,"in view", nextView.getId());
+            files.stop();
+            exit();
 
+            return false;
+        }
+        else if(m.getViewId() < currentView.getId()){
+            printF("Client", m.getCliId(), "is in a old View. Sending new view.", m);
+            Message vc = new Message(m.getId(), currentView.getId());
+            vc.setType(Type.VIEWCHANGE);
+            vc.setNewOverlay(currentView.getOverlay());
+            vc.setDst(m.getDst());
+            vc.setCliId(m.getCliId());
+            sendReplyVC(vc);
             return false;
         }
         return true;

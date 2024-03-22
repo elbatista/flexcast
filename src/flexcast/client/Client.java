@@ -33,7 +33,6 @@ public class Client extends ClientProxy {
     protected int [][][][] wloadDist4dests;
     protected int [][][][][] wloadDist5dests;
     protected Stats stats;
-    private View currentView;
     
     public Client(short id, ArgsParser args, boolean start){
         super(id);
@@ -44,7 +43,6 @@ public class Client extends ClientProxy {
         ArrayList<Node> nodes = files.loadHosts();
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         currentView = new View(0, nodes);
-        setViewOnProxy(currentView);
         connectToServers(syncAllConnections);
         numNodes = (short) nodes.size();
         destsSizes = new int [numNodes];
@@ -440,6 +438,12 @@ public class Client extends ClientProxy {
         }
 
         return tempdst;
+    }
+
+    @Override
+    protected void changeView(Message reply) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'changeView'");
     }
 
 }

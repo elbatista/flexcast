@@ -24,6 +24,8 @@ public class Results {
     static int lines = 0;
     private static long second = 1000000000;
 
+    static ArrayList<Integer> tppersecond = new ArrayList<>(100);
+
     static class TPLine{
         int clients, skeen, byz, flex;
         public TPLine(int clients, int skeen, int byz, int flex) {
@@ -75,9 +77,10 @@ public class Results {
             Files.list(Paths.get(strpath)) 
             .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);}catch (Exception e) {return false;}})
             .forEach(path -> {
-                if(!path.getFileName().toString().contains("client")) return;
+                if(!path.getFileName().toString().contains("cli")) return;
                 totalFiles++;
                 Scanner scan = null;
+                print("read file", path.toFile());
                 try{scan = new Scanner(path.toFile());}catch (Exception e) {}
                 while(scan.hasNext()){
                     String line = scan.nextLine();
@@ -85,7 +88,13 @@ public class Results {
                         lines++;
                         StringTokenizer str = new StringTokenizer(line, ":");
                         str.nextToken(); // skip the first column (text)
-                        values.add(Double.valueOf(str.nextToken().trim())); // add the second column (tp)
+                        String value = str.nextToken().trim();
+                        values.add(Double.valueOf(value)); // add the second column (tp)
+                        print("read line", line);
+                        int second = Integer.valueOf(line.replace(":", "").split(" ")[3]);
+
+                        tppersecond.set(second, Integer.valueOf(value)+tppersecond.get(second));
+                        // tp.
                     }
                 }
                 valuesperclient.add(Stats.of(values.subList((int)(values.size() * .1), (int)(values.size() * .9))).mean());
@@ -152,15 +161,16 @@ public class Results {
         try {
             PrintWriter printerOut = new PrintWriter("plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
-            Collections.sort(sortedKeys);
-            for(int cli : sortedKeys){
-                printerOut.println(
-                    cli + 
-                    "\t" + tpValues.get(cli).get("skeen_gc"+gc)+ 
-                    "\t" + tpValues.get(cli).get("byzcast_gc"+gc)+ 
-                    "\t" + tpValues.get(cli).get("flexcast_gc"+gc)
-                );
-            }
+            for(int i : tppersecond)printerOut.println(i);
+            // Collections.sort(sortedKeys);
+            // for(int cli : sortedKeys){
+            //     printerOut.println(
+            //         cli + 
+            //         "\t" + tpValues.get(cli).get("skeen_gc"+gc)+ 
+            //         "\t" + tpValues.get(cli).get("byzcast_gc"+gc)+ 
+            //         "\t" + tpValues.get(cli).get("flexcast_gc"+gc)
+            //     );
+            // }
             printerOut.flush();
             printerOut.close();
         } catch (Exception ex) {
@@ -307,16 +317,17 @@ public class Results {
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"90"};
-        short numnodes []    = {12};
-        String algos []      = {"byzcast"};// , "flexcast", "skeen"};
-        int clients []       = {192};//{24,240,480,720,960,1200,1440};
+        String localities [] = {"95"};
+        short numnodes []    = {9};
+        String algos []      = {"flexcast"};// , "flexcast", "skeen"};
+        int clients []       = {9};//{24,240,480,720,960,1200,1440};
         int gcflex           = 0;
         int gcall            = 0;
-        int dag              = 3;
+        int dag              = 1;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
+        for(int i=0; i<100; i++) tppersecond.add(0);
         short [] nodeMap;
         for(String locality : localities){
             for(short nodes : numnodes){
@@ -327,41 +338,41 @@ public class Results {
                     if(algo.equals("flexcast")) gc = gcflex; 
                     for(int cli : clients){
                         
-                        String basedir ="experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
-                        loadNodesMap(nodeMap, basedir);
+                        String basedir = "";//"experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+                        // loadNodesMap(nodeMap, basedir);
 
                         System.out.println("Data from: "+ basedir);
                         // ###################### Latencies per Node ######################
-                        HashMap<Short, ArrayList<Double>> values = new HashMap<>();
-                        for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
-                        for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
-                            for(short i = 0; i < nodesLat.size(); i++){
-                                values.get(i).add(nodesLat.get(i));
-                            }
-                        }
-                        for(short n = 0; n < nodes; n++) 
-                            if(values.get(n).size()>0) 
-                                System.out.println(
-                                    algo + 
-                                    " - Node " + n + ": " + (double)(int)Stats.of(values.get(n)).mean()  + 
-                                    " & " + Quantiles.scale(100).indexes(90,95,99).compute(values.get(n)).toString()
-                                    .replaceAll(",", " & ")
-                                    .replace("{","").replace("}","")
-                                    .replace("50=","").replace("90=","")
-                                    .replace("95=","").replace("99=","")
-                                );
+                        // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
+                        // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
+                        // for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
+                        //     for(short i = 0; i < nodesLat.size(); i++){
+                        //         values.get(i).add(nodesLat.get(i));
+                        //     }
+                        // }
+                        // for(short n = 0; n < nodes; n++) 
+                        //     if(values.get(n).size()>0) 
+                        //         System.out.println(
+                        //             algo + 
+                        //             " - Node " + n + ": " + (double)(int)Stats.of(values.get(n)).mean()  + 
+                        //             " & " + Quantiles.scale(100).indexes(90,95,99).compute(values.get(n)).toString()
+                        //             .replaceAll(",", " & ")
+                        //             .replace("{","").replace("}","")
+                        //             .replace("50=","").replace("90=","")
+                        //             .replace("95=","").replace("99=","")
+                        //         );
                         //writeCDFFiles(values, algo, locality);
                         // writeCDFFiles3(values, algo, locality, cli, dag);
                         
                         // ###################### Throughput ######################
-                        // double avgtp = 0;
-                        // totalFiles = 0;
-                        // avgtp += readTPFiles(basedir+"/logs");
-                        // // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
-                        // // System.out.println(basedir);
-                        // // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
-                        // if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        // tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
+                        double avgtp = 0;
+                        totalFiles = 0;
+                        avgtp += readTPFiles(basedir+"logs");
+                        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+                        // System.out.println(basedir);
+                        // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
 
                         // ###################### Msg Sizes ######################
                         // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
@@ -371,7 +382,7 @@ public class Results {
                     }
                     
                 }
-                // writeTPFile(tpValues, nodes, locality, gc);
+                writeTPFile(tpValues, nodes, locality, gcflex);
             }
         }
 

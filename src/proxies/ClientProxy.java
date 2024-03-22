@@ -2,6 +2,7 @@ package proxies;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.locks.ReentrantLock;
@@ -13,7 +14,7 @@ import flexcast.reconfig.View;
 import io.netty.channel.Channel;
 import util.Stats;
 
-public class ClientProxy extends Node{
+public abstract class ClientProxy extends Node{
     private Semaphore sema = new Semaphore(0);
     private ReentrantLock lock = new ReentrantLock();
     private ArrayList<Message> replies = new ArrayList<>();
@@ -24,14 +25,10 @@ public class ClientProxy extends Node{
     private HashMap<Short, Long> latsPerNode = new HashMap<>();
     short lca;
     short[] dsts;
-    private View currentView;
+    protected View currentView;
 
     public ClientProxy(short id){
         super(id);
-    }
-
-    public void setViewOnProxy(View v){
-        this.currentView = v;
     }
 
     public void connectToServers(){
@@ -141,6 +138,15 @@ public class ClientProxy extends Node{
         latsPerNode.put(reply.getSender(), ((System.nanoTime() - startTime) / 1000));
 
         replies.add(reply);
+
+        // if it is a viewchange, changes the view
+        if(reply.getType() == Type.VIEWCHANGE){
+            printF("Got a viewchange reply from server", reply.getSender());
+            changeView(reply);
+            sema.release();
+            lock.unlock();
+            return;
+        }
         
         if(replies.size() == expectedReplies){
             if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts);
@@ -149,6 +155,8 @@ public class ClientProxy extends Node{
         
         lock.unlock();
     }
+
+    protected abstract void changeView(Message reply);
 
     public Message multicast(Message m){
         // printF("Send", m);
@@ -165,6 +173,27 @@ public class ClientProxy extends Node{
             e.printStackTrace();
         }
         return replies.get(0);
+    }
+
+    public List<Message> multicast2(Message m){
+        // printF("Send", m);
+        replies.clear();
+        expectedReplies = (short) m.getDst().length;
+        latsPerNode.clear();
+        startTime = System.nanoTime();
+        lca = m.getLca();
+        dsts = m.getDst();
+        send(m, lca);
+        try {
+            sema.acquire();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        ArrayList<Message> rep = new ArrayList<>();
+        for (Message ms : replies){
+            rep.add(ms);
+        }
+        return rep;
     }
 
 }

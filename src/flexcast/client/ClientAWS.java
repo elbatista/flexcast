@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,7 +12,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
-import java.util.stream.Collectors;
+import base.Host;
 import base.Node;
 import flexcast.messages.Message.TransactionType;
 import flexcast.messages.Message.Type;
@@ -42,7 +41,6 @@ public class ClientAWS extends ClientProxy {
     private HashMap<Short, String> nearestWHs = new HashMap<>();
     double AcumTt = 0;
     int TtCount = 0;
-    private View currentView;
 
     // Tpcc workload distribution
     private static final int newOrderWeight = 45;
@@ -70,7 +68,6 @@ public class ClientAWS extends ClientProxy {
         FileManager.loadLocalityFile(nearestWHs);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         currentView = new View(0, nodes);
-        setViewOnProxy(currentView);
         connectToServers(syncAllConnections);
         numNodes = (short) nodes.size();
         destsSizes = new int [numNodes];
@@ -89,15 +86,16 @@ public class ClientAWS extends ClientProxy {
 
     private void start() {
         if(gc > -1)
-            printF("Started AWS FlexCast GC Client");
+            printF("Started AWS FlexCast GC Client", "["+getId()+"]");
         else
-            printF("Start FlexCast ClientAWS");
+            printF("Start FlexCast ClientAWS", "["+getId()+"]");
 
         // wait all netty threads connect to all servers
         try {syncAllConnections.await();} catch(InterruptedException|BrokenBarrierException e){printF("Broken barrier!!!!");}
 
         printF("Connected to all servers!");
         printF("DAG TOPOLY:", dagTop);
+        printF("Initial view:", currentView);
         // sleep(10000);
 
         // send initialization message to all servers
@@ -130,12 +128,6 @@ public class ClientAWS extends ClientProxy {
             while ((elapsed / 1e9) < totalTime) {
                 
                 Message m = newMessage();
-
-                /// REMOVE!!!!!
-                // if(getId()==0 & (elapsed / 1e9) > 5){
-                //     m.setViewId(1);
-                // }
-
                 generatePayload(m);
 
                 now = System.nanoTime();
@@ -149,7 +141,6 @@ public class ClientAWS extends ClientProxy {
                 computeDistribution(m);
 
                 if(tt) thinkTime();
-
                 
                 //usLat = now;
                 totalMsgs++;
@@ -231,7 +222,7 @@ public class ClientAWS extends ClientProxy {
             // envia msg de GC referente a msg do flush
             sendGCMessage(m.getId());
             printF("Sent and received all replies GC for msg", m.getId());
-            if(gc > 0 )sleep(gc);
+            if(gc > 0 ) sleep(gc);
             now = System.nanoTime();
             elapsed = (now - startTime);
         }
@@ -292,9 +283,12 @@ public class ClientAWS extends ClientProxy {
     }
 
     private short[] allDests() {
-        short [] tempdst = new short[numNodes];
-        for(short s = 0; s < numNodes; s++)
-            tempdst[s] = s;
+        short [] tempdst = new short[currentView.getNodes().size()];
+        int i = 0;
+        for(Node n : currentView.getNodes()){
+            tempdst[i] = n.getId();
+            i++;
+        }
         return tempdst;
     }
 
@@ -305,11 +299,11 @@ public class ClientAWS extends ClientProxy {
             uniqueNumbers.add((short)randomNumber(0, numNodes-1, gen));
         short [] tempdst = new short[size];
         short i = 0;
-        for(short u : uniqueNumbers.stream().sorted().collect(Collectors.toList())){
+        for(short u : uniqueNumbers){
             tempdst[i] = u;
             i++;
         }
-        return tempdst;
+        return currentView.sortByCDAGPosition(tempdst);
     }
 
     private short[] generate2Dests(){
@@ -321,9 +315,9 @@ public class ClientAWS extends ClientProxy {
         else 
             tempdst[1] = getNearestWH(1);
 
-        Arrays.sort(tempdst);
+        // Arrays.sort(tempdst);
 
-        return tempdst;
+        return currentView.sortByCDAGPosition(tempdst);
     }
 
     private short[] generate3Dests(){
@@ -346,9 +340,9 @@ public class ClientAWS extends ClientProxy {
             finaldst[i] = s;
             i++;
         }
-        Arrays.sort(finaldst);
+        // Arrays.sort(finaldst);
 
-        return finaldst;
+        return currentView.sortByCDAGPosition(finaldst);
     }
 
     private short getNearestWH(int index) {
@@ -362,6 +356,33 @@ public class ClientAWS extends ClientProxy {
             if(tempdst == numNodes) tempdst = (short)(warehouse-1);
         }
         return tempdst;
+    }
+
+    protected void changeView(Message m) {
+
+        if(m.getViewId() == currentView.getId()){
+            printF("I am already in the new view, ignoring.");
+            return;
+        }
+        
+        // get the nodes from the current view
+        // change their position acording to new overlay
+        int pos = 0;
+        ArrayList<Node> newnodes = new ArrayList<>();
+        for(short s : m.getNewOverlay()){
+            Host h = currentView.getHostFromNode(s);
+            newnodes.add(new Node(s,h,pos));
+            pos++;
+        }
+        View nextView = new View(m.getViewId(), newnodes);        
+        // transfer fisical connections from prev view
+        nextView.setConnections(currentView.getConnections());
+        // set current view as next, and next to null
+        currentView = nextView;
+        numNodes = (short)currentView.getNodes().size();
+        // nextView = null;
+        // process any buffered message in the new view
+        printF("Changed to a new view:", currentView);
     }
 
     public static int randomNumber(int min, int max, Random r) {

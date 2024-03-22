@@ -5,6 +5,7 @@ import flexcast.client.TpccClient;
 import skeen.SkeenClient;
 import skeen.TpccSkeenClient;
 import util.ArgsParser;
+import flexcast.reconfig.ReconfigClient;
 
 public class MainClient {
     public static void main(String args[]){
@@ -12,23 +13,33 @@ public class MainClient {
 
         switch(p.getAlgorithm()){
             case 0: {
-                if(p.isTpcc())
+                if(p.isTpcc()){
                     new TpccClient(p.getId(), p);
-                else
-                    new ClientAWS(p.getId(), p, true);
-            }; break;
+                }
+                else {
+                    if(p.getReconfigClient() > 0){
+                        new ReconfigClient(p.getId(), p);
+                    }
+                    else {
+                        new ClientAWS(p.getId(), p, true);
+                    }
+                }
+            };
+            break;
             case 1: {
                 if(p.isTpcc())
                     new TpccSkeenClient(p.getId(), p);
                 else
                     new SkeenClient(p.getId(), p, true);
-                }; break;
+            }; 
+            break;
             case 2: {
                 if(p.isTpcc())
                     new TpccByzCastClient(p.getId(), p);
                 else
                     new ByzCastClient(p.getId(), p, true);
-            }; break;
+            }; 
+            break;
             default: return;
         }
     }

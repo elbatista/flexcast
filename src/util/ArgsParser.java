@@ -10,7 +10,7 @@ import org.apache.commons.cli.ParseException;
 
 public class ArgsParser {
     private Option log, id, numMsgs, clientCount, duration, tpcc, numPartitions, 
-    locality, homewarehouse, region, algorithm, tree, gc, payload, tt, localMsgs;
+    locality, homewarehouse, region, algorithm, tree, gc, payload, tt, localMsgs, reconfigClient;
     private Options options;
     private CommandLineParser parser;
     private CommandLine line;
@@ -33,6 +33,7 @@ public class ArgsParser {
         region = Option.builder("r").desc("region").argName("region").hasArg().numberOfArgs(1).type(String.class).build();
         tree = Option.builder("tree").desc("tree").argName("tree").hasArg().numberOfArgs(1).type(Short.class).build();
         gc = Option.builder("gc").desc("gc client").argName("gc").hasArg().numberOfArgs(1).type(Integer.class).build();
+        reconfigClient = Option.builder("rc").desc("reconfig client").argName("rc").hasArg().numberOfArgs(1).type(Integer.class).build();
         options = new Options();
         parser = new DefaultParser();
         line = null;
@@ -60,6 +61,7 @@ public class ArgsParser {
         parser.options.addOption(parser.payload);
         parser.options.addOption(parser.tt);
         parser.options.addOption(parser.localMsgs);
+        parser.options.addOption(parser.reconfigClient);
         parser.parse(args);
         return parser;
     }
@@ -106,6 +108,11 @@ public class ArgsParser {
 
     public boolean isTpcc() {
         return line.hasOption("t");
+    }
+
+    public int getReconfigClient() {
+        String v = line.getOptionValue("rc");
+        return v == null ? -1 : Integer.valueOf(v);
     }
 
     public int getGC() {

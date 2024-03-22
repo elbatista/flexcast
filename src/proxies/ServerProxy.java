@@ -48,11 +48,13 @@ public abstract class ServerProxy extends ClientProxy {
     }
 
     private void receive(Message m) {
-
-        if(!validateView(m)) return;
-
         switch(m.getType()){
-            case MSG: receiveMsg(m); break;
+            case MSG: {
+                if(!validateView(m)) return;
+                receiveMsg(m); break;
+            }
+            case CKFREQ: receiveMsg(m); break;
+            case VIEWCHANGE: receiveMsg(m); break;
             case ACK: receiveAck(m); break;
             case NOTIF: receiveNotif(m); break;
             // message used only to establish a connection to each client
@@ -104,6 +106,17 @@ public abstract class ServerProxy extends ClientProxy {
         Message reply = new Message(m.getId(), m.getViewId());
         reply.setSender(getId());
         reply.setType(Type.REPLY);
+        reply.setDst(m.getDst());
+
+        if(m.getType() == Type.CKFREQ){
+            reply.setType(Type.CKFREQ);
+            HashMap<String, Integer> dstFreq = new HashMap<>();
+            for(String k : currentView.getDstsFreq().keySet()){
+                dstFreq.put(k, currentView.getDstsFreq().get(k));
+            }
+            reply.setDstsFreq(dstFreq);
+        }
+
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 
@@ -115,4 +128,13 @@ public abstract class ServerProxy extends ClientProxy {
 
     // view change related methods
     protected abstract boolean validateView(Message m);
+    protected void sendReplyVC(Message m){
+        Message reply = new Message(m.getId(), m.getViewId());
+        reply.setSender(getId());
+        reply.setType(m.getType());
+        reply.setViewId(m.getViewId());
+        reply.setDst(new short[0]);
+        reply.setNewOverlay(m.getNewOverlay());
+        cliChannels.get(m.getCliId()).writeAndFlush(reply);
+    }
 }

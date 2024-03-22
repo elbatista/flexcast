@@ -1,16 +1,51 @@
 package flexcast.reconfig;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import com.google.common.primitives.Shorts;
+
 import base.Node;
 import base.Host;
 import flexcast.messages.LightMessagesList.Item;
 import flexcast.messages.Message;
+import flexcast.reconfig.wlot.DAG;
+import flexcast.reconfig.wlot.Wlot;
+import flexcast.reconfig.wlot.Workload;
 import flexcast.server.History;
 import io.netty.channel.Channel;
 import util.BaseObj;
+// import com.fasterxml.jackson.databind.ObjectMapper;
+
+// class DestsCount{
+//     private List<Short> dests;
+//     private int count;
+//     public DestsCount(Short[] dests) {
+//         this.dests = Arrays.<Short>asList(dests);
+//         this.count = 1;
+//     }
+//     public int getCount() {
+//         return count;
+//     }
+//     public List<Short> getDests() {
+//         return dests;
+//     }
+//     public void inc() {
+//         count++;
+//     }
+//     @Override
+//     public boolean equals(Object o) {
+//         if (o instanceof DestsCount) {
+//             DestsCount d = (DestsCount) o;
+//             return d.getDests().equals(this.getDests());
+//         }
+//         return false;
+//     }
+// }
 
 public class View extends BaseObj{
     private int id;
@@ -28,6 +63,21 @@ public class View extends BaseObj{
     private HashMap<Short, Item> hstPointersPerDesc;
     private Channel [] serverConnections;
     private ArrayList<Message> initBuffer;
+    private HashMap<String, Integer> dstsFreq = new HashMap<>();
+
+    public HashMap<String, Integer> getDstsFreq() {
+        return dstsFreq;
+    }
+
+    public void addDstsFreq(short[] dst){
+        String s = Arrays.toString(dst);
+        Integer f = dstsFreq.get(s);
+        if(f == null){
+            dstsFreq.put(s, 1);
+            return;
+        }
+        dstsFreq.put(s, f.intValue()+1);
+    }
 
     public View(int id){
         this.id = id;
@@ -44,6 +94,10 @@ public class View extends BaseObj{
         this.id = id;
         this.nodes = nodes;
         this.serverConnections = new Channel[nodes.size()];
+        this.ancestors              = new ArrayList<>();
+        this.initBuffer             = new ArrayList<>();
+        this.descendants            = new ArrayList<>();
+        this.queues                 = new HashMap<>();
     }
 
     public void prepareConnections(ArrayList<Node> nodes){
@@ -69,23 +123,23 @@ public class View extends BaseObj{
         this.ancHstPointersPerDesc  = new HashMap<>();
         this.hstPointersPerDesc     = new HashMap<>();
         this.serverConnections      = new Channel[nodes.size()];
-        createConnStructures();
+        createOverlayStructures();
     }
 
     public void prepareConnections(short nodeid, ArrayList<Node> nodes){
         this.nodeid = nodeid;
         this.nodes = nodes;
         for(Node n : nodes){
-            if(n.getId()==id){
+            if(n.getId()==nodeid){
                 this.nodepos = n.getPosition();
                 break;
             }
         }
         this.serverConnections = new Channel[nodes.size()];
-        createConnStructures();
+        createOverlayStructures();
     }
 
-    public void createConnStructures(){
+    public void createOverlayStructures(){
         for(Node n : nodes){
             // data for each ancestor
             if(n.getPosition() < nodepos) {
@@ -190,5 +244,78 @@ public class View extends BaseObj{
 
     public boolean isDescendant(Short d) {
         return getDescendants().contains(d);
+    }
+
+    public Host getHostFromNode(short id) {
+        for(Node n : getNodes()){
+            if(n.getId() == id) return n.getHost();
+        }
+        return null;
+    }
+
+    public void setConnections(Channel[] connections) {
+        this.serverConnections = connections;
+    }
+
+    public String toString(){
+        return "\nView {\n  id: "+getId()+
+        ",\n  nodeid: "+nodeid+
+        ",\n  nodepos: "+nodepos+
+        ",\n  host: "+host+
+        ",\n  nodes: ("+nodes+")"+
+        ",\n  ancs: ("+ancestors+")"+
+        ",\n  desc: ("+descendants+")"+
+        (history != null ? ",\n  hstSize: "+history.getGraphSize() : "")+
+        ",\n  queuesSize: "+queues.size()+
+        ",\n  iniBuffSize: "+initBuffer.size()+
+        "\n}";
+    }
+
+    public short[] sortByCDAGPosition(short[] tempdst) {
+        short[] tmp = new short[tempdst.length];
+        int i = 0;
+        for(Node n : getNodes()){
+            if(dstsIncludes(tempdst, n.getId())){
+                tmp[i] = n.getId();
+                i++;
+            }
+        }
+        return tmp;
+    }
+
+    private boolean dstsIncludes(short[] tempdst, short id) {
+        for(short s : tempdst){
+            if(s == id) return true;
+        }
+        return false;
+    }
+
+    public short[] getOverlay() {
+        short[] tmp = new short[getNodes().size()];
+        int i = 0;
+        for(Node n : getNodes()){
+            tmp[i] = n.getId();
+            i++;
+        }
+        return tmp;
+    }
+
+    public short[] calculatePossibleNewDAG() {
+        Workload wl = new Workload(getDstsFreq());
+        Wlot wlot = new Wlot(getNumNodes(), wl);
+        DAG min = wlot.getMinimumCostDAG();
+
+        if(!min.getDag().stream().map(v->v.shortValue()).collect(Collectors.toList())
+        .equals(Shorts.asList(getOverlay()))){
+            short [] newdag = new short[min.getDag().size()];
+            int i = 0;
+            for (int v: min.getDag()){
+                newdag[i] = (short)v;
+                i++;
+            }
+            return newdag;
+
+        }
+        return null;
     }
 }

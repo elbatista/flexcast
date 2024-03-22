@@ -4,6 +4,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -16,7 +17,7 @@ import util.OrderItem;
 
 public class Message extends BaseObj implements Externalizable {
 
-    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY, GC}
+    public enum Type {MSG, ACK, NOTIF, CONN, REPLY, END, READY, GC, VIEWCHANGE, CKFREQ}
     public enum TransactionType {NEW, PAYMENT, STATUS, DELIVERY, STOCK, NOPAYLOAD}
     private short sender = -1, idNotifier = -1;
     private int id = -1, cliId = -1;
@@ -26,7 +27,11 @@ public class Message extends BaseObj implements Externalizable {
     private HashMap<Short, LightMessagesList> hst;
     private ArrayList<Pair<Short, Integer>> notifList;
     private int idNotif=-1;
-    
+
+    // used in viewchange msgs
+    private short [] newOverlay;
+    private HashMap<String, Integer> dstsFreq;
+
     //payload fields
     private TransactionType transaction;
     private Date orderDate;
@@ -53,6 +58,7 @@ public class Message extends BaseObj implements Externalizable {
         items = new ArrayList<>();
         hst = new HashMap<>();
         notifList = new ArrayList<>();
+        dstsFreq = new HashMap<>();
     }
 
     public Message(int id, int viewid){
@@ -78,7 +84,15 @@ public class Message extends BaseObj implements Externalizable {
     public void setViewId(int id) {
         this.viewid = id;
     }
-    
+
+    public HashMap<String, Integer> getDstsFreq() {
+        return dstsFreq;
+    }
+
+    public void setDstsFreq(HashMap<String, Integer> dstsFreq) {
+        this.dstsFreq = dstsFreq;
+    }
+
     public Date getOrderDate() {
         return orderDate;
     }
@@ -203,6 +217,14 @@ public class Message extends BaseObj implements Externalizable {
         return this.dst[0];
     }
 
+    public short[] getNewOverlay() {
+        return newOverlay;
+    }
+
+    public void setNewOverlay(short[] newOverlay) {
+        this.newOverlay = newOverlay;
+    }
+
     @Override
     public int hashCode() {
         return getId();
@@ -214,7 +236,7 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     public String toString(){
-        return toString(getId(), getViewId(), getType(), Arrays.toString(getDst()), getHst(), "notifier:", getIdNotifier(), " nl:", getNotifList());
+        return toString(getId(), getViewId(), getType(), Arrays.toString(getDst()), getHst(), "notifier:", getIdNotifier(), " nl:", getNotifList(),"dstFreq:", dstsFreq);
     }
 
     public boolean isAddressedTo(short d){
@@ -236,6 +258,8 @@ public class Message extends BaseObj implements Externalizable {
             case READY: writeExtReady(out); break;
             case REPLY: writeExtReply(out); break;
             case GC: writeExtGC(out); break;
+            case VIEWCHANGE: writeExtViewChange(out); break;
+            case CKFREQ: writeExtDestsFreq(out); break;
         }
     }
 
@@ -389,6 +413,39 @@ public class Message extends BaseObj implements Externalizable {
         out.writeInt(getCliId());
         out.writeByte(getSender());
     }
+
+    private void writeExtViewChange(ObjectOutput out) throws IOException {
+        out.writeByte(7);
+        out.writeInt(getId());
+        out.writeInt(getViewId());
+        out.writeInt(getCliId());
+        out.writeByte(getSender());
+        out.writeShort(getNewOverlay().length);
+        for(short i : getNewOverlay()){
+            out.writeShort(i);
+        }
+        writeExtDsts(out);
+        writeExtHst(out);
+        writeExtNotifList(out);
+    }
+
+    private void writeExtDestsFreq(ObjectOutput out) throws IOException {
+        out.writeByte(8);
+        out.writeInt(getId());
+        out.writeInt(getViewId());
+        out.writeInt(getCliId());
+        out.writeByte(getSender());
+        writeExtDsts(out);
+        writeExtHst(out);
+        writeExtNotifList(out);
+        out.writeInt(dstsFreq.size());
+        for(String key : dstsFreq.keySet()){
+            byte[] str = key.getBytes(StandardCharsets.UTF_8);
+            out.writeInt(str.length);
+            out.write(str);
+            out.writeInt(dstsFreq.get(key));
+        }
+    }
     
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -400,6 +457,8 @@ public class Message extends BaseObj implements Externalizable {
             case 4: readExtConn(in); break;
             case 5: readExtReply(in); break;
             case 6: readExtGC(in); break;
+            case 7: readExtViewChange(in); break;
+            case 8: readExtDestsFreq(in); break;
             case 9: readExtReady(in); break;
             case 10: readExtEnd(in); break;
         }
@@ -557,4 +616,37 @@ public class Message extends BaseObj implements Externalizable {
         setSender(in.readByte());
     }
 
+    private void readExtViewChange(ObjectInput in) throws IOException {
+        setType(Type.VIEWCHANGE);
+        setId(in.readInt());
+        setViewId(in.readInt());
+        setCliId(in.readInt());
+        setSender(in.readByte());
+        short size = in.readShort();
+        newOverlay = new short[size];
+        for(int i = 0; i < size; i++){
+            newOverlay[i] = in.readShort();
+        }
+        readExtDsts(in);
+        readExtHst(in);
+        readExtNotifList(in);
+    }
+
+    private void readExtDestsFreq(ObjectInput in) throws IOException {
+        setType(Type.CKFREQ);
+        setId(in.readInt());
+        setViewId(in.readInt());
+        setCliId(in.readInt());
+        setSender(in.readByte());
+        readExtDsts(in);
+        readExtHst(in);
+        readExtNotifList(in);
+        int size = in.readInt();
+        for(int i = 0; i < size; i++){
+            byte[] s = new byte[in.readInt()];
+            in.read(s);
+            String key = new String(s, StandardCharsets.UTF_8);
+            dstsFreq.put(key, in.readInt());
+        }
+    }
 }
