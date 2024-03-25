@@ -271,11 +271,17 @@ public class FlexCastNode extends ServerProxy {
         currentView = nextView;
         nextView = null;
 
-
-        // TODO: ?????
-        // process any buffered message in the new view
         printF("Changed to a new view:", currentView);
-        
+        processViewBufferedMessages();
+    }
+
+    private void processViewBufferedMessages() {
+        if(currentView.getInitBuffer().size() > 0) printF("Processing buffered messages...");
+        while(!currentView.getInitBuffer().isEmpty()){
+            Message m = currentView.getInitBuffer().get(0);
+            receiveMsg(m);
+            currentView.getInitBuffer().remove(0);
+        }
     }
 
     private void forward(Message m){
@@ -492,9 +498,9 @@ public class FlexCastNode extends ServerProxy {
             }
 
             nextView.bufferMessage(m);
-            printF("Buffered message", m ,"in view", nextView.getId());
-            files.stop();
-            exit();
+            printF("Buffered message", m.getId() ,"in view", nextView.getId());
+            // files.stop();
+            // exit();
 
             return false;
         }

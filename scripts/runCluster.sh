@@ -12,7 +12,7 @@ fi
 
 i=0;
 ID=-1;
-log="null";
+log="-log";
 warehouse=0;
 iniport=3000;
 basedir=/usr/batista/flexcast;
@@ -30,7 +30,7 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
-rc="10"
+rc=""
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;

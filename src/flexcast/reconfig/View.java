@@ -63,6 +63,10 @@ public class View extends BaseObj{
     private HashMap<Short, Item> hstPointersPerDesc;
     private Channel [] serverConnections;
     private ArrayList<Message> initBuffer;
+    public ArrayList<Message> getInitBuffer() {
+        return initBuffer;
+    }
+
     private HashMap<String, Integer> dstsFreq = new HashMap<>();
 
     public HashMap<String, Integer> getDstsFreq() {

@@ -157,9 +157,9 @@ public class Results {
         return values;
     }
 
-    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc) {
+    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc, String basedir) {
         try {
-            PrintWriter printerOut = new PrintWriter("plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
+            PrintWriter printerOut = new PrintWriter(basedir+"/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
             for(int i : tppersecond)printerOut.println(i);
             // Collections.sort(sortedKeys);
@@ -324,6 +324,7 @@ public class Results {
         int gcflex           = 0;
         int gcall            = 0;
         int dag              = 1;
+        String basedir = "/usr/batista/flexcast";//"experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
@@ -338,7 +339,6 @@ public class Results {
                     if(algo.equals("flexcast")) gc = gcflex; 
                     for(int cli : clients){
                         
-                        String basedir = "";//"experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
                         // loadNodesMap(nodeMap, basedir);
 
                         System.out.println("Data from: "+ basedir);
@@ -367,7 +367,7 @@ public class Results {
                         // ###################### Throughput ######################
                         double avgtp = 0;
                         totalFiles = 0;
-                        avgtp += readTPFiles(basedir+"logs");
+                        avgtp += readTPFiles(basedir+"/logs");
                         // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
                         // System.out.println(basedir);
                         // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
@@ -382,7 +382,7 @@ public class Results {
                     }
                     
                 }
-                writeTPFile(tpValues, nodes, locality, gcflex);
+                writeTPFile(tpValues, nodes, locality, gcflex, basedir);
             }
         }
 
