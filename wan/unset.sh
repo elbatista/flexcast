@@ -53,10 +53,10 @@ do
 		echo "$NODE,$IP,$IFACE" >> $IFACES_FILE
 	fi
 
-	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p ~/flexcast/wan;"
-	scp -q -o StrictHostKeyChecking=accept-new ~/flexcast/wan/* $NODE:~/flexcast/wan/
+	ssh -o StrictHostKeyChecking=accept-new $NODE "mkdir -p $BASEDIR;"
+	scp -q -o StrictHostKeyChecking=accept-new $BASEDIR/* $NODE:$BASEDIR/
 
-	COMMAND="ssh $NODE sudo python ~/flexcast/wan/latsetter.py unset $IFACE"
+	COMMAND="ssh $NODE sudo python3 $BASEDIR/latsetter.py unset $IFACE"
 	echo $ $COMMAND
 	$COMMAND
 	if [ "$?" != "0" ]

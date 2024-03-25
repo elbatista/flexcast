@@ -4,7 +4,7 @@ if [ "$#" -lt 1 ]; then
     exit 0; 
 fi
 
-basedir=~/flexcast;
+basedir=/usr/batista/flexcast;
 rm -f $basedir/wan/ifaces.csv;
 for i in $(seq 1 $(($1)))
 do

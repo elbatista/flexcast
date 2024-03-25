@@ -1,4 +1,6 @@
 #!/bin/bash
+# ./scripts/runCluster.sh 10 0 10 10 35 90 0 1000 1 false true true true 0
+
 if [ "$#" -lt 14 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
     echo  "Usage: $0 <duration:sec> \
@@ -13,7 +15,7 @@ ID=-1;
 log="null";
 warehouse=0;
 iniport=3000;
-basedir=~/flexcast;
+basedir=/usr/batista/flexcast;
 duration=$1;
 algo=$2;
 clients=$3;
@@ -28,6 +30,7 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
+rc="10"
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
@@ -62,14 +65,20 @@ ant clean; ant;
 echo updating all other nodes with source code, config, scripts, and directories >> $basedir/logs/execution.log;
 for i in $(seq 1 $nodes)
 do
-    ssh -o StrictHostKeyChecking=accept-new node$i "rm -f -r $basedir/*; mkdir -p $basedir/logs; mkdir -p $basedir/files; mkdir -p $basedir/results; mkdir -p $basedir/config"
+    ssh -o StrictHostKeyChecking=accept-new node$i "rm -rf $basedir/*; mkdir -p $basedir/logs; mkdir -p $basedir/files; mkdir -p $basedir/results; mkdir -p $basedir/config;"
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/bin node$i:$basedir/bin
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/lib node$i:$basedir/lib
     scp -q -r -o StrictHostKeyChecking=accept-new $basedir/scripts node$i:$basedir/scripts
-    scp -q -o StrictHostKeyChecking=accept-new $basedir/config/*.conf* node$i:$basedir/config/
+    scp -q -o StrictHostKeyChecking=accept-new $basedir/config/*.conf* node$i:$basedir/config
 done
 
+# one more client for the gc:
 if [ "$gc" -gt 0 ]; then
+    clients=$(($clients+1));
+fi
+
+# one more client for the reconfig client:
+if [ "$rc" != "" ]; then 
     clients=$(($clients+1));
 fi
 
@@ -101,6 +110,12 @@ do
     lastnode=$node;
 done < <( awk '!/^ *#/ && NF'  "$clifile");
 
+if [ "$rc" != "" ]; then 
+    java -cp "bin/*:lib/*" MainClient -c $clients -i $ID -d $duration -a $algo $log -rc $rc >> logs/reconfigoracle.txt &
+    echo "started reconfig client ($rc sec)" >> $basedir/logs/execution.log;
+    ID=$(($ID+1));
+fi
+
 if [ "$gc" -gt 0 ]; then
     echo "started $(($clients-1)) clients" >> $basedir/logs/execution.log;
     # ID=$(($ID+1));
@@ -116,10 +131,16 @@ sleep $duration;
 while :
 do
     #bring files from servers
-    for i in $(seq 1 $servers)
+    # for i in $(seq 1 $servers)
+    # do
+    #     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/files/* $basedir/files/
+    # done
+
+    while IFS=, read -r node region ip
     do
-        scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/files/* $basedir/files/
-    done
+        scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET $node:$basedir/files/* $basedir/files/
+    done < <( awk '!/^ *#/ && NF' "$serverfile");
+
     nodeFiles=`find $basedir/files -name 'NodeFinished*' | wc -l` #Count files and store in a variable
     if [ "$nodeFiles" -ge $servers ]; then break; fi
     sleep 2;
@@ -141,7 +162,7 @@ do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/
 done
 
-expdir="$basedir/experiments/${algodesc[$2]}-aws-loc-file-90%-dag_tree$dag_tree/${servers}nodes/${3}cli/${locality}%/gc${gc}"
+expdir="$basedir/experiments/${algodesc[$2]}-reconfig/${servers}nodes/${3}cli/${locality}%/gc${gc}"
 mkdir -p $expdir/config
 echo "moving data to" $expdir >> $basedir/logs/execution.log;
 cp -r $basedir/logs $expdir/
