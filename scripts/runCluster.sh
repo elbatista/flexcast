@@ -1,5 +1,5 @@
 #!/bin/bash
-# ./scripts/runCluster.sh 10 0 10 10 35 90 0 1000 1 false true true true 0
+# ./scripts/runCluster.sh 60 0 108 9 35 99 0 100 6 false true true true 1
 
 if [ "$#" -lt 14 ]; then 
     #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
@@ -12,7 +12,7 @@ fi
 
 i=0;
 ID=-1;
-log="-log";
+log="null";
 warehouse=0;
 iniport=3000;
 basedir=/usr/batista/flexcast;
@@ -30,7 +30,7 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
-rc=""
+rc="20"
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
