@@ -1,18 +1,16 @@
 #!/bin/bash
-# ./scripts/runCluster.sh 10 0 10 10 35 90 0 1000 1 false true true true 0
+
+# run example:
+# ./scripts/runCluster.sh 120 0 6 3 6 95 0 100 2 false true true false 1
 
 if [ "$#" -lt 14 ]; then 
-    #echo "Usage: $0 <duration:sec> <debug:bool> <skeen:bool> <tpcc:bool> <#clis> <#servers> <latency:ms> <#experiments> <#partitions> <pfon:bool> <cpu:bool> <#msgs> <batch:bool> <batchtimeout:nanos> <%locality> <#clispernode>"; 
-    echo  "Usage: $0 <duration:sec> \
-    <algo:0-flex;1-skeen;2-byz> \
-    <#clis> <#servers> <#nodes> \
-    <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm> <dag_tree>"
+    echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm> <dag_tree>"
     exit 0; 
 fi
 
 i=0;
 ID=-1;
-log="-log";
+log="any"; # either -log or any
 warehouse=0;
 iniport=3000;
 basedir=/usr/batista/flexcast;
@@ -101,12 +99,10 @@ while IFS=, read -r node region nodewarehouse
 do
     warehouse="${warehouses[$nodewarehouse]}"
     echo "$clispernode clients on $node region $region assume as primary warehouse: $warehouse ($nodewarehouse)" >> $basedir/logs/execution.log;
-    # for i in $(seq 1 $clispernode)
-    # do
-        ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm $dag_tree # >> $basedir/logs/execution.log;
-        sleep 1;
-        ID=$(($ID+$clispernode));
-    # done
+
+    ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm $dag_tree # >> $basedir/logs/execution.log;
+    sleep 1;
+    ID=$(($ID+$clispernode));
     lastnode=$node;
 done < <( awk '!/^ *#/ && NF'  "$clifile");
 
@@ -130,12 +126,6 @@ echo "waiting for nodes to finish" >> $basedir/logs/execution.log;
 sleep $duration;
 while :
 do
-    #bring files from servers
-    # for i in $(seq 1 $servers)
-    # do
-    #     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/files/* $basedir/files/
-    # done
-
     while IFS=, read -r node region ip
     do
         scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET $node:$basedir/files/* $basedir/files/
