@@ -161,7 +161,7 @@ public class Results {
         try {
             PrintWriter printerOut = new PrintWriter(basedir+"/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
-            for(int i : tppersecond)printerOut.println(i);
+            for(int i : tppersecond) printerOut.println(i);
             // Collections.sort(sortedKeys);
             // for(int cli : sortedKeys){
             //     printerOut.println(
@@ -317,10 +317,10 @@ public class Results {
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"95"};
+        String localities [] = {"99"};
         short numnodes []    = {9};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
-        int clients []       = {9};//{24,240,480,720,960,1200,1440};
+        int clients []       = {108};//{24,240,480,720,960,1200,1440};
         int gcflex           = 0;
         int gcall            = 0;
         int dag              = 1;

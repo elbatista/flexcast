@@ -1,0 +1,5 @@
+
+olhar latencia
+testar com menos nodes
+zerar as frequencias por view
+implementar mudanca dinamica de wload

@@ -28,7 +28,7 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
-rc=""
+rc="20"
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
