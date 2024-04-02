@@ -10,6 +10,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
 
+import flexcast.messages.Message.Type;
+
 /**
  * @author Paulo Coelho - paulo.coelho@usi.ch
  */
@@ -162,21 +164,23 @@ public class Stats {
         long [] values;
         short[] dsts;
         boolean isGlobal;
-        public ValuesPerNode(long [] values, boolean isGlobal, short[] dsts) {
+        Type type;
+        public ValuesPerNode(long [] values, boolean isGlobal, short[] dsts, Type type) {
             this.values = values;
             this.isGlobal = isGlobal;
             this.dsts = dsts;
+            this.type = type;
         }
     }
 
     ArrayList<ValuesPerNode> valuesPerNode = new ArrayList<>();
 
-    public void store(HashMap<Short, Long> latsPerNode, boolean isGlobal, short[] dsts) {
+    public void store(HashMap<Short, Long> latsPerNode, boolean isGlobal, short[] dsts, Type type) {
         long [] val = new long[numNodes];
         for(short node : latsPerNode.keySet()){
             val[node] = latsPerNode.get(node);
         }
-        valuesPerNode.add(new ValuesPerNode(val, isGlobal, dsts));
+        valuesPerNode.add(new ValuesPerNode(val, isGlobal, dsts, type));
     }
 
     public void persistPerNodes(String fileName, int discardPercent) {
@@ -188,7 +192,8 @@ public class Stats {
             fw.write("ORDER\t");
             for(int i = 0; i < numNodes; i++) fw.write("LAT_"+i+"\t");
             fw.write("DSTS\t");
-            fw.write("TYPE\n");
+            fw.write("TYPE\t");
+            fw.write("MSGTYPE\n");
 
             for (int i = 0; i < valuesPerNode.size(); i++) {
                 ValuesPerNode value = valuesPerNode.get(i);
@@ -204,7 +209,7 @@ public class Stats {
                 }
 
                 dsts+="]";
-                fw.write(dsts + "\t" + (value.isGlobal ? "global" : "local")+"\n");
+                fw.write(dsts + "\t" + (value.isGlobal ? "global" : "local")+ "\t" + value.type  + "\n");
             }
 
             fw.write("\n");

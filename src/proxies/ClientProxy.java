@@ -141,6 +141,7 @@ public abstract class ClientProxy extends Node{
 
         // if it is a viewchange, changes the view
         if(reply.getType() == Type.VIEWCHANGE){
+            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts, reply.getType());
             printF("Got a viewchange reply from server", reply.getSender());
             changeView(reply);
             sema.release();
@@ -149,7 +150,7 @@ public abstract class ClientProxy extends Node{
         }
         
         if(replies.size() == expectedReplies){
-            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts);
+            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts, reply.getType());
             sema.release();
         }
         

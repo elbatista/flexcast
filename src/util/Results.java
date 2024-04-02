@@ -24,7 +24,7 @@ public class Results {
     static int lines = 0;
     private static long second = 1000000000;
 
-    static ArrayList<Integer> tppersecond = new ArrayList<>(100);
+    static ArrayList<Integer> tppersecond = new ArrayList<>(500);
 
     static class TPLine{
         int clients, skeen, byz, flex;
@@ -84,7 +84,7 @@ public class Results {
                 try{scan = new Scanner(path.toFile());}catch (Exception e) {}
                 while(scan.hasNext()){
                     String line = scan.nextLine();
-                    if(line.startsWith("Tp at sec") && !line.startsWith("Tp at sec 60")){
+                    if(line.startsWith("Tp at sec") && !line.startsWith("Tp at sec 120")){
                         lines++;
                         StringTokenizer str = new StringTokenizer(line, ":");
                         str.nextToken(); // skip the first column (text)
@@ -314,107 +314,6 @@ public class Results {
         }
     }
 
-    public static void main(String ... args){
-        // ArrayList<Double> latencies = new ArrayList<>();
-        
-        String localities [] = {"99"};
-        short numnodes []    = {9};
-        String algos []      = {"flexcast"};// , "flexcast", "skeen"};
-        int clients []       = {108};//{24,240,480,720,960,1200,1440};
-        int gcflex           = 0;
-        int gcall            = 0;
-        int dag              = 1;
-        String basedir = "/usr/batista/flexcast";//"experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
-
-        ArrayList<TPLine> tp = new ArrayList<>();
-        HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
-        for(int i=0; i<100; i++) tppersecond.add(0);
-        short [] nodeMap;
-        for(String locality : localities){
-            for(short nodes : numnodes){
-                tpValues = new HashMap<>();
-                nodeMap = new short[nodes];
-                for(String algo : algos){
-                    int gc = gcall;
-                    if(algo.equals("flexcast")) gc = gcflex; 
-                    for(int cli : clients){
-                        
-                        // loadNodesMap(nodeMap, basedir);
-
-                        System.out.println("Data from: "+ basedir);
-                        // ###################### Latencies per Node ######################
-                        // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
-                        // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
-                        // for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
-                        //     for(short i = 0; i < nodesLat.size(); i++){
-                        //         values.get(i).add(nodesLat.get(i));
-                        //     }
-                        // }
-                        // for(short n = 0; n < nodes; n++) 
-                        //     if(values.get(n).size()>0) 
-                        //         System.out.println(
-                        //             algo + 
-                        //             " - Node " + n + ": " + (double)(int)Stats.of(values.get(n)).mean()  + 
-                        //             " & " + Quantiles.scale(100).indexes(90,95,99).compute(values.get(n)).toString()
-                        //             .replaceAll(",", " & ")
-                        //             .replace("{","").replace("}","")
-                        //             .replace("50=","").replace("90=","")
-                        //             .replace("95=","").replace("99=","")
-                        //         );
-                        //writeCDFFiles(values, algo, locality);
-                        // writeCDFFiles3(values, algo, locality, cli, dag);
-                        
-                        // ###################### Throughput ######################
-                        double avgtp = 0;
-                        totalFiles = 0;
-                        avgtp += readTPFiles(basedir+"/logs");
-                        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
-                        // System.out.println(basedir);
-                        // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
-                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
-
-                        // ###################### Msg Sizes ######################
-                        // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
-
-                        // ###################### Num Msg Per Node ######################
-                        // processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
-                    }
-                    
-                }
-                writeTPFile(tpValues, nodes, locality, gcflex, basedir);
-            }
-        }
-
-        // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/america"));
-        // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
-        // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));
-
-        // System.out.println(algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%" + "\nRead "+totalFiles+" latency files...");
-        // if(latencies.size()>0) 
-        //     System.out.println("AVG Lat: " + Stats.of(latencies).mean() + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(latencies));
-        
-        //////////// LAT PER NODE
-        // totalFiles = 0;
-        // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
-        // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
-
-        // for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
-        //     for(short i = 0; i < nodesLat.size(); i++){
-        //         values.get(i).add(nodesLat.get(i));
-        //     }
-        // }
-
-        // System.out.println(algo+"/"+nodes+"nodes/gc"+gc+"/"+cli+"cli/"+locality+"%" + "\nRead "+totalFiles+" latency files...");
-        // for(short n = 0; n < nodes; n++) 
-        //     if(values.get(n).size()>0) 
-        //         System.out.println("Node " + n + ": " + Stats.of(values.get(n)).mean()  + "(" + Stats.of(values.get(n)).sampleStandardDeviation() + ")" + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(values.get(n)));
-        
-        // // CFDs
-        // writeCDFFiles(values, algo, locality);
-
-        
-    }
 
     private static void writeCDFFiles2(HashMap<Short, ArrayList<Double>> values, String algo, String locality) {
         try{
@@ -546,5 +445,109 @@ public class Results {
             index++;
         }
     }
+
+
+    public static void main(String ... args){
+        // ArrayList<Double> latencies = new ArrayList<>();
+        
+        String localities [] = {"99"};
+        short numnodes []    = {9};
+        String algos []      = {"flexcast"};// , "flexcast", "skeen"};
+        int clients []       = {108};//{24,240,480,720,960,1200,1440};
+        int gcflex           = 0;
+        int gcall            = 0;
+        int dag              = 1;
+        String basedir = "/usr/batista/flexcast";//"experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+
+        ArrayList<TPLine> tp = new ArrayList<>();
+        HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
+        for(int i=0; i<500; i++) tppersecond.add(0);
+        short [] nodeMap;
+        for(String locality : localities){
+            for(short nodes : numnodes){
+                tpValues = new HashMap<>();
+                nodeMap = new short[nodes];
+                for(String algo : algos){
+                    int gc = gcall;
+                    if(algo.equals("flexcast")) gc = gcflex; 
+                    for(int cli : clients){
+                        
+                        // loadNodesMap(nodeMap, basedir);
+
+                        System.out.println("Data from: "+ basedir);
+                        // ###################### Latencies per Node ######################
+                        // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
+                        // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
+                        // for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
+                        //     for(short i = 0; i < nodesLat.size(); i++){
+                        //         values.get(i).add(nodesLat.get(i));
+                        //     }
+                        // }
+                        // for(short n = 0; n < nodes; n++) 
+                        //     if(values.get(n).size()>0) 
+                        //         System.out.println(
+                        //             algo + 
+                        //             " - Node " + n + ": " + (double)(int)Stats.of(values.get(n)).mean()  + 
+                        //             " & " + Quantiles.scale(100).indexes(90,95,99).compute(values.get(n)).toString()
+                        //             .replaceAll(",", " & ")
+                        //             .replace("{","").replace("}","")
+                        //             .replace("50=","").replace("90=","")
+                        //             .replace("95=","").replace("99=","")
+                        //         );
+                        //writeCDFFiles(values, algo, locality);
+                        // writeCDFFiles3(values, algo, locality, cli, dag);
+                        
+                        // ###################### Throughput ######################
+                        double avgtp = 0;
+                        totalFiles = 0;
+                        avgtp += readTPFiles(basedir+"/logs");
+                        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+                        // System.out.println(basedir);
+                        // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
+
+                        // ###################### Msg Sizes ######################
+                        // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+
+                        // ###################### Num Msg Per Node ######################
+                        // processTotalMsgsPerNode(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
+                    }
+                    
+                }
+                writeTPFile(tpValues, nodes, locality, gcflex, basedir);
+            }
+        }
+
+        // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/america"));
+        // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/europe"));
+        // latencies.addAll(readFiles("consolid/"+algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%/results/asia"));
+
+        // System.out.println(algo+"/"+nodes+"nodes/"+dur+"s/"+cli+"cli/"+locality+"%" + "\nRead "+totalFiles+" latency files...");
+        // if(latencies.size()>0) 
+        //     System.out.println("AVG Lat: " + Stats.of(latencies).mean() + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(latencies));
+        
+        //////////// LAT PER NODE
+        // totalFiles = 0;
+        // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
+        // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
+
+        // for(ArrayList<Double> nodesLat : readFilesPerNode(basedir+"/results", nodes)){
+        //     for(short i = 0; i < nodesLat.size(); i++){
+        //         values.get(i).add(nodesLat.get(i));
+        //     }
+        // }
+
+        // System.out.println(algo+"/"+nodes+"nodes/gc"+gc+"/"+cli+"cli/"+locality+"%" + "\nRead "+totalFiles+" latency files...");
+        // for(short n = 0; n < nodes; n++) 
+        //     if(values.get(n).size()>0) 
+        //         System.out.println("Node " + n + ": " + Stats.of(values.get(n)).mean()  + "(" + Stats.of(values.get(n)).sampleStandardDeviation() + ")" + "\t" + Quantiles.scale(100).indexes(5,25,50,75,80,90,95,99).compute(values.get(n)));
+        
+        // // CFDs
+        // writeCDFFiles(values, algo, locality);
+
+        
+    }
+
 
 }

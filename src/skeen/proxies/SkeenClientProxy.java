@@ -125,7 +125,7 @@ public class SkeenClientProxy extends Node {
 
         replies.add(reply);
         if(replies.size() == expectedReplies){
-            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts);
+            if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts, null);
             sema.release();
         }
         lock.unlock();
