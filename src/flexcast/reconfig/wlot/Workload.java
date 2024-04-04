@@ -43,10 +43,9 @@ public class Workload {
             addDestination(d);
         }
 
-        // printDstsAsJSON();
+        printDstsAsJSON();
     }
 
-    @SuppressWarnings("unused")
     private void printDstsAsJSON() {
         System.out.println("{\n\t\"workload\": [");
         for(Destination d : getDestinations()){

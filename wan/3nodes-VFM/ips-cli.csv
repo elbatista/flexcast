@@ -1,0 +1,7 @@
+Zone,IP
+Virginia,10.10.1.2
+Frankfurt,10.10.1.3
+Mumbai,10.10.1.4
+cli-Virginia,10.10.1.5
+cli-Frankfurt,10.10.1.6
+cli-Mumbai,10.10.1.7

@@ -1,5 +1,6 @@
 package util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
@@ -157,9 +158,14 @@ public class Results {
         return values;
     }
 
-    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc, String basedir) {
+    private static void writeTPFile(HashMap<Integer, HashMap<String, Double>> tpValues, short nodes, String locality, int gc, String basedir, String cliregion) {
         try {
-            PrintWriter printerOut = new PrintWriter(basedir+"/plots/tp/TP_"+nodes+"nodes_"+locality+"%_gc"+gc+"-aws-loc-file-90%.txt");
+            File directory = new File(String.valueOf(basedir+"/plots/tp"+cliregion));
+            if (!directory.exists())  {
+                print("Criando dir", directory.getAbsolutePath());
+                directory.mkdirs();
+            }
+            PrintWriter printerOut = new PrintWriter(basedir+"/plots/tp"+cliregion+"/TP_Reconf.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
             for(int i : tppersecond) printerOut.println(i);
             // Collections.sort(sortedKeys);
@@ -450,14 +456,19 @@ public class Results {
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"99"};
-        short numnodes []    = {9};
+        String localities [] = {"95"};
+        short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
-        int clients []       = {108};//{24,240,480,720,960,1200,1440};
-        int gcflex           = 0;
-        int gcall            = 0;
-        int dag              = 1;
-        String basedir = "/usr/batista/flexcast";//"experiments/"+algo+"-aws-loc-file-90%-dag_tree"+dag+"/"+nodes+"nodes/"+cli+"cli/"+locality+"%/gc"+gc;
+        int clients []       = {150};//{24,240,480,720,960,1200,1440};
+        int gcflex           = 100;
+        // int gcall            = 0;
+        // int dag              = 1;
+        String clilat        = "clilat";
+        String rc            = "rc40";
+
+        String cliregion = "/canada";
+
+        String basedir = "/usr/batista/flexcast/experiments/flexcast-reconfig/"+numnodes[0]+"nodes/"+clients[0]+"cli/"+localities[0]+"%/gc"+gcflex+"/"+rc+"/"+clilat;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
@@ -468,8 +479,8 @@ public class Results {
                 tpValues = new HashMap<>();
                 nodeMap = new short[nodes];
                 for(String algo : algos){
-                    int gc = gcall;
-                    if(algo.equals("flexcast")) gc = gcflex; 
+                    // int gc = gcall;
+                    // if(algo.equals("flexcast")) gc = gcflex; 
                     for(int cli : clients){
                         
                         // loadNodesMap(nodeMap, basedir);
@@ -500,12 +511,12 @@ public class Results {
                         // ###################### Throughput ######################
                         double avgtp = 0;
                         totalFiles = 0;
-                        avgtp += readTPFiles(basedir+"/logs");
+                        avgtp += readTPFiles(basedir+"/logs"+cliregion);
                         // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
                         // System.out.println(basedir);
                         // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
                         if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        tpValues.get(cli).put(algo+"_gc"+gc, avgtp);
+                        tpValues.get(cli).put(algo+"_gc"+gcflex, avgtp);
 
                         // ###################### Msg Sizes ######################
                         // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
@@ -515,7 +526,7 @@ public class Results {
                     }
                     
                 }
-                writeTPFile(tpValues, nodes, locality, gcflex, basedir);
+                writeTPFile(tpValues, nodes, locality, gcflex, basedir, cliregion);
             }
         }
 

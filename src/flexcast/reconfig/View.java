@@ -306,8 +306,10 @@ public class View extends BaseObj{
 
     public short[] calculatePossibleNewDAG() {
         Workload wl = new Workload(getDstsFreq());
+        
         Wlot wlot = new Wlot(getNumNodes(), wl);
         DAG min = wlot.getMinimumCostDAG();
+        
 
         if(!min.getDag().stream().map(v->v.shortValue()).collect(Collectors.toList())
         .equals(Shorts.asList(getOverlay()))){

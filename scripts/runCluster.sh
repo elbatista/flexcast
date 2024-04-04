@@ -30,6 +30,8 @@ localm=${13}
 dag_tree=${14}
 rc="40"
 
+clilat=true
+
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
 mkdir $basedir/logs; mkdir $basedir/files; mkdir $basedir/results;
@@ -152,7 +154,23 @@ do
     scp -q -r -o StrictHostKeyChecking=accept-new -o LogLevel=QUIET node$i:$basedir/results/* $basedir/results/
 done
 
-expdir="$basedir/experiments/${algodesc[$2]}-reconfig/${servers}nodes/${3}cli/${locality}%/gc${gc}"
+expdir="$basedir/experiments/${algodesc[$2]}-reconfig/${servers}nodes/${3}cli/${locality}%/gc${gc}";
+# epoc=$(date +"%Y%m%d%H%M%S" )
+
+if [ "$rc" != "" ]; then
+    expdir="$expdir/rc${rc}"
+else
+    expdir="$expdir/norc"
+fi
+
+if $clilat; then
+    expdir="$expdir/clilat"
+else
+    expdir="$expdir/noclilat"
+fi
+
+# expdir="$expdir/$epoc"
+
 mkdir -p $expdir/config
 echo "moving data to" $expdir >> $basedir/logs/execution.log;
 cp -r $basedir/logs $expdir/
