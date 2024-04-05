@@ -456,17 +456,17 @@ public class Results {
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"95"};
+        String localities [] = {"100"};
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
         int gcflex           = 100;
         // int gcall            = 0;
         // int dag              = 1;
-        String clilat        = "clilat";
+        String clilat        = "noclilat";
         String rc            = "rc40";
 
-        String cliregion = "/canada";
+        String cliregion = "";
 
         String basedir = "/usr/batista/flexcast/experiments/flexcast-reconfig/"+numnodes[0]+"nodes/"+clients[0]+"cli/"+localities[0]+"%/gc"+gcflex+"/"+rc+"/"+clilat;
 

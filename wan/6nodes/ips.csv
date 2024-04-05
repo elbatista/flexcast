@@ -1,0 +1,13 @@
+Zone,IP
+Frankfurt,10.10.1.2
+Paris,10.10.1.3
+Canada,10.10.1.4
+Virginia,10.10.1.5
+SaoPaulo,10.10.1.6
+Mumbai,10.10.1.7
+cli-Frankfurt,10.10.1.8
+cli-Paris,10.10.1.9
+cli-Canada,10.10.1.10
+cli-Virginia,10.10.1.11
+cli-SaoPaulo,10.10.1.12
+cli-Mumbai,10.10.1.13

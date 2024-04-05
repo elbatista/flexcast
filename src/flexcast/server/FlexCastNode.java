@@ -233,7 +233,7 @@ public class FlexCastNode extends ServerProxy {
         getHistory().getDeliveredMsgs().put(m.getId(), true);
         if(m.getLca() == getId()){
             forward(m);
-            if(m.getType() == Type.MSG && m.getDst().length < getNumNodes()) currentView.addDstsFreq(m.getDst());
+            if(m.getType() == Type.MSG && m.getDst().length <= getNumNodes()) currentView.addDstsFreq(m.getDst());
         }
         else {
             getQueues().get(m.getLca()).remove(0);
