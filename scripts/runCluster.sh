@@ -28,9 +28,9 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
-rc="40"
+rc="30"
 
-clilat=false
+clilat=true
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
@@ -102,7 +102,7 @@ do
     warehouse="${warehouses[$nodewarehouse]}"
     echo "$clispernode clients on $node region $region assume as primary warehouse: $warehouse ($nodewarehouse)" >> $basedir/logs/execution.log;
 
-    ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm $dag_tree # >> $basedir/logs/execution.log;
+    ./scripts/sshcli.sh $node $basedir $clients $ID $duration $algo $locality $warehouse $msgs $log $tpcc $clispernode $payload $thinktime $localm $dag_tree $region # >> $basedir/logs/execution.log;
     sleep 1;
     ID=$(($ID+$clispernode));
     lastnode=$node;

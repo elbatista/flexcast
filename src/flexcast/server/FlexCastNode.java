@@ -253,6 +253,23 @@ public class FlexCastNode extends ServerProxy {
         if (nextView == null){
             nextView = new View(currentView.getId()+1);
         }
+
+        if(!getPendingNotifs().isEmpty()){
+            printF("Attempting to change view with pending notifs");
+            files.stop();
+            exit();
+        }
+
+        for (ArrayList<Message>  q : getQueues().values()){
+            
+            if(!q.isEmpty()){
+                printF("Attempting to change view with non-empty queue", q);
+                files.stop();
+                exit();
+            }
+        }
+
+
         // get the nodes from the current view
         // change their position acording to new overlay
         int pos = 0;
@@ -276,12 +293,21 @@ public class FlexCastNode extends ServerProxy {
     }
 
     private void processViewBufferedMessages() {
-        if(currentView.getInitBuffer().size() > 0) printF("Processing buffered messages...");
+        if(currentView.getInitBuffer().size() > 0) printF("Processing",currentView.getInitBuffer().size(),"buffered messages...");
         while(!currentView.getInitBuffer().isEmpty()){
             Message m = currentView.getInitBuffer().get(0);
-            receiveMsg(m);
+            // receiveMsg(m);
+
+            switch(m.getType()){
+                case MSG: receiveMsg(m); break;
+                case ACK: receiveAck(m); break;
+                case NOTIF: receiveNotif(m); break;
+                default: break;
+            }
+
             currentView.getInitBuffer().remove(0);
         }
+        printF("Finished processing buffered messages...");
     }
 
     private void forward(Message m){

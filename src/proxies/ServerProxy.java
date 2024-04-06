@@ -48,11 +48,14 @@ public abstract class ServerProxy extends ClientProxy {
     }
 
     private void receive(Message m) {
+        if(
+            (m.getType() == Type.MSG || m.getType() == Type.ACK || m.getType() == Type.NOTIF)
+            && !validateView(m)
+        ){
+            return;
+        }
         switch(m.getType()){
-            case MSG: {
-                if(!validateView(m)) return;
-                receiveMsg(m); break;
-            }
+            case MSG: receiveMsg(m); break;
             case CKFREQ: receiveMsg(m); break;
             case VIEWCHANGE: receiveMsg(m); break;
             case ACK: receiveAck(m); break;

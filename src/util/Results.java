@@ -141,7 +141,7 @@ public class Results {
                             if(Double.valueOf(val) > 0){
                                 nodeValues.add(Double.valueOf(TimeUnit.MICROSECONDS.toMillis(Long.valueOf(val))));
                             }
-                            ;
+                            
                         }
 
                         auxvalues.add(nodeValues); // add the second column (LATENCY)
@@ -184,9 +184,17 @@ public class Results {
         }
     }
 
-    private static void writeCDFFiles(HashMap<Short, ArrayList<Double>> values, String algo, String locality) {
+    private static void writeCDFFiles(boolean sort, String basedir, HashMap<Short, ArrayList<Double>> values, String algo, String locality) {
+
+        String plotdir = basedir+"/plots/lat-cdf";
+
+            File directory = new File(plotdir);
+            if (!directory.exists())  {
+                print("Criando dir", directory.getAbsolutePath());
+                directory.mkdirs();
+            }
         try {
-            for(ArrayList<Double> a : values.values()) a.sort(Double::compare);
+            if(sort)for(ArrayList<Double> a : values.values()) a.sort(Double::compare);
             ArrayList<Double> [] array = new ArrayList[values.size()];
             int i = 0;
             for(ArrayList<Double> a : values.values()){
@@ -194,17 +202,17 @@ public class Results {
                 i++;
             }
          
-            PrintWriter printerOut = new PrintWriter("plots/lat-cdf/CDF_"+algo+"_"+locality+"%loc_node1.txt");
+            PrintWriter printerOut = new PrintWriter(plotdir+"/CDF_"+algo+"_"+locality+"%loc_node1.txt");
             for(double v: array[0]) printerOut.println(v);
             printerOut.flush();
             printerOut.close();
 
-            printerOut = new PrintWriter("plots/lat-cdf/CDF_"+algo+"_"+locality+"%loc_node2.txt");
+            printerOut = new PrintWriter(plotdir+"/CDF_"+algo+"_"+locality+"%loc_node2.txt");
             for(double v: array[1]) printerOut.println(v);
             printerOut.flush();
             printerOut.close();
 
-            printerOut = new PrintWriter("plots/lat-cdf/CDF_"+algo+"_"+locality+"%loc_node3.txt");
+            printerOut = new PrintWriter(plotdir+"/CDF_"+algo+"_"+locality+"%loc_node3.txt");
             for(double v: array[2]) printerOut.println(v);
             printerOut.flush();
             printerOut.close();
@@ -356,11 +364,20 @@ public class Results {
         }
     }
 
-    private static void writeCDFFiles3(HashMap<Short, ArrayList<Double>> values, String algo, String locality, int cli, int dag) {
+    private static void writeCDFFiles3(String basedir, HashMap<Short, ArrayList<Double>> values, String algo, String locality, int cli, int dag) {
         try{
+
+            String plotdir = basedir+"/plots/lat-cdf2";
+
+            File directory = new File(plotdir);
+            if (!directory.exists())  {
+                print("Criando dir", directory.getAbsolutePath());
+                directory.mkdirs();
+            }
+
             for(short d : new short[]{0,1,2}){
                 ArrayList<Double> dest = values.get(d);
-                PrintWriter printerOut = new PrintWriter("plots/lat-cdf2/CDF_"+algo+"_"+cli+"cli_"+locality+"%loc_dagtree"+dag+"_node"+(d+1)+".txt");
+                PrintWriter printerOut = new PrintWriter(plotdir+"/CDF_"+algo+"_"+cli+"cli_"+locality+"%loc_dagtree"+dag+"_node"+(d+1)+".txt");
                 dest.sort(Double::compare);
                 
                 int n = dest.size();
@@ -456,14 +473,14 @@ public class Results {
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"100"};
-        short numnodes []    = {3};
+        String localities [] = {"95"};
+        short numnodes []    = {6};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
         int gcflex           = 100;
         // int gcall            = 0;
         // int dag              = 1;
-        String clilat        = "noclilat";
+        String clilat        = "clilat";
         String rc            = "rc40";
 
         String cliregion = "";
@@ -486,6 +503,7 @@ public class Results {
                         // loadNodesMap(nodeMap, basedir);
 
                         System.out.println("Data from: "+ basedir);
+                        latenciesPerSec(basedir);
                         // ###################### Latencies per Node ######################
                         // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
                         // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
@@ -505,18 +523,18 @@ public class Results {
                         //             .replace("50=","").replace("90=","")
                         //             .replace("95=","").replace("99=","")
                         //         );
-                        //writeCDFFiles(values, algo, locality);
-                        // writeCDFFiles3(values, algo, locality, cli, dag);
+                        // writeCDFFiles(false,basedir,values, algo, locality);
+                        // writeCDFFiles3(basedir, values, algo, locality, cli, 1);
                         
                         // ###################### Throughput ######################
-                        double avgtp = 0;
-                        totalFiles = 0;
-                        avgtp += readTPFiles(basedir+"/logs"+cliregion);
-                        // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
-                        // System.out.println(basedir);
-                        // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
-                        if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
-                        tpValues.get(cli).put(algo+"_gc"+gcflex, avgtp);
+                        // double avgtp = 0;
+                        // totalFiles = 0;
+                        // avgtp += readTPFiles(basedir+"/logs"+cliregion);
+                        // // System.out.println("TP - Read "+totalFiles+" tp files. Avg "+lines/totalFiles+" lines per file");
+                        // // System.out.println(basedir);
+                        // // System.out.println("AVG Throughput: "+avgtp+" ops/sec");
+                        // if(tpValues.get(cli) == null) tpValues.put(cli, new HashMap<>());
+                        // tpValues.get(cli).put(algo+"_gc"+gcflex, avgtp);
 
                         // ###################### Msg Sizes ######################
                         // processMsgSizeFilesDiscrete(basedir+"/files", nodes, locality, gc, cli, algo, nodeMap);
@@ -526,7 +544,7 @@ public class Results {
                     }
                     
                 }
-                writeTPFile(tpValues, nodes, locality, gcflex, basedir, cliregion);
+                // writeTPFile(tpValues, nodes, locality, gcflex, basedir, cliregion);
             }
         }
 
@@ -558,6 +576,66 @@ public class Results {
         // writeCDFFiles(values, algo, locality);
 
         
+    }
+
+    private static void latenciesPerSec(String basedir) {
+        HashMap<Integer, ArrayList<Double>> seconds = new HashMap<>();
+        try {
+            Files.list(Paths.get(basedir+"/results")) 
+            .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);} catch (Exception e) {return false;}})
+            .forEach(path -> {
+                if(path.getFileName().toString().contains("per-node")) return;
+                
+                Scanner scan=null;
+                String line;
+                long abs=0;
+                int second=1;
+                try{scan = new Scanner(path.toFile());}catch (Exception e) {}
+                line = scan.nextLine();
+
+                while(scan.hasNext()){
+                    if(line.equals("") || line.startsWith("\t") || line.startsWith("ORDER") || line.startsWith("Sta") || line.startsWith("--")) {
+                        line = scan.nextLine();
+                        continue;
+                    }
+                    long curAbs = Long.parseLong(line.split("\t")[2]);
+                    if(abs == 0) abs = curAbs;
+                    else {
+                        if(curAbs-abs >= 1000000){
+                            second++;
+                            // print(second);
+                            abs = curAbs;
+                        }
+                    }
+
+                    if(seconds.get(second)==null){
+                        seconds.put(second, new ArrayList<>());
+                    }
+                    seconds.get(second).add(Double.parseDouble(line.split("\t")[1]));
+                    // print(line.split("\t")[1], line.split("\t")[2]);
+                    line = scan.nextLine();
+                }
+                print(path.getFileName().toString());
+            });
+
+            File directory = new File(basedir+"/plots/latpersec");
+            if (!directory.exists())  {
+                print("Criando dir", directory.getAbsolutePath());
+                directory.mkdirs();
+            }
+
+            PrintWriter printerOut = new PrintWriter(basedir+"/plots/latpersec/lat.txt");
+            
+            for(int key : seconds.keySet()){
+                printerOut.println(key+"\t"+(long)Stats.of(seconds.get(key)).mean()+"\t"+ (long)Stats.of(seconds.get(key)).populationStandardDeviation());
+            }
+
+            printerOut.flush();
+            printerOut.close();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

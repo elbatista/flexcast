@@ -236,7 +236,16 @@ public class Message extends BaseObj implements Externalizable {
     }
 
     public String toString(){
-        return toString(getId(), getViewId(), getType(), Arrays.toString(getDst()), getHst(), "notifier:", getIdNotifier(), " nl:", getNotifList(),"dstFreq:", dstsFreq);
+        return toString(
+            getId(), 
+            getViewId(), 
+            getType(), 
+            Arrays.toString(getDst()), 
+            // getHst(), 
+            // "notifier:", getIdNotifier(), 
+            // " nl:", getNotifList(),
+            "dstFreq:", dstsFreq
+        );
     }
 
     public boolean isAddressedTo(short d){
