@@ -474,14 +474,14 @@ public class Results {
         // ArrayList<Double> latencies = new ArrayList<>();
         
         String localities [] = {"95"};
-        short numnodes []    = {6};
+        short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
         int gcflex           = 100;
         // int gcall            = 0;
         // int dag              = 1;
-        String clilat        = "clilat";
-        String rc            = "rc40";
+        String clilat        = "noclilat";
+        String rc            = "rc30";
 
         String cliregion = "";
 
@@ -503,7 +503,8 @@ public class Results {
                         // loadNodesMap(nodeMap, basedir);
 
                         System.out.println("Data from: "+ basedir);
-                        latenciesPerSec(basedir);
+                        // latenciesPerSec(basedir);
+                        latenciesPerSecPerDest(basedir, nodes);
                         // ###################### Latencies per Node ######################
                         // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
                         // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
@@ -637,6 +638,101 @@ public class Results {
             e.printStackTrace();
         }
     }
+
+    private static void latenciesPerSecPerDest(String basedir, int numNodes) {
+        HashMap<Integer, HashMap<String, ArrayList<Long>>> seconds = new HashMap<>();
+        try {
+            Files.list(Paths.get(basedir+"/results")) 
+            .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);} catch (Exception e) {return false;}})
+            .forEach(path -> {
+                if(!path.getFileName().toString().contains("per-node")) return;
+                
+                Scanner scan=null;
+                String line;
+                long abs=0, curAbs=0;
+                int second=1;
+                try{scan = new Scanner(path.toFile());}catch (Exception e) {}
+                line = scan.nextLine();
+
+                while(scan.hasNext()){
+                    if(line.equals("") || line.startsWith("\t") || line.startsWith("ORDER") || line.startsWith("Sta") || line.startsWith("--")) {
+                        line = scan.nextLine();
+                        continue;
+                    }
+                    String [] linesplit = line.split("\t");
+                    String dests = linesplit[numNodes+1];
+
+                    long latency = 0;
+                    for(int i=1; i<=numNodes;i++){
+                        if(Long.valueOf(linesplit[i]) > latency){
+                            latency = Long.valueOf(linesplit[i]);
+                        }
+                    }
+
+                    curAbs+=latency;
+
+                    if(abs == 0) abs = latency;
+                    else {
+                        if(curAbs-abs >= 1000000){
+                            second++;
+                            // print(second);
+                            abs = curAbs;
+                        }
+                        
+                    }
+
+                    if(seconds.get(second)==null){
+                        seconds.put(second, new HashMap<>());
+                    }
+                    if(seconds.get(second).get(dests)==null){
+                        seconds.get(second).put(dests, new ArrayList<>());
+                    }
+                    seconds.get(second).get(dests).add((latency));
+                    // print(line.split("\t")[1], line.split("\t")[2]);
+                    line = scan.nextLine();
+                }
+                print(path.getFileName().toString(), seconds.size());
+            });
+
+            File directory = new File(basedir+"/plots/latpersec/perdest");
+            if (!directory.exists())  {
+                print("Criando dir", directory.getAbsolutePath());
+                directory.mkdirs();
+            }
+
+            HashMap<String, PrintWriter> files = new HashMap<>();
+            for(int key : seconds.keySet()){
+                for(String key2 : seconds.get(key).keySet()){
+                    if(files.get(key2) == null){
+                        files.put(key2, new PrintWriter(basedir+"/plots/latpersec/perdest/lat"+key2+".txt"));
+                    }
+                    // Stats s = Stats.of(seconds.get(key).get(key2));
+                    files.get(key2).println(
+                        key+"\t"+
+                        Quantiles.scale(100)
+                        .indexes(90,95,99)
+                        .compute(seconds.get(key).get(key2))
+                        .toString()
+                        .replace("{","")
+                        .replaceAll(", ","\t")
+                        .replace("90=","")
+                        .replace("95=","")
+                        .replace("99=","")
+                        .replace("}","")
+                    );
+                }
+            }
+
+            for(PrintWriter file : files.values()){
+                file.flush();
+                file.close();
+            }
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 
 }

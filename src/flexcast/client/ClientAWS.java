@@ -149,8 +149,14 @@ public class ClientAWS extends ClientProxy {
 
             if (stats.getCount() > 0) {
                 try {Files.createDirectories(Paths.get("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion())));} catch (IOException e) {}
-                stats.persist("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client.txt", 15);
-                stats.persistPerNodes("results" + (args.getRegion().equals("") ? "" : "/"+args.getRegion()) + "/" + getId() + "-stats-client-per-node.txt", 15);
+                stats.persist("results/" + getId() + "-stats-client.txt", 15);
+                stats.persistPerNodes("results/" + getId() + "-stats-client-per-node.txt", 15);
+                
+                if(!args.getRegion().equals("")){
+                    stats.persist("results/"+args.getRegion() + "/" + getId() + "-stats-client.txt", 15);
+                    stats.persistPerNodes("results/"+args.getRegion() + "/" + getId() + "-stats-client-per-node.txt", 15);
+                }
+
                 printF("LOCAL STATS:", stats);
             }
             

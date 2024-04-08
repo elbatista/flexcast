@@ -30,7 +30,7 @@ localm=${13}
 dag_tree=${14}
 rc="30"
 
-clilat=true
+clilat=false
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;

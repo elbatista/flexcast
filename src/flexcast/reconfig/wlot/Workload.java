@@ -31,9 +31,11 @@ public class Workload {
         int total = 0;
         for(int v : dstsFreq.values()) total+=v;
 
+        System.out.println("Total msgs: " + total);
+
         for(String k : dstsFreq.keySet()){
             float perc = ((float)100 * ((float)dstsFreq.get(k))) / (float)total;
-            // System.out.println(k+" - "+ dstsFreq.get(k) +"; total="+total+"; perc="+perc);
+            System.out.println(k+" - "+ dstsFreq.get(k) +"; total="+total+"; perc="+perc);
             Destination d = new Destination();
             d.setDestination(
                 Arrays.asList(k.replace("[", "").replace("]", "").split(","))
