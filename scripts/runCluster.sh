@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # run example:
-# ./scripts/runCluster.sh 120 0 150 3 6 95 0 100 50 false true true false 1
+# ./scripts/runCluster.sh 120 0 150 6 12 95 0 100 25 false true true false 1
 
 if [ "$#" -lt 14 ]; then 
     echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm> <dag_tree>"
@@ -30,7 +30,7 @@ localm=${13}
 dag_tree=${14}
 rc="30"
 
-clilat=false
+clilat=true
 
 algodesc=("flexcast" "skeen" "byzcast")
 rm -f -r $basedir/logs $basedir/files $basedir/results;
