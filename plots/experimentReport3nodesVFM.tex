@@ -1,0 +1,109 @@
+\documentclass[a4paper,9pt]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage[yyyymmdd,hhmmss]{datetime}
+\usepackage{subfigure}
+\usepackage[top=0.5in, bottom=1in, left=0.4in, right=0.4in]{geometry}
+\usepackage{multicol}
+\newenvironment{Figure}
+  {\par\medskip\noindent\minipage{\linewidth}}
+  {\endminipage\par\medskip}
+
+\title{\vspace{-7ex}Analysis of FlexCast Reconfiguration}
+\date{\vspace{-10ex}}
+\begin{document}
+\maketitle
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig interval:} 30sec
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Virg., Frank., Mumbai)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.4]{figs/VFM.png}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.5]{figs/3nodesVFM/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.5]{figs/3nodesVFM/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\begin{multicols}{2}
+\footnotesize
+\begin{center}
+\begin{verbatim}
+                workload 1 : [
+                    {
+                        "destination": [0, 1],
+                        "percentage": 0.38385853
+                    },
+                    {
+                        "destination": [0, 2],
+                        "percentage": 0.53157824
+                    },
+                    {
+                        "destination": [0, 1, 2],
+                        "percentage": 0.05112352
+                    },
+                    {
+                        "destination": [1, 2],
+                        "percentage": 0.033439703
+                    },
+                ]
+                Took 55 ms 
+\end{verbatim}
+\end{center}
+\columnbreak
+\begin{Figure}
+    
+    \includegraphics[scale=.4]{figs/3nodesVFM/reconf.png}
+\end{Figure}
+\end{multicols}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[page=1, scale=.5]{figs/3nodesVFM/latperdest90p.pdf}
+    \includegraphics[page=2, scale=.5]{figs/3nodesVFM/latperdest90p.pdf}
+    \includegraphics[page=3, scale=.5]{figs/3nodesVFM/latperdest90p.pdf}
+    \includegraphics[page=4, scale=.5]{figs/3nodesVFM/latperdest90p.pdf}
+\end{Figure}
+
+\newpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \subsection{Reconfiguration}
+
+
+\end{document}
