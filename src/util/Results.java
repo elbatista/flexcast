@@ -474,14 +474,14 @@ public class Results {
         // ArrayList<Double> latencies = new ArrayList<>();
         
         String localities [] = {"95"};
-        short numnodes []    = {6};
+        short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
         int gcflex           = 100;
         // int gcall            = 0;
         // int dag              = 1;
         String clilat        = "clilat";
-        String rc            = "rc30";
+        String rc            = "norc";
 
         String cliregion = "";
 

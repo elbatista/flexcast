@@ -2,7 +2,6 @@
 
 # run example:
 # ./scripts/runCluster.sh 120 0 150 6 12 95 0 100 25 false true true false 1
-
 if [ "$#" -lt 14 ]; then 
     echo  "Usage: $0 <duration:sec> <algo:0-flex;1-skeen;2-byz> <#clis> <#servers> <#nodes> <locality> <#msgs> <#gc(ms)> <#clispernode> <tpcc> <payload> <thinktime> <localm> <dag_tree>"
     exit 0; 
@@ -28,7 +27,7 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
-rc="30"
+rc=""
 
 clilat=true
 
