@@ -4,6 +4,7 @@ import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -288,8 +289,8 @@ public class FlexCastNode extends ServerProxy {
         currentView = nextView;
         nextView = null;
 
-        printF("Changed to a new view:", currentView);
         processViewBufferedMessages();
+        printF(new Date(), "Changed to a new view:", currentView);
     }
 
     private void processViewBufferedMessages() {
