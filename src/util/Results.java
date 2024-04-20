@@ -476,7 +476,7 @@ public class Results {
         String localities [] = {"95"};
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
-        int clients []       = {3};//{24,240,480,720,960,1200,1440};
+        int clients []       = {120};//{24,240,480,720,960,1200,1440};
         int gcflex           = 100;
         // int gcall            = 0;
         // int dag              = 1;
