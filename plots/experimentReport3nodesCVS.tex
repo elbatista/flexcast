@@ -136,6 +136,59 @@ Took 5 ms
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \small
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig interval:} no reconfig
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Calif., Virg., Sao Paulo)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.29]{figs/3nodesCVS/reconfig1.png}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+\small
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.5]{figs/3nodesCVS/testNoReconf/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.5]{figs/3nodesCVS/testNoReconf/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[page=1, scale=.5]{figs/3nodesCVS/testNoReconf/latperdest90p.pdf}
+    \includegraphics[page=2, scale=.5]{figs/3nodesCVS/testNoReconf/latperdest90p.pdf}
+    \includegraphics[page=3, scale=.5]{figs/3nodesCVS/testNoReconf/latperdest90p.pdf}
+    \includegraphics[page=4, scale=.5]{figs/3nodesCVS/testNoReconf/latperdest90p.pdf}
+\end{Figure}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Experiment Config.}
 \begin{multicols}{3}
