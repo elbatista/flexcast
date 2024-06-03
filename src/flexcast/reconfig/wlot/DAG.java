@@ -1,91 +1,128 @@
 package flexcast.reconfig.wlot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class DAG {
-    private int id;
-    private List<Integer> dag;
-    public List<Integer> getDag() {
-        return dag;
+
+    private int V; // No. of vertices'
+    private Map<Integer, List<Edge>> adjs; // array of adjacency lists
+    private int dist[][]; // calculated longest distances
+
+    public DAG(List<Integer> dag, List<List<Integer>> weights) // Constructor
+    {
+        V = dag.size();
+        adjs = new HashMap<>();
+        dist = new int[V][V];
+
+        for (int i = 0; i < V; ++i) {
+            int from = dag.get(i);
+            adjs.put(from, new ArrayList<>());
+            for (int j = 0; j < V; ++j) {
+                dist[i][j] = Integer.MIN_VALUE;
+                if (j > i) {
+                    int to = dag.get(j);
+                    int w = weights.get(from).get(to);
+                    adjs.get(from).add(new Edge(to, w));
+                }
+            }
+        }
+        computeLongestPaths();
     }
 
-    private List<Destination> destinations;
-    private float totalCost;
+    // A recursive function used by longestPath. See below link for details
+    private void topologicalSortUtil(int v, boolean visited[], Stack<Integer> stack) {
+        // Mark the current node as visited
+        visited[v] = true;
 
-    /**
-     * Creates a new DAG with every possible destination
-     * 
-     * @param id  DAG identifier
-     * @param dag the list of nodes in the DAG
-     */
-    public DAG(int id, List<Integer> dag) {
-        this.id = id;
-        this.dag = dag;
-        this.totalCost = 0f;
+        // Recur for all the vertices adjacent to this vertex
+        for (int i = 0; i < adjs.get(v).size(); i++) {
+            Edge node = adjs.get(v).get(i);
+            if (!visited[node.getTo()])
+                topologicalSortUtil(node.getTo(), visited, stack);
+        }
 
-        destinations = new ArrayList<>();
-        // computeAllDests(dag, 0, new ArrayList<>());
+        // Push current vertex to stack which stores topological
+        // sort
+        stack.push(v);
     }
 
-    /**
-     * Creates a new DAG with the destinations in the provided workload
-     * 
-     * @param id  DAG identifier
-     * @param dag the list of nodes in the DAG
-     * @param wl  the workload with the destinations and use percentage
-     */
-    public DAG(int id, List<Integer> dag, Workload wl) {
-        this.id = id;
-        this.dag = dag;
+    private void computeLongestPaths() {
+        Stack<Integer> stack = new Stack<Integer>();
 
-        updateWorkload(wl);
-    }
+        // Mark all the vertices as not visited
+        boolean visited[] = new boolean[V];
+        for (int i = 0; i < V; i++)
+            visited[i] = false;
 
-    /**
-     * Recreates the destinations from the provided workload
-     * 
-     * @param wl the workload
-     */
-    public void updateWorkload(Workload wl) {
-        destinations = new ArrayList<>();
-        totalCost = 0;
+        // Call the recursive helper function to store Topological
+        // Sort starting from all vertices one by one
+        for (int i = 0; i < V; i++)
+            if (visited[i] == false)
+                topologicalSortUtil(i, visited, stack);
 
-        for (Destination d : wl.getDestinations()) {
-            Destination tmp = d.clone();
-            tmp.calculateCostNew(dag);
-            destinations.add(tmp);
-            totalCost += tmp.getPercentage() * tmp.getCost();
+        // Process vertices in topological order
+        while (stack.isEmpty() == false) {
+
+            // Get the next vertex from topological order
+            int u = stack.peek();
+            stack.pop();
+
+            for (int l = 0; l < V; ++l) {
+                dist[l][l] = 0;
+                // Update distances of all adjacent vertices ;
+                if (dist[l][u] != Integer.MIN_VALUE) {
+                    for (int i = 0; i < adjs.get(u).size(); i++) {
+                        Edge node = adjs.get(u).get(i);
+                        if (dist[l][node.getTo()] < dist[l][u] + node.getWeight())
+                            dist[l][node.getTo()] = dist[l][u] + node.getWeight();
+                    }
+                }
+            }
         }
     }
 
-    public float getTotalCost() {
-        return totalCost;
+    public int getLongestPath(int s, int d) {
+        return dist[s][d];
     }
 
     @Override
     public String toString() {
-        String out = "DAG #" + id + " [";
-
-        for (int e : dag) {
-            out += e == dag.getLast() ? e + "]:\n" : e + " --> ";
+        String s = "Costs:\n";
+        for (int i = 0; i < V; i++) {
+            for (int j = 0; j < V; j++) {
+                if (dist[i][j] == Integer.MIN_VALUE)
+                    s += "--\t";
+                else
+                    s += (dist[i][j] + "\t");
+            }
+            s += "\n";
         }
-        for (Destination d : destinations) {
-            out += d + "\n";
-        }
-        out += "Total cost = " + totalCost + "\n";
-        return out;
 
+        return s;
     }
 
-    @SuppressWarnings("unused")
-    private void computeAllDests(List<Integer> l, int start, List<Integer> current) {
-        if (current.size() > 1)
-            destinations.add(new Destination(new ArrayList<>(current), this.dag));
-        for (int i = start; i < l.size(); i++) {
-            current.add(l.get(i));
-            computeAllDests(l, i + 1, current);
-            current.remove(current.size() - 1);
+    // Each node of adjacency list contains vertex number of the vertex to which
+    // edge connects and the weight.
+    static class Edge {
+
+        int to;
+        int weight;
+
+        Edge(int to, int weight) {
+            this.to = to;
+            this.weight = weight;
+        }
+
+        int getTo() {
+            return to;
+        }
+
+        int getWeight() {
+            return weight;
         }
     }
 }
