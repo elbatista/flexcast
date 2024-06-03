@@ -1,5 +1,8 @@
 package flexcast.reconfig;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +16,6 @@ import base.Node;
 import base.Host;
 import flexcast.messages.LightMessagesList.Item;
 import flexcast.messages.Message;
-import flexcast.reconfig.wlot.DAG;
 import flexcast.reconfig.wlot.Wlot;
 import flexcast.reconfig.wlot.Workload;
 import flexcast.server.History;
@@ -306,16 +308,17 @@ public class View extends BaseObj{
 
     public short[] calculatePossibleNewDAG() {
         Workload wl = new Workload(getDstsFreq());
+        List<List<Integer>> weights = new ArrayList<>();
+        readLatencies(weights);
         
-        Wlot wlot = new Wlot(getNumNodes(), wl);
-        DAG min = wlot.getMinimumCostDAG();
+        Wlot wlot = new Wlot(weights, wl, true);
+        List<Integer> min = wlot.getMinimumCostDAG();
         
-
-        if(!min.getDag().stream().map(v->v.shortValue()).collect(Collectors.toList())
+        if(!min.stream().map(v->v.shortValue()).collect(Collectors.toList())
         .equals(Shorts.asList(getOverlay()))){
-            short [] newdag = new short[min.getDag().size()];
+            short [] newdag = new short[min.size()];
             int i = 0;
-            for (int v: min.getDag()){
+            for (int v: min){
                 newdag[i] = (short)v;
                 i++;
             }
@@ -323,5 +326,32 @@ public class View extends BaseObj{
 
         }
         return null;
+    }
+
+    private void readLatencies(List<List<Integer>> weights) {
+        try{
+            BufferedReader br = new BufferedReader(new FileReader("wan/latencies.csv"));
+            String line;
+
+            br.readLine(); // skip header line (region names)
+
+            while ((line = br.readLine()) != null) {
+                String[] values = line.split(",");
+
+                // remove first position (region name)
+                int n = values.length-1;
+                String[] newvalues=new String[n];
+                System.arraycopy(values,1,newvalues,0,n);
+
+                List<Integer> l = Arrays.stream(newvalues) // stream of String
+                .map(Integer::valueOf) // stream of Integer
+                .collect(Collectors.toList());
+                weights.add(l);
+            }
+            br.close();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
     }
 }

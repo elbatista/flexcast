@@ -71,6 +71,18 @@ public class Workload {
     }
 
     @Override
+    public Workload clone() {
+        Workload w = null;
+        w = new Workload();
+        w.destinations = new ArrayList<>();
+        for (Destination d : this.destinations) {
+            Destination d2 = d.clone();
+            w.destinations.add(d2);
+        }
+        return w;
+    }
+
+    @Override
     public String toString() {
         String out = "Workload:\n";
         for (Destination d : destinations) {
