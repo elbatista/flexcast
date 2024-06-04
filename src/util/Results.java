@@ -81,7 +81,7 @@ public class Results {
                 if(!path.getFileName().toString().contains("cli")) return;
                 totalFiles++;
                 Scanner scan = null;
-                print("read file", path.toFile());
+                //print("read file", path.toFile());
                 try{scan = new Scanner(path.toFile());}catch (Exception e) {}
                 while(scan.hasNext()){
                     String line = scan.nextLine();
@@ -91,7 +91,7 @@ public class Results {
                         str.nextToken(); // skip the first column (text)
                         String value = str.nextToken().trim();
                         values.add(Double.valueOf(value)); // add the second column (tp)
-                        print("read line", line);
+                        // print("read line", line);
                         int second = Integer.valueOf(line.replace(":", "").split(" ")[3]);
 
                         tppersecond.set(second, Integer.valueOf(value)+tppersecond.get(second));
@@ -165,20 +165,30 @@ public class Results {
                 print("Criando dir", directory.getAbsolutePath());
                 directory.mkdirs();
             }
+
+            // write data file
             PrintWriter printerOut = new PrintWriter(basedir+"/plots/tp"+cliregion+"/TP_Reconf.txt");
             ArrayList<Integer> sortedKeys = new ArrayList<Integer>(tpValues.keySet());
-            for(int i : tppersecond) printerOut.println(i);
-            // Collections.sort(sortedKeys);
-            // for(int cli : sortedKeys){
-            //     printerOut.println(
-            //         cli + 
-            //         "\t" + tpValues.get(cli).get("skeen_gc"+gc)+ 
-            //         "\t" + tpValues.get(cli).get("byzcast_gc"+gc)+ 
-            //         "\t" + tpValues.get(cli).get("flexcast_gc"+gc)
-            //     );
-            // }
+            for(int i : tppersecond) if(i>0) printerOut.println(i);
             printerOut.flush();
             printerOut.close();
+
+            // write plot file and plot the pdf
+            printerOut = new PrintWriter(basedir+"/plots/tp"+cliregion+"/plot.p");
+            printerOut.println( "set terminal pdf dashed size 5, 2.5 font \",18\" ");
+            printerOut.println( "set key right top maxrow 2 ");
+            printerOut.println( "set ylabel \"TP (ops/sec)\" ");
+            printerOut.println( "set xlabel \"Time (sec)\" ");
+            printerOut.println( "set grid ytics lt 0 lw 1 ");
+            printerOut.println( "set grid xtics lt 0 lw 1 ");
+            printerOut.println( "set output '"+basedir+"/plots/tp"+cliregion+"/tp.pdf' ");
+            printerOut.println( "plot '"+basedir+"/plots/tp"+cliregion+"/TP_Reconf.txt' using 1 t \"TP\" with lines ");
+            printerOut.flush();
+            printerOut.close();
+
+            Process  process = Runtime.getRuntime().exec("gnuplot "+basedir+"/plots/tp"+cliregion+"/plot.p");
+            process.waitFor();
+
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -328,7 +338,6 @@ public class Results {
         }
     }
 
-
     private static void writeCDFFiles2(HashMap<Short, ArrayList<Double>> values, String algo, String locality) {
         try{
             PrintWriter printerOut = new PrintWriter("plots/lat-cdf2/CDF_"+algo+"_"+locality+"%loc_node1.txt");
@@ -469,11 +478,10 @@ public class Results {
         }
     }
 
-
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"100"};
+        String localities [] = {"95"};
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
@@ -485,7 +493,7 @@ public class Results {
 
         String cliregion = "";
 
-        String basedir = "/usr/batista/flexcast/experiments/flexcast-reconfig/"+numnodes[0]+"nodes/"+clients[0]+"cli/"+localities[0]+"%/gc"+gcflex+"/"+rc+"/"+clilat;
+        String basedir = "experiments/flexcast-reconfig/"+numnodes[0]+"nodes/"+clients[0]+"cli/"+localities[0]+"%/gc"+gcflex+"/"+rc+"/"+clilat;
 
         ArrayList<TPLine> tp = new ArrayList<>();
         HashMap<Integer, HashMap<String, Double>> tpValues = new HashMap<>();
@@ -616,7 +624,7 @@ public class Results {
                     // print(line.split("\t")[1], line.split("\t")[2]);
                     line = scan.nextLine();
                 }
-                print(path.getFileName().toString());
+                // print(path.getFileName().toString());
             });
 
             File directory = new File(basedir+"/plots/latpersec");
@@ -625,16 +633,38 @@ public class Results {
                 directory.mkdirs();
             }
 
+            // write data file
             PrintWriter printerOut = new PrintWriter(basedir+"/plots/latpersec/lat.txt");
-            
             for(int key : seconds.keySet()){
                 printerOut.println(key+"\t"+(long)Stats.of(seconds.get(key)).mean()+"\t"+ (long)Stats.of(seconds.get(key)).populationStandardDeviation());
             }
-
             printerOut.flush();
             printerOut.close();
+
+            // write plot file and plot the pdf
+            printerOut = new PrintWriter(basedir+"/plots/latpersec/plot.p");
+
+            printerOut.println( "set terminal pdf dashed size 5, 2.5 font \",18\" ");
+            printerOut.println( "set style data histogram ");
+            printerOut.println( "set style histogram cluster gap 1 errorbars ");
+            printerOut.println( "set key right top maxrow 2 ");
+            printerOut.println( "set ylabel \"Latency (ms)\" ");
+            printerOut.println( "set xlabel \"Time (sec)\" ");
+            printerOut.println( "set grid ytics lt 0 lw 1 ");
+            printerOut.println( "set grid xtics lt 0 lw 1 ");
+            printerOut.println("set xrange[0:120]");
+            printerOut.println("set xtics rotate by 50 right");
+
+
+            printerOut.println( "set output '"+basedir+"/plots/latpersec/lat.pdf' ");
+            printerOut.println( "plot '"+basedir+"/plots/latpersec/lat.txt' using ($2/1000):($3/1000):xtic($1) t \"Final Latency\" ");
+            printerOut.flush();
+            printerOut.close();
+
+            Process  process = Runtime.getRuntime().exec("gnuplot "+basedir+"/plots/latpersec/plot.p");
+            process.waitFor();
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -691,7 +721,7 @@ public class Results {
                     // print(line.split("\t")[1], line.split("\t")[2]);
                     line = scan.nextLine();
                 }
-                print(path.getFileName().toString(), seconds.size());
+                // print(path.getFileName().toString(), seconds.size());
             });
 
             File directory = new File(basedir+"/plots/latpersec/perdest");
@@ -701,10 +731,30 @@ public class Results {
             }
 
             HashMap<String, PrintWriter> files = new HashMap<>();
+            PrintWriter plot = new PrintWriter(basedir+"/plots/latpersec/perdest/plot.p");
+            plot.println( "set terminal pdf dashed size 5, 2.5 font \",18\" ");
+            plot.println( "set style data histogram ");
+            // plot.println( "set style histogram cluster gap 1 errorbars ");
+            plot.println( "set key right top maxrow 2 ");
+            plot.println( "set ylabel \"Latency (ms)\" ");
+            plot.println( "set xlabel \"Time (sec)\" ");
+            plot.println( "set grid ytics lt 0 lw 1 ");
+            // plot.println( "set grid xtics lt 0 lw 1 ");
+            // plot.println("set xrange [:10]");
+            // plot.println(" set xtic 10 ");
+
+            plot.println("set xtics rotate by 90 right font ',8' nomirror");
+            // plot.println("set xtics auto");
+
             for(int key : seconds.keySet()){
                 for(String key2 : seconds.get(key).keySet()){
                     if(files.get(key2) == null){
                         files.put(key2, new PrintWriter(basedir+"/plots/latpersec/perdest/lat"+key2+".txt"));
+                        
+                        plot.println( "set output '"+basedir+"/plots/latpersec/perdest/lat"+key2+".pdf' ");
+                        plot.println( "plot '"+basedir+      "/plots/latpersec/perdest/lat"+key2+".txt' using ($2/1000):xticlabel(1) t \"Dests "+key2+" \" ");
+
+                        
                     }
                     // Stats s = Stats.of(seconds.get(key).get(key2));
                     files.get(key2).println(
@@ -727,8 +777,14 @@ public class Results {
                 file.flush();
                 file.close();
             }
+            plot.flush();
+            plot.close();
+
+            Process  process = Runtime.getRuntime().exec("gnuplot "+basedir+"/plots/latpersec/perdest/plot.p");
+            process.waitFor();
+
             
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

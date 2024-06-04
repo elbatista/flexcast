@@ -109,8 +109,8 @@ public class Wlot {
             float cost = 0;
             for (Destination d : wl.getDestinations()) {
                 d.reorder(prefix);
-                d.setCost(dag.getLongestPath(d.getDestination().getFirst(),
-                        d.getDestination().getLast()));
+                d.setCost(dag.getLongestPath(d.getDestination().get(0),
+                        d.getDestination().get(d.getDestination().size()-1)));
                 cost += d.getCost() * d.getPercentage();
                 // System.out.println(d);
 

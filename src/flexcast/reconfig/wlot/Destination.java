@@ -93,7 +93,7 @@ public class Destination implements Cloneable {
         String out = "\tDestination {";
 
         for (int d : destination) {
-            out += d == destination.getLast() ? d : d + ",";
+            out += d == destination.get(destination.size()-1) ? d : d + ",";
         }
         out += "}, Cost = " + cost;
         out += percentage == 0 ? "" : ", Perc = " + percentage;

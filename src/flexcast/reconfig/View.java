@@ -330,23 +330,15 @@ public class View extends BaseObj{
 
     private void readLatencies(List<List<Integer>> weights) {
         try{
-            BufferedReader br = new BufferedReader(new FileReader("wan/latencies.csv"));
+            BufferedReader br = new BufferedReader(new FileReader("config/latencies.csv"));
             String line;
-
-            br.readLine(); // skip header line (region names)
-
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-
-                // remove first position (region name)
-                int n = values.length-1;
-                String[] newvalues=new String[n];
-                System.arraycopy(values,1,newvalues,0,n);
-
-                List<Integer> l = Arrays.stream(newvalues) // stream of String
-                .map(Integer::valueOf) // stream of Integer
+                List<Integer> l = Arrays.stream(values) // stream of String
+                .map(i -> Integer.valueOf(i.replaceAll("[^0-9]", ""))) // stream of Integer
                 .collect(Collectors.toList());
                 weights.add(l);
+                weights.forEach(System.out::println);
             }
             br.close();
         }

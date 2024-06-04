@@ -3,4 +3,4 @@ if [ "$#" -lt 4 ]; then
     exit 0;
 fi
 clis=$4
-./scripts/runCluster.sh 120 0 $clis $1 $2 $3 0 10000 $(($clis/$1)) false true true false 1
+./scripts/runDSLabCluster.sh 120 0 $clis $1 $2 $3 0 10000 $(($clis/$1)) false true true false 1
