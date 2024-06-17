@@ -47,7 +47,7 @@ public class NettyClientChannel extends Thread {
                 b.handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
-                        ch.pipeline().addLast(new MessageDecoder(null), new MessageEncoder(), 
+                        ch.pipeline().addLast(new MessageDecoder(null, null), new MessageEncoder(), 
                         new NettyClientChannelHandler(serverProxy, node.getId(), syncAllConnections, view));
                     }
                 });

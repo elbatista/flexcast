@@ -1,12 +1,19 @@
 
-zerar as frequencias por view
+OK - zerar as frequencias por view
+
+OK - rodar experimento que reconfigura sem latencias de cliente
+
+OK - verificar o garbage collector (pq nao influencia depois da reconfiguracao ?)
+ - diminuir frequencia
+ - desligar o GC
+
+
+
+
+
+
+testar com 6 nodes
 implementar mudanca dinamica de wload
  - thread que le novo arquivo de localidades depois de um tempo
  - testar diferentes periodos de reconfiguracao para que a mudanca de wload reflita nas frequencias de msgs extraidas pelo reconfig client
  - rodar experimento por mais tempo caso seja necessario
-
-rodar experimento que reconfigura sem latencias de cliente
-testar com 6 nodes
-
-verificar o garbage collector (pq nao influencia depois da reconfiguracao ?)
- - diminuir frequencia ou desligar o GC

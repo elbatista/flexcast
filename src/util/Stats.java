@@ -20,6 +20,10 @@ public class Stats {
     private Vector<Boolean> isGlobal;
     private int accCount, limit;
     private int [] throughput;
+    private int [] acks;
+    private int [] notifs;
+    private int [] graphsizes;
+    private int [] volumeinfo;
     private int now = 0;
     private short numNodes=0;
     /**
@@ -35,6 +39,10 @@ public class Stats {
         this();
         this.numNodes = numNodes;
         throughput = new int[duration+1];
+        acks = new int[duration+1];
+        notifs = new int[duration+1];
+        graphsizes = new int[duration+1];
+        volumeinfo = new int[duration+1];
         System.out.println("Start tp measurements");
         new Timer().scheduleAtFixedRate(new TimerTask() {
             public void run(){
@@ -52,7 +60,28 @@ public class Stats {
         values.add(value);
         this.isGlobal.add(isGlobal);
         accCount++;
-        try{throughput[now]++;}catch(Exception e){}
+        try{
+            throughput[now]++;
+        }catch(Exception e){}
+    }
+
+    public void storeAckNotif(boolean ack, boolean notif){
+        try{
+            if(ack) acks[now]++;
+            if(notif) notifs[now]++;
+        }catch(Exception e){}
+    }
+
+    public void storeGraphSize(int size){
+        try{
+            if(graphsizes[now] == 0) graphsizes[now] = size;
+        }catch(Exception e){}
+    }
+
+    public void storeVolume(int size){
+        try{
+            volumeinfo[now] += size;
+        }catch(Exception e){}
     }
 
     public int getPartialCount() {
@@ -218,6 +247,34 @@ public class Stats {
             fw.close();
         } catch (IOException ex) {
             System.err.println("Unable to save stats to file");
+            ex.printStackTrace();
+        }
+    }
+
+    public void persistAckNotifs(String fileName) {
+        File f = new File(fileName);
+        try {
+            FileWriter fw = new FileWriter(f);
+            fw.write("SEC\t");
+            fw.write("ACKS\t");
+            fw.write("NOTIFS\t");
+            fw.write("GRAPHSIZE\t");
+            fw.write("VOLUME\t");
+            for (int i = 0; i < acks.length; i++) {
+                try{
+                    fw.write(i + "\t" + 
+                        acks[i] + "\t" + 
+                        notifs[i]+ "\t" + 
+                        graphsizes[i]+ "\t" +
+                        volumeinfo[i]+ "\n"
+                    );
+                }
+                catch (Exception ex) {}
+            }
+            fw.flush();
+            fw.close();
+        } catch (IOException ex) {
+            System.err.println("Unable to save acks notifs stats to file");
             ex.printStackTrace();
         }
     }

@@ -485,7 +485,7 @@ public class Results {
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
-        int gcflex           = 10000;
+        int gcflex           = 0;
         // int gcall            = 0;
         // int dag              = 1;
         String clilat        = "clilat";
@@ -513,6 +513,7 @@ public class Results {
                         System.out.println("Data from: "+ basedir);
                         latenciesPerSec(basedir);
                         latenciesPerSecPerDest(basedir, nodes);
+                        acksNotifsPerSec(basedir);
                         // ###################### Latencies per Node ######################
                         // HashMap<Short, ArrayList<Double>> values = new HashMap<>();
                         // for(short n = 0; n < nodes; n++) values.put(n, new ArrayList<>());
@@ -645,8 +646,8 @@ public class Results {
             printerOut = new PrintWriter(basedir+"/plots/latpersec/plot.p");
 
             printerOut.println( "set terminal pdf dashed size 5, 2.5 font \",18\" ");
-            printerOut.println( "set style data histogram ");
-            printerOut.println( "set style histogram cluster gap 1 errorbars ");
+            // printerOut.println( "set style data histogram ");
+            // printerOut.println( "set style histogram cluster gap 1 errorbars ");
             printerOut.println( "set key right top maxrow 2 ");
             printerOut.println( "set ylabel \"Latency (ms)\" ");
             printerOut.println( "set xlabel \"Time (sec)\" ");
@@ -657,11 +658,101 @@ public class Results {
 
 
             printerOut.println( "set output '"+basedir+"/plots/latpersec/lat.pdf' ");
-            printerOut.println( "plot '"+basedir+"/plots/latpersec/lat.txt' using ($2/1000):($3/1000):xtic($1) t \"Final Latency\" ");
+            printerOut.println( "plot '"+basedir+"/plots/latpersec/lat.txt' using ($2/1000):xtic($1) t \"Final Latency\" w lines ");
             printerOut.flush();
             printerOut.close();
 
             Process  process = Runtime.getRuntime().exec("gnuplot "+basedir+"/plots/latpersec/plot.p");
+            process.waitFor();
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void acksNotifsPerSec(String basedir) {
+        HashMap<Integer, int[]> seconds = new HashMap<>();
+        try {
+            Files.list(Paths.get(basedir+"/files")) 
+            .filter(file -> {try{return !Files.isHidden(file) && !Files.isDirectory(file);} catch (Exception e) {return false;}})
+            .forEach(path -> {
+                if(!path.getFileName().toString().contains("acksNotifs")) return;
+                
+                Scanner scan=null;
+                String line;
+                long abs=0;
+                // int second=1;
+                try{scan = new Scanner(path.toFile());}catch (Exception e) {}
+
+                // skip first line
+                line = scan.nextLine();
+
+                while(scan.hasNext()){
+                    if(line.equals("") || line.startsWith("\t") || line.startsWith("SEC")) {
+                        line = scan.nextLine();
+                        continue;
+                    }
+                    String [] linesplit = line.split("\t");
+                    int sec = Integer.valueOf(linesplit[0]);
+                    if(seconds.get(sec)==null){
+                        seconds.put(sec, new int[2]);
+                    }
+                    seconds.get(sec)[0]+=Integer.valueOf(linesplit[1]);
+                    seconds.get(sec)[1]+=Integer.valueOf(linesplit[2]);
+
+                    line = scan.nextLine();
+                }
+            });
+
+            File directory = new File(basedir+"/plots/acksnotifs");
+            if (!directory.exists())  {
+                print("Criando dir", directory.getAbsolutePath());
+                directory.mkdirs();
+            }
+
+            // write data file
+            PrintWriter printerOut = new PrintWriter(basedir+"/plots/acksnotifs/data.txt");
+            for(int key : seconds.keySet()){
+                printerOut.println(key+"\t"+seconds.get(key)[0]+"\t"+ seconds.get(key)[1]);
+            }
+            printerOut.flush();
+            printerOut.close();
+
+            // write plot file and plot the pdf
+            printerOut = new PrintWriter(basedir+"/plots/acksnotifs/plot.p");
+
+            printerOut.println( "set terminal pdf dashed size 5, 2.5 font \",18\" ");
+            printerOut.println( "set key left top maxrow 2 ");
+            printerOut.println( "set ylabel \"Msgs/sec\" ");
+            printerOut.println( "set xlabel \"Time (sec)\" ");
+            printerOut.println( "set grid ytics lt 0 lw 1 ");
+            printerOut.println( "set grid xtics lt 0 lw 1 ");
+            printerOut.println("set xrange[0:120]");
+            printerOut.println("set xtics rotate by 50 right");
+
+
+            printerOut.println( "set output '"+basedir+"/plots/acksnotifs/acksnotifs.pdf' ");
+            printerOut.println( "plot '"+basedir+"/plots/acksnotifs/data.txt' using ($2):xtic($1) t \"Acks\" w lines, \\");
+            printerOut.println( "     '"+basedir+"/plots/acksnotifs/data.txt' using ($3):xtic($1) t \"Notifs\" w lines");
+
+            printerOut.println( "set ylabel \"Graph Size\" ");
+            printerOut.println( "set output '"+basedir+"/plots/acksnotifs/graphsizes.pdf' ");
+            printerOut.println( "plot '"+basedir+"/files/node0-acksNotifs.txt' using ($4):xtic($1) t \"Node0\" w lines , \\");
+            printerOut.println( "     '"+basedir+"/files/node1-acksNotifs.txt' using ($4):xtic($1) t \"Node1\" w lines , \\");
+            printerOut.println( "     '"+basedir+"/files/node2-acksNotifs.txt' using ($4):xtic($1) t \"Node2\" w lines ");
+
+            printerOut.println( "set ylabel \"Volume - Bytes\" ");
+            printerOut.println("set yrange[0:600000]");
+            printerOut.println( "set output '"+basedir+"/plots/acksnotifs/volume.pdf' ");
+            printerOut.println( "plot '"+basedir+"/files/node0-acksNotifs.txt' using ($5):xtic($1) t \"Node0\" w lines , \\");
+            printerOut.println( "     '"+basedir+"/files/node1-acksNotifs.txt' using ($5):xtic($1) t \"Node1\" w lines , \\");
+            printerOut.println( "     '"+basedir+"/files/node2-acksNotifs.txt' using ($5):xtic($1) t \"Node2\" w lines ");
+
+            
+            printerOut.flush();
+            printerOut.close();
+
+            Process  process = Runtime.getRuntime().exec("gnuplot "+basedir+"/plots/acksnotifs/plot.p");
             process.waitFor();
             
         } catch (Exception e) {

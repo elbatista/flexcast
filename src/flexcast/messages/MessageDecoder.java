@@ -7,13 +7,15 @@ import java.util.List;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
+import proxies.ServerProxy;
 import util.MsgSize;
 
 public class MessageDecoder extends ReplayingDecoder<Message> {
     private ArrayList<MsgSize> sizes;
-
-    public MessageDecoder(ArrayList<MsgSize> sizes){
+    private ServerProxy server;
+    public MessageDecoder(ArrayList<MsgSize> sizes, ServerProxy server){
         this.sizes = sizes;
+        this.server = server;
     }
 
     @Override
@@ -26,6 +28,7 @@ public class MessageDecoder extends ReplayingDecoder<Message> {
         Message m = (Message) ois.readObject();
         if(sizes != null && m.getType() == Message.Type.MSG || m.getType() == Message.Type.ACK || m.getType() == Message.Type.NOTIF){
             sizes.add(new MsgSize(System.nanoTime(), m.getId(), (double)size, m.getDst()));
+            server.getStats().storeVolume(size);
         }
         out.add(m);
     }
