@@ -52,6 +52,8 @@ public class Message extends BaseObj implements Externalizable {
     // "transient" fields
     private Channel channelIn;
     private HashSet<Integer> pendNotifOrigins;
+    private long recvTime;
+
 
     // constructors
     public Message(){
@@ -83,6 +85,14 @@ public class Message extends BaseObj implements Externalizable {
 
     public void setViewId(int id) {
         this.viewid = id;
+    }
+
+    public long getRecvTime() {
+        return recvTime;
+    }
+
+    public void setRecvTime(long recvTime) {
+        this.recvTime = recvTime;
     }
 
     public HashMap<String, Integer> getDstsFreq() {

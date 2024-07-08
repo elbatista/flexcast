@@ -42,6 +42,7 @@ public class FlexCastNode extends ServerProxy {
     protected void receiveMsg(Message m){
         print("Received msg", m, "queues", getQueues());
         msgs++;
+        m.setRecvTime(System.nanoTime());
         getHistory().addHst(m);
         if(getId() == m.getLca()){
             deliver(m);
@@ -248,6 +249,7 @@ public class FlexCastNode extends ServerProxy {
             sendAcks(m);
         }
         sendReply(m);
+        stats.storeDeliverTime(System.nanoTime() - m.getRecvTime());
         print("Delivered", m);
 
         stats.storeGraphSize(getHistory().getGraphSize());

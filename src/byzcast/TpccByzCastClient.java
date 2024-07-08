@@ -57,7 +57,7 @@ public class TpccByzCastClient extends ByzCastClient {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
         print("ByzCast TPC-C Client");
-        FileManager.loadLocalityFile(nearestWHs);
+        FileManager.loadLocalityFile(nearestWHs,0);
         run();
     }
     

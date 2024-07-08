@@ -65,7 +65,7 @@ public class ByzCastClient extends ByzCastClientProxy {
         this.warehouse = (short) args.getHomeWarehouse();
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
-        FileManager.loadLocalityFile(nearestWHs);
+        FileManager.loadLocalityFile(nearestWHs,0);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         for(Node server : nodes) connectTo(server, syncAllConnections);
         numNodes = (short) nodes.size();

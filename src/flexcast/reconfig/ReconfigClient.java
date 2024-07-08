@@ -33,7 +33,7 @@ public class ReconfigClient extends ClientProxy {
         if(!args.getLog()) setPrint(false);
         this.gen = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
-        FileManager.loadLocalityFile(nearestWHs);
+        FileManager.loadLocalityFile(nearestWHs,0);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         currentView = new View(0, nodes);
         connectToServers(syncAllConnections);

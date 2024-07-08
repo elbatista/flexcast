@@ -85,7 +85,7 @@ public class Results {
                 try{scan = new Scanner(path.toFile());}catch (Exception e) {}
                 while(scan.hasNext()){
                     String line = scan.nextLine();
-                    if(line.startsWith("Tp at sec") && !line.startsWith("Tp at sec 120")){
+                    if(line.startsWith("Tp at sec") && !line.startsWith("Tp at sec " + duration)){
                         lines++;
                         StringTokenizer str = new StringTokenizer(line, ":");
                         str.nextToken(); // skip the first column (text)
@@ -478,6 +478,8 @@ public class Results {
         }
     }
 
+    static int duration = 60;
+
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
@@ -485,11 +487,11 @@ public class Results {
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
-        int gcflex           = 0;
+        int gcflex           = 1000;
         // int gcall            = 0;
         // int dag              = 1;
         String clilat        = "clilat";
-        String rc            = "rc30";
+        String rc            = "rc10";
 
         String cliregion = "";
 
@@ -653,7 +655,7 @@ public class Results {
             printerOut.println( "set xlabel \"Time (sec)\" ");
             printerOut.println( "set grid ytics lt 0 lw 1 ");
             printerOut.println( "set grid xtics lt 0 lw 1 ");
-            printerOut.println("set xrange[0:120]");
+            printerOut.println("set xrange[0:"+duration+"]");
             printerOut.println("set xtics rotate by 50 right");
 
 
@@ -727,7 +729,7 @@ public class Results {
             printerOut.println( "set xlabel \"Time (sec)\" ");
             printerOut.println( "set grid ytics lt 0 lw 1 ");
             printerOut.println( "set grid xtics lt 0 lw 1 ");
-            printerOut.println("set xrange[0:120]");
+            printerOut.println("set xrange[0:"+duration+"]");
             printerOut.println("set xtics rotate by 50 right");
 
 
@@ -748,6 +750,13 @@ public class Results {
             printerOut.println( "     '"+basedir+"/files/node1-acksNotifs.txt' using ($5):xtic($1) t \"Node1\" w lines , \\");
             printerOut.println( "     '"+basedir+"/files/node2-acksNotifs.txt' using ($5):xtic($1) t \"Node2\" w lines ");
 
+
+            printerOut.println( "set ylabel \"Time (ms)\" ");
+            printerOut.println("set yrange[-1:100]");
+            printerOut.println( "set output '"+basedir+"/plots/acksnotifs/timetodeliver.pdf' ");
+            printerOut.println( "plot '"+basedir+"/files/node0-acksNotifs.txt' using ($6/1000000):xtic($1) t \"Node0\" w lines , \\");
+            printerOut.println( "     '"+basedir+"/files/node1-acksNotifs.txt' using ($6/1000000):xtic($1) t \"Node1\" w lines , \\");
+            printerOut.println( "     '"+basedir+"/files/node2-acksNotifs.txt' using ($6/1000000):xtic($1) t \"Node2\" w lines ");
             
             printerOut.flush();
             printerOut.close();

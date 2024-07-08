@@ -24,6 +24,7 @@ public class Stats {
     private int [] notifs;
     private int [] graphsizes;
     private int [] volumeinfo;
+    private HashMap<Integer, ArrayList<Long>> deliverTime;
     private int now = 0;
     private short numNodes=0;
     /**
@@ -43,6 +44,8 @@ public class Stats {
         notifs = new int[duration+1];
         graphsizes = new int[duration+1];
         volumeinfo = new int[duration+1];
+        deliverTime = new HashMap<>();
+        for(int i = 0; i <= duration+1; i++) deliverTime.put(i, new ArrayList<>());
         System.out.println("Start tp measurements");
         new Timer().scheduleAtFixedRate(new TimerTask() {
             public void run(){
@@ -81,6 +84,12 @@ public class Stats {
     public void storeVolume(int size){
         try{
             volumeinfo[now] += size;
+        }catch(Exception e){}
+    }
+
+    public void storeDeliverTime(long time){
+        try{
+            deliverTime.get(now).add(time);
         }catch(Exception e){}
     }
 
@@ -260,13 +269,16 @@ public class Stats {
             fw.write("NOTIFS\t");
             fw.write("GRAPHSIZE\t");
             fw.write("VOLUME\t");
+            fw.write("DELIVERTIME\n");
+            
             for (int i = 0; i < acks.length; i++) {
                 try{
                     fw.write(i + "\t" + 
                         acks[i] + "\t" + 
                         notifs[i]+ "\t" + 
                         graphsizes[i]+ "\t" +
-                        volumeinfo[i]+ "\n"
+                        volumeinfo[i]+ "\t" +
+                        avgDeliverTime(i)+ "\n"
                     );
                 }
                 catch (Exception ex) {}
@@ -277,5 +289,11 @@ public class Stats {
             System.err.println("Unable to save acks notifs stats to file");
             ex.printStackTrace();
         }
+    }
+
+    private long avgDeliverTime(int i) {
+        long sum = 0;
+        for( long time : deliverTime.get(i)) sum+=time;
+        return (long) sum / deliverTime.get(i).size();
     }
 }
