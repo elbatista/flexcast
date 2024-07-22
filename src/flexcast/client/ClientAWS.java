@@ -15,7 +15,6 @@ import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.locks.ReentrantLock;
-
 import base.Host;
 import base.Node;
 import flexcast.messages.Message.TransactionType;
@@ -161,12 +160,23 @@ public class ClientAWS extends ClientProxy {
             int totalMsgs=0;
 
             while ((elapsed / 1e9) < totalTime) {
-                
                 Message m = newMessage();
                 generatePayload(m);
 
                 now = System.nanoTime();
-                multicast(m);
+
+                do {
+                    m.setType(Type.MSG);
+                    m.setViewId(currentView.getId());
+                    m.setCliId(getId());
+                    m.setDst(currentView.sortByCDAGPosition(m.getDst()));
+
+                    resend = false;
+                    multicast(m);
+                    
+                }
+                while (resend);
+
                 stats.store((System.nanoTime() - now) / 1000, (m.getDst().length > 1));
 
                 elapsed = (now - startTime);

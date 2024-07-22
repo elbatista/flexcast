@@ -4,7 +4,6 @@ import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
 import util.Stats;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -249,7 +248,7 @@ public class FlexCastNode extends ServerProxy {
             sendAcks(m);
         }
         sendReply(m);
-        stats.storeDeliverTime(System.nanoTime() - m.getRecvTime());
+        stats.storeDeliverTime(System.nanoTime() - m.getRecvTime(), currentView.getId());
         print("Delivered", m);
 
         stats.storeGraphSize(getHistory().getGraphSize());
@@ -510,6 +509,7 @@ public class FlexCastNode extends ServerProxy {
         // printF("Avg msg size", Stats.of(getSizes()).mean());
         files.persistMsgSizes(getSizes(), getId());
         stats.persistAckNotifs("files/node"+getId()+"-acksNotifs.txt");
+        stats.persistMsgsPerConfig("files/node"+getId()+"-deliveryTimePerConfig.txt");
         printF("-------------------------------------");
         files.nodeFinished(getId());
         exit();
@@ -548,6 +548,7 @@ public class FlexCastNode extends ServerProxy {
             vc.setNewOverlay(currentView.getOverlay());
             vc.setDst(m.getDst());
             vc.setCliId(m.getCliId());
+            // vc.setRecvTime(m.getRecvTime());
             sendReplyVC(vc);
             return false;
         }

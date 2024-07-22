@@ -142,8 +142,9 @@ public abstract class ServerProxy extends ClientProxy {
         reply.setSender(getId());
         reply.setType(m.getType());
         reply.setViewId(m.getViewId());
-        reply.setDst(new short[0]);
+        reply.setDst(m.getDst());
         reply.setNewOverlay(m.getNewOverlay());
+        // reply.setRecvTime(m.getRecvTime());
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 }

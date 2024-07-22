@@ -478,7 +478,7 @@ public class Results {
         }
     }
 
-    static int duration = 60;
+    static int duration = 180;
 
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
@@ -487,7 +487,7 @@ public class Results {
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
-        int gcflex           = 1000;
+        int gcflex           = 2000;
         // int gcall            = 0;
         // int dag              = 1;
         String clilat        = "clilat";
@@ -751,7 +751,7 @@ public class Results {
             printerOut.println( "     '"+basedir+"/files/node2-acksNotifs.txt' using ($5):xtic($1) t \"Node2\" w lines ");
 
 
-            printerOut.println( "set ylabel \"Time (ms)\" ");
+            printerOut.println( "set ylabel \"Time to deliver (ms)\" font \",16\" ");
             printerOut.println("set yrange[-1:100]");
             printerOut.println( "set output '"+basedir+"/plots/acksnotifs/timetodeliver.pdf' ");
             printerOut.println( "plot '"+basedir+"/files/node0-acksNotifs.txt' using ($6/1000000):xtic($1) t \"Node0\" w lines , \\");
