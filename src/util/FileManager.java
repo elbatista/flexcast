@@ -294,10 +294,11 @@ public class FileManager extends BaseObj {
         }
     }
 
-    public static void loadLocalityFile(HashMap<Short, String> nearestWHs) {
+    public static void loadLocalityFile(HashMap<Short, String> nearestWHs, int num) {
         try{
-
-            FileReader fr = new FileReader("config/locality.conf");
+            String filename = "config/locality"+(num>0?num:"")+".conf";
+            System.out.println("Reading locality file: " + filename);
+            FileReader fr = new FileReader(filename);
             BufferedReader rd = new BufferedReader(fr);
             String line = null;
             while((line = rd.readLine()) != null){

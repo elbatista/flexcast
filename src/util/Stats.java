@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -20,6 +21,12 @@ public class Stats {
     private Vector<Boolean> isGlobal;
     private int accCount, limit;
     private int [] throughput;
+    private int [] acks;
+    private int [] notifs;
+    private int [] graphsizes;
+    private int [] volumeinfo;
+    private HashMap<Integer, ArrayList<Long>> deliverTime;
+    private HashMap<Integer, HashMap<Integer, ArrayList<Long>>> msgsPerConfig;
     private int now = 0;
     private short numNodes=0;
     /**
@@ -35,6 +42,16 @@ public class Stats {
         this();
         this.numNodes = numNodes;
         throughput = new int[duration+1];
+        acks = new int[duration+1];
+        notifs = new int[duration+1];
+        graphsizes = new int[duration+1];
+        volumeinfo = new int[duration+1];
+        deliverTime = new HashMap<>();
+        msgsPerConfig = new HashMap<>();
+        for(int i = 0; i <= duration+1; i++) {
+            deliverTime.put(i, new ArrayList<>());
+            msgsPerConfig.put(i, new HashMap<>());
+        }
         System.out.println("Start tp measurements");
         new Timer().scheduleAtFixedRate(new TimerTask() {
             public void run(){
@@ -52,7 +69,40 @@ public class Stats {
         values.add(value);
         this.isGlobal.add(isGlobal);
         accCount++;
-        try{throughput[now]++;}catch(Exception e){}
+        try{
+            throughput[now]++;
+        }catch(Exception e){}
+    }
+
+    public void storeAckNotif(boolean ack, boolean notif){
+        try{
+            if(ack) acks[now]++;
+            if(notif) notifs[now]++;
+        }catch(Exception e){}
+    }
+
+    public void storeGraphSize(int size){
+        try{
+            if(graphsizes[now] == 0) graphsizes[now] = size;
+        }catch(Exception e){}
+    }
+
+    public void storeVolume(int size){
+        try{
+            volumeinfo[now] += size;
+        }catch(Exception e){}
+    }
+
+    public void storeDeliverTime(long time, int config){
+        try{
+            deliverTime.get(now).add(time);
+
+            if(msgsPerConfig.get(now).get(config) == null)
+                msgsPerConfig.get(now).put(config, new ArrayList<>());
+            
+                msgsPerConfig.get(now).get(config).add(time);
+            
+        }catch(Exception e){}
     }
 
     public int getPartialCount() {
@@ -221,4 +271,91 @@ public class Stats {
             ex.printStackTrace();
         }
     }
+
+    public void persistAckNotifs(String fileName) {
+        File f = new File(fileName);
+        try {
+            FileWriter fw = new FileWriter(f);
+            fw.write("SEC\t");
+            fw.write("ACKS\t");
+            fw.write("NOTIFS\t");
+            fw.write("GRAPHSIZE\t");
+            fw.write("VOLUME\t");
+            fw.write("DELIVERTIME\n");
+            
+            for (int i = 0; i < acks.length; i++) {
+                try{
+                    fw.write(i + "\t" + 
+                        acks[i] + "\t" + 
+                        notifs[i]+ "\t" + 
+                        graphsizes[i]+ "\t" +
+                        volumeinfo[i]+ "\t" +
+                        avgDeliverTime(i, deliverTime.get(i))+ "\n"
+                    );
+                }
+                catch (Exception ex) {}
+            }
+            fw.flush();
+            fw.close();
+        } catch (IOException ex) {
+            System.err.println("Unable to save acks notifs stats to file");
+            ex.printStackTrace();
+        }
+    }
+    public void persistMsgsPerConfig(String fileName) {
+        File f = new File(fileName);
+        try {
+            FileWriter fw = new FileWriter(f);
+            fw.write("#SEC\t");
+            fw.write("CONFIG\t");
+            fw.write("AVG_TIME\t");
+            fw.write("SD_TIME\n");
+            
+            for (int i = 0; i < msgsPerConfig.size(); i++) {
+                for (int config : msgsPerConfig.get(i).keySet()) {
+                    try{
+                        fw.write(i + "\t" + 
+                            config + "\t" + 
+                            avgDeliverTime(i, msgsPerConfig.get(i).get(config)) + "\t" + 
+                            standardDeviation(i, msgsPerConfig.get(i).get(config)) + "\n"
+                        );
+                    }
+                    catch (Exception ex) {}
+                }
+            }
+            fw.flush();
+            fw.close();
+        } catch (IOException ex) {
+            System.err.println("Unable to save msgs per config stats to file");
+            ex.printStackTrace();
+        }
+    }
+
+    private long avgDeliverTime(int i, List<Long> times) {
+        long sum = 0;
+        for( long time : times) sum+=time;
+        return (long) sum / times.size();
+    }
+
+    private long standardDeviation(int i, List<Long> times) {
+
+        // get the sum of array
+        long sum = 0;
+        for (long l : times) {
+            sum += l;
+        }
+    
+        // get the mean of array
+        int length = times.size();
+        double mean = sum / length;
+    
+        // calculate the standard deviation
+        double standardDeviation = 0.0;
+        for (long num : times) {
+            standardDeviation += Math.pow(num - mean, 2);
+        }
+    
+        return (long) Math.sqrt(standardDeviation / length);
+    }
+    
 }

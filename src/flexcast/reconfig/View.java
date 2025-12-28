@@ -346,4 +346,11 @@ public class View extends BaseObj{
             e.printStackTrace();
         }
     }
+
+    public void clearDstsFreq() {
+        if(dstsFreq != null){
+            dstsFreq.clear();
+            printF("Cleared frequencies");
+        }
+    }
 }

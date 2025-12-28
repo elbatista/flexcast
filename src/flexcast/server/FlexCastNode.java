@@ -3,6 +3,7 @@ package flexcast.server;
 import proxies.ServerProxy;
 import util.ArgsParser;
 import util.FileManager;
+import util.Stats;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,7 @@ public class FlexCastNode extends ServerProxy {
         if(!p.getLog()) setPrint(false);
         currentView = new View(0, getId(), files.loadHosts());
         setHost(currentView.getHost());
+        stats = new Stats(p.getDuration(), getId());
         connectToServers();
         printF(this, "FlexCast - Start listening...");
         printF("Current view:", currentView);
@@ -39,6 +41,7 @@ public class FlexCastNode extends ServerProxy {
     protected void receiveMsg(Message m){
         print("Received msg", m, "queues", getQueues());
         msgs++;
+        m.setRecvTime(System.nanoTime());
         getHistory().addHst(m);
         if(getId() == m.getLca()){
             deliver(m);
@@ -79,6 +82,7 @@ public class FlexCastNode extends ServerProxy {
     protected void receiveAck(Message ack){
         print("Received ack", ack, "from", ack.getSender(), "queues", getQueues());
         acks++;
+        stats.storeAckNotif(true, false);
         getHistory().addHst(ack);
         PendingMessage pend = getHistory().getPendMsg(ack.getId());
         if(pend == null){
@@ -106,6 +110,7 @@ public class FlexCastNode extends ServerProxy {
     protected void receiveNotif(Message notif){
         print("Received notif", notif, "from", notif.getSender(), "queues", getQueues());
         notifs++;
+        stats.storeAckNotif(false, true);
         getHistory().addHst(notif);
 
         if(getPendingNotifs().size() > 0){
@@ -243,7 +248,10 @@ public class FlexCastNode extends ServerProxy {
             sendAcks(m);
         }
         sendReply(m);
+        stats.storeDeliverTime(System.nanoTime() - m.getRecvTime(), currentView.getId());
         print("Delivered", m);
+
+        stats.storeGraphSize(getHistory().getGraphSize());
 
         if(m.getType() == Type.VIEWCHANGE){
             changeView(m);
@@ -500,6 +508,8 @@ public class FlexCastNode extends ServerProxy {
         // if(gsizes != null && gsizes.size() > 0) printF("Avg Graph size:", Stats.of(gsizes).mean());
         // printF("Avg msg size", Stats.of(getSizes()).mean());
         files.persistMsgSizes(getSizes(), getId());
+        stats.persistAckNotifs("files/node"+getId()+"-acksNotifs.txt");
+        stats.persistMsgsPerConfig("files/node"+getId()+"-deliveryTimePerConfig.txt");
         printF("-------------------------------------");
         files.nodeFinished(getId());
         exit();
@@ -538,6 +548,7 @@ public class FlexCastNode extends ServerProxy {
             vc.setNewOverlay(currentView.getOverlay());
             vc.setDst(m.getDst());
             vc.setCliId(m.getCliId());
+            // vc.setRecvTime(m.getRecvTime());
             sendReplyVC(vc);
             return false;
         }

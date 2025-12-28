@@ -8,20 +8,25 @@ import flexcast.messages.Message;
 import flexcast.messages.Message.Type;
 import io.netty.channel.Channel;
 import util.MsgSize;
+// import util.Stats;
+import util.Stats;
 
 public abstract class ServerProxy extends ClientProxy {
     protected ConcurrentLinkedQueue<Message> bufferQueue;
     private HashMap<Integer, Channel> cliChannels;
     protected int numCliEndsRecv = 0, numCliReadyRecv = 0, numClients = 0, localMsgs;
     ArrayList<MsgSize> sizes = new ArrayList<>();
-
+    // int duration = 0;
     public ArrayList<MsgSize> getSizes() {
         return sizes;
     }
 
+    public Stats getStats(){return stats;}
+
     public ServerProxy(short id, int numClients){
         super(id);
         this.numClients = numClients;
+        // this.duration = duration;
         bufferQueue = new ConcurrentLinkedQueue<>();
         cliChannels = new HashMap<>();
         new NettyServerChannel(this, this);
@@ -86,6 +91,7 @@ public abstract class ServerProxy extends ClientProxy {
                 m.setSender(getId());
                 cliChannels.get(i).writeAndFlush(m);
             }
+            
         }
     }
 
@@ -118,8 +124,8 @@ public abstract class ServerProxy extends ClientProxy {
                 dstFreq.put(k, currentView.getDstsFreq().get(k));
             }
             reply.setDstsFreq(dstFreq);
+            currentView.clearDstsFreq();
         }
-
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 
@@ -136,8 +142,9 @@ public abstract class ServerProxy extends ClientProxy {
         reply.setSender(getId());
         reply.setType(m.getType());
         reply.setViewId(m.getViewId());
-        reply.setDst(new short[0]);
+        reply.setDst(m.getDst());
         reply.setNewOverlay(m.getNewOverlay());
+        // reply.setRecvTime(m.getRecvTime());
         cliChannels.get(m.getCliId()).writeAndFlush(reply);
     }
 }

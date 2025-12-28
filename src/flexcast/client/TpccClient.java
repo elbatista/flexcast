@@ -57,7 +57,7 @@ public class TpccClient extends Client {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
         print("FlexCast TPC-C Client");
-        FileManager.loadLocalityFile(nearestWHs);
+        FileManager.loadLocalityFile(nearestWHs,0);
         run();
     }
     

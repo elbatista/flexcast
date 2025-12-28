@@ -56,7 +56,7 @@ public class TpccSkeenClient extends SkeenClient {
         super(id, args, false);
         this.gen = new Random(System.nanoTime());
         print("Skeen TPC-C Client");
-        FileManager.loadLocalityFile(nearestWHs);
+        FileManager.loadLocalityFile(nearestWHs,0);
         run();
     }
     

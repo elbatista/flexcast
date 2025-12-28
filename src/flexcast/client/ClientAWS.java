@@ -10,8 +10,11 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.locks.ReentrantLock;
 import base.Host;
 import base.Node;
 import flexcast.messages.Message.TransactionType;
@@ -39,8 +42,11 @@ public class ClientAWS extends ClientProxy {
     private boolean sendPayload, tt, includeLocalMsgs;
     private int gc=0, dagTop = 1;
     private HashMap<Short, String> nearestWHs = new HashMap<>();
+    private ReentrantLock locFileLock = new ReentrantLock();
     double AcumTt = 0;
     int TtCount = 0;
+    private int chgWloadFreq = -1;
+    private int chgWloadLocFile = -1;
 
     // Tpcc workload distribution
     private static final int newOrderWeight = 45;
@@ -65,7 +71,8 @@ public class ClientAWS extends ClientProxy {
         this.gen = new Random(System.nanoTime());
         thinkTimeRand = new Random(System.nanoTime());
         ArrayList<Node> nodes = files.loadHosts();
-        FileManager.loadLocalityFile(nearestWHs);
+        FileManager.loadLocalityFile(nearestWHs,0);
+        printF(nearestWHs);
         syncAllConnections = new CyclicBarrier(nodes.size()+1);
         currentView = new View(0, nodes);
         connectToServers(syncAllConnections);
@@ -73,9 +80,36 @@ public class ClientAWS extends ClientProxy {
         destsSizes = new int [numNodes];
         wloadDist2dests = new int [numNodes][numNodes];
         wloadDist3dests = new int [numNodes][numNodes][numNodes];
+        int [] cwvalues = args.getChangeWload();
+        if(cwvalues != null){
+            chgWloadFreq = cwvalues[0];
+            chgWloadLocFile = cwvalues[1];
+        
+            new Timer("").schedule(
+                new TimerTask() {
+                    public void run() {
+                        changeLocality();
+                    }
+                }
+                , chgWloadFreq*1000
+            );
+        }
         if(start) start();
     }
     
+    protected void changeLocality() {
+        try{
+            locFileLock.lock();
+            nearestWHs.clear();
+            FileManager.loadLocalityFile(nearestWHs, chgWloadLocFile);
+            printF("Changed locality!!!");
+            printF(nearestWHs);
+        }
+        finally {
+            locFileLock.unlock();
+        }
+    }
+
     // generates an unique message id, based on the client id
     private int nextSeqNumber(){
         seqNumber++;
@@ -126,12 +160,23 @@ public class ClientAWS extends ClientProxy {
             int totalMsgs=0;
 
             while ((elapsed / 1e9) < totalTime) {
-                
                 Message m = newMessage();
                 generatePayload(m);
 
                 now = System.nanoTime();
-                multicast(m);
+
+                do {
+                    m.setType(Type.MSG);
+                    m.setViewId(currentView.getId());
+                    m.setCliId(getId());
+                    m.setDst(currentView.sortByCDAGPosition(m.getDst()));
+
+                    resend = false;
+                    multicast(m);
+                    
+                }
+                while (resend);
+
                 stats.store((System.nanoTime() - now) / 1000, (m.getDst().length > 1));
 
                 elapsed = (now - startTime);
@@ -353,15 +398,20 @@ public class ClientAWS extends ClientProxy {
 
     private short getNearestWH(int index) {
         short tempdst = -1;
+        try {
+            locFileLock.lock();
+            try{tempdst = Short.valueOf(nearestWHs.get((short)warehouse).split(" ")[index].trim());} catch(Exception e){}
 
-        try{tempdst = Short.valueOf(nearestWHs.get((short)warehouse).split(" ")[index].trim());} catch(Exception e){}
-
-        if(tempdst == -1){
-            // simply get the next HW in order of id
-            tempdst = (short)(warehouse+1);
-            if(tempdst == numNodes) tempdst = (short)(warehouse-1);
+            if(tempdst == -1){
+                // simply get the next HW in order of id
+                tempdst = (short)(warehouse+1);
+                if(tempdst == numNodes) tempdst = (short)(warehouse-1);
+            }
+            return tempdst;
         }
-        return tempdst;
+        finally{
+            locFileLock.unlock();
+        }
     }
 
     protected void changeView(Message m) {

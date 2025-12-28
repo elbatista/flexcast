@@ -27,6 +27,7 @@ public class Message extends BaseObj implements Externalizable {
     private HashMap<Short, LightMessagesList> hst;
     private ArrayList<Pair<Short, Integer>> notifList;
     private int idNotif=-1;
+    private long recvTime = -1;
 
     // used in viewchange msgs
     private short [] newOverlay;
@@ -52,6 +53,7 @@ public class Message extends BaseObj implements Externalizable {
     // "transient" fields
     private Channel channelIn;
     private HashSet<Integer> pendNotifOrigins;
+
 
     // constructors
     public Message(){
@@ -83,6 +85,14 @@ public class Message extends BaseObj implements Externalizable {
 
     public void setViewId(int id) {
         this.viewid = id;
+    }
+
+    public long getRecvTime() {
+        return recvTime;
+    }
+
+    public void setRecvTime(long recvTime) {
+        this.recvTime = recvTime;
     }
 
     public HashMap<String, Integer> getDstsFreq() {
@@ -276,6 +286,7 @@ public class Message extends BaseObj implements Externalizable {
         // type
         out.writeByte(1);
         out.writeInt(getId());
+        out.writeLong(getRecvTime());
         out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeShort(getSender());
@@ -426,6 +437,7 @@ public class Message extends BaseObj implements Externalizable {
     private void writeExtViewChange(ObjectOutput out) throws IOException {
         out.writeByte(7);
         out.writeInt(getId());
+        out.writeLong(getRecvTime());
         out.writeInt(getViewId());
         out.writeInt(getCliId());
         out.writeByte(getSender());
@@ -476,6 +488,7 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtMsg(ObjectInput in) throws IOException {
         setType(Type.MSG);
         setId(in.readInt());
+        setRecvTime(in.readLong());
         setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readShort());
@@ -628,6 +641,7 @@ public class Message extends BaseObj implements Externalizable {
     private void readExtViewChange(ObjectInput in) throws IOException {
         setType(Type.VIEWCHANGE);
         setId(in.readInt());
+        setRecvTime(in.readLong());
         setViewId(in.readInt());
         setCliId(in.readInt());
         setSender(in.readByte());

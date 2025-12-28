@@ -18,6 +18,7 @@ public abstract class ClientProxy extends Node{
     private Semaphore sema = new Semaphore(0);
     private ReentrantLock lock = new ReentrantLock();
     private ArrayList<Message> replies = new ArrayList<>();
+    protected boolean resend = false;
     private short expectedReplies = 0;
     protected short numNodes = 0;
     protected Stats stats;
@@ -144,6 +145,7 @@ public abstract class ClientProxy extends Node{
             if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts, reply.getType());
             printF("Got a viewchange reply from server", reply.getSender());
             changeView(reply);
+            resend = true;
             sema.release();
             lock.unlock();
             return;
