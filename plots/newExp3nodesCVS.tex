@@ -186,8 +186,6 @@ Took 5 ms
     \includegraphics[scale=.7]{exp_didnt_reconf/plots/latpersec/perdest/lat[0,1,2].pdf}
 \end{Figure}
 
-\newpage
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \newpage
@@ -275,6 +273,457 @@ Took 5 ms
     \includegraphics[scale=.6]{exp_reconf/latpersec/perdest/lat[0,2].pdf}
     \includegraphics[scale=.6]{exp_reconf/latpersec/perdest/lat[1,2].pdf}
     \includegraphics[scale=.6]{exp_reconf/latpersec/perdest/lat[0,1,2].pdf}
+\end{Figure}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \small
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies\\ \Large \color{red}NO CLIENT LATENCIES}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig:} 30 seconds
+        \item \Large \color{red} \textbf{GC:} 10 seconds
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Canada, Sao Paulo, Virginia)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.29]{figs/CSV}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+\small
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{noclilat/plots/tp/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{noclilat/plots/latpersec/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\begin{multicols}{2}
+    \footnotesize
+
+    \begin{verbatim}
+        "workload": [
+            {
+                "destination": [0, 1],
+                "percentage": 0.714834
+            },
+            {
+                "destination": [0, 2],
+                "percentage": 0.029263614
+            },
+            {
+                "destination": [0, 1, 2],
+                "percentage": 0.047801804
+            },
+            {
+                "destination": [1, 2],
+                "percentage": 0.2081006
+            },
+        ]
+    Took 22 ms 
+    \end{verbatim}
+
+    \columnbreak
+
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.3]{figs/SVC.png}
+    \end{Figure}
+
+\end{multicols}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[scale=.6]{noclilat/plots/latpersec/perdest/lat[0,1].pdf}
+    \includegraphics[scale=.6]{noclilat/plots/latpersec/perdest/lat[0,2].pdf}
+    \includegraphics[scale=.6]{noclilat/plots/latpersec/perdest/lat[1,2].pdf}
+    \includegraphics[scale=.6]{noclilat/plots/latpersec/perdest/lat[0,1,2].pdf}
+\end{Figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \small
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig:} 30 seconds
+        \item \Large \color{red}NO GC
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Canada, Sao Paulo, Virginia)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.29]{figs/CSV}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+\small
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/nogc/plots/tp/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/nogc/plots/latpersec/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\begin{multicols}{2}
+    \footnotesize
+
+    \begin{verbatim}
+        "workload": [
+            {
+                "destination": [0, 1],
+                "percentage": 0.6664093
+            },
+            {
+                "destination": [0, 2],
+                "percentage": 0.029835107
+            },
+            {
+                "destination": [0, 1, 2],
+                "percentage": 0.05035019
+            },
+            {
+                "destination": [1, 2],
+                "percentage": 0.2534054
+            },
+        ]
+    Took 25 ms 
+    \end{verbatim}
+
+    \columnbreak
+
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.3]{figs/SVC.png}
+    \end{Figure}
+
+\end{multicols}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[scale=.6]{exp_reconf/nogc/plots/latpersec/perdest/lat[0,1].pdf}
+    \includegraphics[scale=.6]{exp_reconf/nogc/plots/latpersec/perdest/lat[0,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/nogc/plots/latpersec/perdest/lat[1,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/nogc/plots/latpersec/perdest/lat[0,1,2].pdf}
+\end{Figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \small
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig:} 30 seconds
+        \item \Large \color{red} GC 1 second
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Canada, Sao Paulo, Virginia)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.29]{figs/CSV}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+\small
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/gc1sec/plots/tp/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/gc1sec/plots/latpersec/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\begin{multicols}{2}
+    \footnotesize
+
+    \begin{verbatim}
+        "workload": [
+            {
+                "destination": [0, 1],
+                "percentage": 0.5822697
+            },
+            {
+                "destination": [0, 2],
+                "percentage": 0.031214725
+            },
+            {
+                "destination": [0, 1, 2],
+                "percentage": 0.050273508
+            },
+            {
+                "destination": [1, 2],
+                "percentage": 0.33624208
+            },
+        ]
+    Took 22 ms 
+    \end{verbatim}
+
+    \columnbreak
+
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.3]{figs/SVC.png}
+    \end{Figure}
+
+\end{multicols}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[scale=.6]{exp_reconf/gc1sec/plots/latpersec/perdest/lat[0,1].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc1sec/plots/latpersec/perdest/lat[0,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc1sec/plots/latpersec/perdest/lat[1,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc1sec/plots/latpersec/perdest/lat[0,1,2].pdf}
+\end{Figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \small
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig:} 30 seconds
+        \item \Large \color{red} GC 2 second
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Canada, Sao Paulo, Virginia)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.29]{figs/CSV}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+\small
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/gc2sec/plots/tp/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/gc2sec/plots/latpersec/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\begin{multicols}{2}
+    \footnotesize
+
+    \begin{verbatim}
+        "workload": [
+            {
+                "destination": [0, 1],
+                "percentage": 0.58594364
+            },
+            {
+                "destination": [0, 2],
+                "percentage": 0.03219614
+            },
+            {
+                "destination": [0, 1, 2],
+                "percentage": 0.04894861
+            },
+            {
+                "destination": [1, 2],
+                "percentage": 0.3329116
+            },
+        ]
+    Took 22 ms 
+    \end{verbatim}
+
+    \columnbreak
+
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.3]{figs/SVC.png}
+    \end{Figure}
+
+\end{multicols}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[scale=.6]{exp_reconf/gc2sec/plots/latpersec/perdest/lat[0,1].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc2sec/plots/latpersec/perdest/lat[0,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc2sec/plots/latpersec/perdest/lat[1,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc2sec/plots/latpersec/perdest/lat[0,1,2].pdf}
+\end{Figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\section{Experiment Config.}
+\begin{multicols}{3}
+    \small
+    \begin{itemize}
+        \item \textbf{TPCC/AWS Latencies}
+        \item \textbf{Exp. Duration:} 2 min
+        \item \textbf{Reconfig:} 30 seconds
+        \item \Large \color{red} GC 5 seconds
+    \end{itemize}
+    \columnbreak
+    \begin{itemize}
+    	\small
+        \item \textbf{Regions/Nodes: 3}  \\(Canada, Sao Paulo, Virginia)
+        \item \textbf{Clients: 150} (50 per region)
+        \item \textbf{Locality: 95\%}
+    \end{itemize}
+    \columnbreak
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.29]{figs/CSV}
+    \end{Figure}
+\end{multicols}
+
+\section{Results}
+\small
+\begin{multicols}{2}
+    \subsection{Throughput}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/gc5sec/plots/tp/tp.pdf}
+    \end{Figure}
+    \columnbreak
+    \subsection{Latency}
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.6]{exp_reconf/gc5sec/plots/latpersec/lat.pdf}
+    \end{Figure}
+\end{multicols}
+
+\subsection{Reconfiguration details}
+
+\begin{multicols}{2}
+    \footnotesize
+
+    \begin{verbatim}
+        "workload": [
+            {
+                "destination": [0, 1],
+                "percentage": 0.58656037
+            },
+            {
+                "destination": [0, 2],
+                "percentage": 0.03316103
+            },
+            {
+                "destination": [0, 1, 2],
+                "percentage": 0.049413003
+            },
+            {
+                "destination": [1, 2],
+                "percentage": 0.3308656
+            },
+        ]
+    Took 22 ms 
+    \end{verbatim}
+
+    \columnbreak
+
+    \begin{Figure}
+        \centering
+        \includegraphics[scale=.3]{figs/SVC.png}
+    \end{Figure}
+
+\end{multicols}
+
+\subsection{Latencies per dests (90p)}
+
+\begin{Figure}
+    \centering
+    \includegraphics[scale=.6]{exp_reconf/gc5sec/plots/latpersec/perdest/lat[0,1].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc5sec/plots/latpersec/perdest/lat[0,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc5sec/plots/latpersec/perdest/lat[1,2].pdf}
+    \includegraphics[scale=.6]{exp_reconf/gc5sec/plots/latpersec/perdest/lat[0,1,2].pdf}
 \end{Figure}
 
 
