@@ -1,7 +1,7 @@
 Zone,IP
-Canada,192.168.3.60
-Virginia,192.168.3.61
-SaoPaulo,192.168.3.62
-cli-Canada,192.168.3.63
-cli-Virginia,192.168.3.64
-cli-SaoPaulo,192.168.3.65
+Virginia,192.168.3.60
+Frankfurt,192.168.3.61
+Mumbai,192.168.3.62
+cli-Virginia,192.168.3.63
+cli-Frankfurt,192.168.3.64
+cli-Mumbai,192.168.3.65

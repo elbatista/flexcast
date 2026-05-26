@@ -27,7 +27,7 @@ payload=${11}
 thinktime=${12}
 localm=${13}
 dag_tree=${14}
-rc="10"
+rc="90"
 iniNode=60
 clilat=true
 

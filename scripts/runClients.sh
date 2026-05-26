@@ -19,7 +19,8 @@ region=${17}
 
 for i in $(seq 1 $clispernode)
 do
-    java -cp "bin/*:lib/*" MainClient -c $clients -i $ID -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log $tpcc $payload $thinktime $localm -tree $dag_tree -r $region >> $basedir/logs/client$ID.txt &
+    # -cw 45 2
+    java -cp "bin/*:lib/*" MainClient -c $clients -i $ID -d $duration -a $algo -l $locality -w $warehouse -m $msgs $log $tpcc $payload $thinktime $localm -tree $dag_tree -r $region  >> $basedir/logs/client$ID.txt &
     sleep .1
     ID=$(($ID+1));
 done

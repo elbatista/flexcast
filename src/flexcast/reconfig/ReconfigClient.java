@@ -70,31 +70,38 @@ public class ReconfigClient extends ClientProxy {
         long now;
         long elapsed = 0;
 
-        sleep(10000);
+        // sleep(10000);
+
+        boolean reconfig = false;
 
         while ((elapsed / 1e9) < totalTime) {
 
             sleep(timeslice);
-            
-            Message m = newCKMessage();
+
             now = System.nanoTime();
-            printF("Sending request for workload data", m);
-            List<Message> replies = multicast2(m);
 
-            printF("Collected workload data", replies);
-            updateDestsFreq(replies);
+            if (!reconfig){
+            
+                Message m = newCKMessage();
+                printF("Sending request for workload data", m);
+                List<Message> replies = multicast2(m);
 
-            printF("Calculating Optimal DAG based on workload");
-            long ini = System.nanoTime();
-            short[] newDAG = currentView.calculatePossibleNewDAG();
-            printF("Took", TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-ini),"ms");
+                printF("Collected workload data", replies);
+                updateDestsFreq(replies);
 
-            if(newDAG != null){
-                printF("New DAG found", Arrays.toString(newDAG));
-                sendChangeViewMessage(newDAG);
-            }
-            else {
-                printF("WLOT didnt suggest a new DAG");
+                printF("Calculating Optimal DAG based on workload");
+                long ini = System.nanoTime();
+                short[] newDAG = currentView.calculatePossibleNewDAG();
+                printF("Took", TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-ini),"ms");
+
+                if(newDAG != null){
+                    printF("New DAG found", Arrays.toString(newDAG));
+                    sendChangeViewMessage(newDAG);
+                    // reconfig = true;
+                }
+                else {
+                    printF("WLOT didnt suggest a new DAG");
+                }
             }
 
             // printF("CurrView", currentView.getDstsFreq());

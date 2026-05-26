@@ -8,7 +8,8 @@ import java.util.Set;
  * RandomLocality
  */
 public class RandomLocality {
-    int numnodes = 3;
+    int numnodes = 9;
+    int howManyNeighbours = 3;
     Random rand = new Random();
     public static void main(String[] args) {
         new RandomLocality();
@@ -20,7 +21,7 @@ public class RandomLocality {
         for(int i = 0; i < numnodes; i++){
             System.err.print(i + " - ");
             Set<Integer> set = new HashSet<>();
-            for(int j = 0; j < 2; j++){
+            for(int j = 0; j < howManyNeighbours; j++){
                 int node = rand.nextInt(numnodes);
                 while(node == i || set.contains(node)) node = rand.nextInt(numnodes);
                 set.add(node);

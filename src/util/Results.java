@@ -478,12 +478,12 @@ public class Results {
         }
     }
 
-    static int duration = 180;
+    static int duration = 120;
 
     public static void main(String ... args){
         // ArrayList<Double> latencies = new ArrayList<>();
         
-        String localities [] = {"95"};
+        String localities [] = {"90"};
         short numnodes []    = {3};
         String algos []      = {"flexcast"};// , "flexcast", "skeen"};
         int clients []       = {150};//{24,240,480,720,960,1200,1440};
@@ -491,7 +491,7 @@ public class Results {
         // int gcall            = 0;
         // int dag              = 1;
         String clilat        = "clilat";
-        String rc            = "rc10";
+        String rc            = "rc90";
 
         String cliregion = "";
 

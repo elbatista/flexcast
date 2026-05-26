@@ -1,7 +1,7 @@
-﻿From/to,Canada,Virginia,SaoPaulo,cli-Canada,cli-Virginia,cli-SaoPaulo
-Canada,5,16,128,5,16,128
-Virginia,17,7,114,17,7,114
-SaoPaulo,126,116,3,126,116,3
-cli-Canada,5,16,128,5,16,128
-cli-Virginia,17,7,114,17,7,114
-cli-SaoPaulo,126,116,3,126,116,3
+﻿From/to,Virginia,Frankfurt,Mumbai,cli-Virginia,cli-Frankfurt,cli-Mumbai
+Virginia,7,92,191,7,92,191
+Frankfurt,92,3,123,92,3,123
+Mumbai,189,120,4,189,120,4
+cli-Virginia,7,92,191,7,92,191
+cli-Frankfurt,92,3,123,92,3,123
+cli-Mumbai,189,120,4,189,120,4

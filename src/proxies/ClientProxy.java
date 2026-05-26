@@ -1,6 +1,7 @@
 package proxies;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
@@ -143,7 +144,7 @@ public abstract class ClientProxy extends Node{
         // if it is a viewchange, changes the view
         if(reply.getType() == Type.VIEWCHANGE){
             if(stats != null) stats.store(latsPerNode, expectedReplies>1, dsts, reply.getType());
-            printF("Got a viewchange reply from server", reply.getSender());
+            printF(new Date(), "Got a viewchange reply from server", reply.getSender());
             changeView(reply);
             resend = true;
             sema.release();
